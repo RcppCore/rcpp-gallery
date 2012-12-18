@@ -9,9 +9,9 @@ more advanced users who  glean insights from seeing how others approach problems
 
 To encourage broad use in both open-source and commercial projects, all of 
 the code in the Rcpp Gallery is published under the 
-[MIT License]({{ site.baseurl }}LICENSE.txt).
+[MIT License](https://github.com/jjallaire/rcpp-gallery/blob/gh-pages/LICENSE.txt).
 
 If you are a user of Rcpp with code or insights you'd like to share, we'd 
 love to hear from you. It's possible to contribute everything from a small
 code snippet to a longer form article with supporting code. Please see 
-[contributing to the Rcpp Gallery]({{ site.repo }}/wiki/Contributing) for more details.
+[contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing) for more details.
