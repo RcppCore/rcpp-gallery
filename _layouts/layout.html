@@ -3,8 +3,10 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta name="author" content="Rccp" />
+    <meta name="author" content="Rcpp" />
+    <meta name="description" content="{{ page.summary }}"/>
     
+    <title>Rcpp Gallery - {{ page.title }}</title>
     
     <!-- Syntax highlighting CSS -->
    <link rel="stylesheet" href="{{ site.baseurl }}css/syntax.css" type="text/css" />
@@ -22,17 +24,42 @@
     <!-- Google site verification -->
     <meta name="google-site-verification" content="js0YHwQux5nJCo2n1RFkyQy0ZPycXEdv8bx45raEMNM" />
   
+  <!-- Google custom search engine -->
+<!-- Put the following javascript before the closing </head> tag. -->
+<script>
+  (function() {
+    var cx = '003241679836417614596:WMX-833312198';
+    var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+  })();
+</script>
+  
   </head>
   <body>
   
     <div class="site">
       
+      <div>
       <div class="title">
         <a href="{{ site.baseurl }}">Rcpp Gallery</a>
         <a class="extra" href="{{ site.baseurl }}">home</a>
         <a class="extra" href="{{ site.baseurl }}about.html">about</a>
-        <a class="extra" href="{{ site.baseurl }}feed.xml">feed</a>
+        <a class="extra" href="{{ site.baseurl }}feed.xml">feed</a>  		
       </div>
+     
+      
+      <!-- Put the following javascript before the closing </head> tag. -->
+	   <script>
+		  (function() {
+		    var cx = '003241679836417614596:WMX-833312198';
+		    var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+		    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+		        '//www.google.com/cse/cse.js?cx=' + cx;
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+		  })();
+		</script>
       
       {{ content }}
       
