@@ -8,7 +8,9 @@ layout: layout
     <p class="postinfo">
        {{ page.author }} &mdash; <em>{{ page.date | date: "%b %e, %Y" }}</em> | 
        {% for tag in page.tags %}
-          <a href="{{ site.baseurl }}tags/{{ tag }}/">{{ tag }}</a>&nbsp;  
+          {% if tag != 'featured' %}
+            <a href="{{ site.baseurl }}tags/{{ tag }}/">{{ tag }}</a>&nbsp;
+          {% endif %}
        {% endfor %}
     </p>
       
