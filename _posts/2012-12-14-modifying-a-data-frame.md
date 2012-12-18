@@ -1,7 +1,7 @@
 ---
 title: Modifying a Data Frame
 author: J.J. Allaire
-tags: dataframes stl
+tags: dataframes stl featured
 summary: Demonstrates modifying a data frame passed to a function and 
   returning the modified version.
 layout: post

@@ -6,14 +6,28 @@ title: Rcpp Gallery
 <div class="content">
 
 
-  <p>Welcome to the Rcpp Gallery!</p>
+
+  <h3 class="section_header">Topics</h3>
 
   {% for tag in site.tags %}
     {% capture tag_name %}{{ tag | first }}{% endcapture %}
       {% if tag_name != 'featured' %}
-  	    {% include tag_section.html %}
+  	    <a class="topic_link" href="{{ site.baseurl }}tags/{{ tag_name }}/">{{ tag_name }}</a>
+        &nbsp;
   	  {% endif %}
   {% endfor %}
+  
+  
+  <h3 class="section_header">Featured</h3>
+  
+  <ul class = "posts">
+    {% for post in site.tags.featured limit:10 %}
+       {% include post_item.html %}
+    {% endfor %}
+    {% if site.tags.featured.size > 10 %}
+      <li><a href="{{ site.baseurl }}tags/featured/">More &raquo;</a></li>
+    {% endif %}
+  </ul>
  
 </div>
 

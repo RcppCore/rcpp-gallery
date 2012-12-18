@@ -67,6 +67,15 @@ table {
 /*
 /*****************************************************************************/
 
+.section_header {
+  margin-top: 20px;
+}
+
+.topic_link {
+  text-decoration: none;
+  margin-right: 5px;
+}
+
 ul.posts {
   list-style-type: none;
   margin-bottom: 2em;
