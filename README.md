@@ -1,7 +1,7 @@
 
 ## About the Rcpp Gallery
 
-The *Rcpp Gallery* is a collection of community contributed code examples that 
+The [Rcpp Gallery](http://gallery.rcpp.org) is a collection of community contributed code examples that 
 illustrate techniques for using the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) package. 
 The goal is to provide a forum for easy sharing of technical insights and methods
 of work. We hope this helps both beginners getting started with Rcpp as well as 
