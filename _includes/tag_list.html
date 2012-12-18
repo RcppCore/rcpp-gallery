@@ -3,7 +3,7 @@
 <ul class = "posts">
   {% for post in site.tags[tag_name] %}
   <li>
-    <a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a><span> &mdash; {{ post.author }}</span> 
+    <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a><span> &mdash; {{ post.author }}</span> 
   <div class="summary">{{ post.summary }}</div>
   </li>
   {% endfor %}

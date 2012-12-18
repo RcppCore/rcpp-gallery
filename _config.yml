@@ -2,7 +2,7 @@ name: Rcpp Gallery
 description: Gallery of Rcpp Examples
 
 absoluteurl: http://gallery.rcpp.org
-baseurl:
+baseurl: /
 permalink: ":year/:month/:day/:title"
 
 exclude: Makefile, rcpp-gallery.Rproj

@@ -8,7 +8,7 @@ layout: layout
     <p class="postinfo">
        {{ page.author }} &mdash; <em>{{ page.date | date: "%b %e, %Y" }}</em> | 
        {% for tag in page.tags %}
-          <a href="{{ site.baseurl }}/tags/{{ tag }}/">{{ tag }}</a>&nbsp;  
+          <a href="{{ site.baseurl }}tags/{{ tag }}/">{{ tag }}</a>&nbsp;  
        {% endfor %}
     </p>
       
@@ -20,13 +20,13 @@ layout: layout
 
   {% include share_post.html %}
 
-  <p class="postinfo"><em>Source code:</em> <a href="{{ site.baseurl }}/src/{{ page.src }}">{{ page.src }}</a></p>
+  <p class="postinfo"><em>Source code:</em> <a href="{{ site.baseurl }}src/{{ page.src }}">{{ page.src }}</a></p>
 
   <div id="related">
     <h3>Related Topics</h3>
     <ul class="posts">
       {% for post in site.related_posts limit:3 %}
-        <li><a href="{{ site.baseurl }}/{{ post.url }}">{{ post.title }}</a> <span>&mdash; {{ post.author }}</span></li>
+        <li><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span>&mdash; {{ post.author }}</span></li>
       {% endfor %}
     </ul>
   </div>
