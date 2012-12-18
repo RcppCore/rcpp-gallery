@@ -8,5 +8,5 @@ permalink: ":year/:month/:day/:title"
 exclude: Makefile, rcpp-gallery.Rproj
 
 pygments: true
-lsi: true
+
 
