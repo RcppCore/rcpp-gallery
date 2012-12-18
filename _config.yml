@@ -8,6 +8,7 @@ permalink: ":year/:month/:day/:title"
 
 exclude: 
   - README.md 
+  - CONTRIBUTING.md
   - Makefile
   - rcpp-gallery.Rproj
 
