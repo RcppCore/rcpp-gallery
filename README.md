@@ -1,9 +1,5 @@
----
-layout: layout
-title: About
----
 
-## About
+## About the Rcpp Gallery
 
 The *Rcpp Gallery* is a collection of community contributed code examples that 
 illustrate techniques for using the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) package. 
@@ -19,8 +15,3 @@ If you are a user of Rcpp with code or insights you'd like to share, we'd
 love to hear from you. It's possible to contribute everything from a small
 code snippet to a longer form article with supporting code. Please see 
 [contributing to the Rcpp Gallery]({{ site.repo }}/wiki/Contributing) for more details.
-
-The source code for this website and all of the examples within it
-is available [here]({{ site.repo }}) (the
-pages for individual examples also include a link to their source code).
-	

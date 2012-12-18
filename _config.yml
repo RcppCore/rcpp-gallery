@@ -6,7 +6,10 @@ url: http://gallery.rcpp.org
 baseurl: /
 permalink: ":year/:month/:day/:title"
 
-exclude: Makefile, rcpp-gallery.Rproj
+exclude: 
+  - README.md 
+  - Makefile
+  - rcpp-gallery.Rproj
 
 pygments: true
 
