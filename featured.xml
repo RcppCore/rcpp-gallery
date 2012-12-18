@@ -1,0 +1,9 @@
+---
+layout: none
+---
+<?xml version="1.0" encoding="UTF-8"?>
+{% assign feed_file = "featured.xml" %}
+{% assign feed_posts = site.tags.featured %}
+{% include feed.xml %}
+
+

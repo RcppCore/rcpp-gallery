@@ -1,0 +1,15 @@
+
+Ubuntu Prerequisites
+------------------------------------------------------
+
+sudo apt-get install rubygems
+sudo gem install jekyll
+sudo apt-get install python-pygments
+
+Mac Prerequisites
+------------------------------------------------------
+
+sudo gem install jekyll
+sudo easy_install Pygments
+
+

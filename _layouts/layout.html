@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="author" content="Rccp" />
+    
+    
+    <!-- Syntax highlighting CSS -->
+   <link rel="stylesheet" href="{{ site.baseurl }}/css/syntax.css" type="text/css" />
+
+   <!-- Base CSS -->
+   <link rel="stylesheet" href="{{ site.baseurl }}/css/screen.css" type="text/css" media="screen, projection"/>
+
+   <!-- JQuery -->
+   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/syntax.css">
+    
+    <!-- Atom feeds -->
+    <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery (All)" href="{{ site.baseurl }}/feed.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery (Featured)" href="{{ site.baseurl }}/featured.xml" />
+    <title>{{ page.title }}</title>
+  
+  </head>
+  <body>
+  
+    <div class="site">
+      
+      <div class="title">
+        <a href="{{ site.baseurl }}/">Rcpp Gallery</a>
+        <a class="extra" href="{{ site.baseurl }}/">home</a>
+        <a class="extra" href="{{ site.baseurl }}/contribute.html">contribute</a>
+        <a class="extra" href="{{ site.baseurl }}/feed.xml">feed</a>
+      </div>
+      
+      {{ content }}
+      
+      <div class="footer">
+        
+      </div>
+    </div>
+  
+   
+  </body>
+</html>

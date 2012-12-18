@@ -1,1 +1,21 @@
-First Commit
+---
+layout: layout
+title: Rcpp Gallery
+---
+
+<div class="content">
+
+
+  <p>Welcome to the Rcpp Gallery!</p>
+
+  {% for tag in site.tags %}
+    {% capture tag_name %}{{ tag | first }}{% endcapture %}
+      {% if tag_name != 'featured' %}
+  	    {% include tag_section.html %}
+  	  {% endif %}
+  {% endfor %}
+ 
+</div>
+
+
+
