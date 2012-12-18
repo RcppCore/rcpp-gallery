@@ -1,7 +1,7 @@
 /**
  * @title Accessing List Elements
  * @author Hadley Wickham
- * @tags featured
+ * @tags featured lists
  * @summary Demonstrates verifying a list's class then accessing its elements
  *   
  * Linear model objects that lm produces are lists and the components are
