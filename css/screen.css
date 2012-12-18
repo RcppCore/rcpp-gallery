@@ -23,7 +23,7 @@ body {
 }
 
 h2 {
-  font-size: 130%;
+  font-size: 140%;
   margin-bottom: 1em;
 }
 
@@ -68,12 +68,13 @@ table {
 /*****************************************************************************/
 
 .section_header {
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 .topic_link {
   text-decoration: none;
   margin-right: 5px;
+  font-size: 140%;
 }
 
 ul.posts {
