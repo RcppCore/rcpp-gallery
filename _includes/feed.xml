@@ -2,15 +2,15 @@
   <channel>
 		<title>{{ site.name }}</title>
 		<description>{{ site.description }}</description>
-		<link>{{ site.absoluteurl }}</link>
-		<atom:link href="{{ site.absoluteurl }}/{{ feed_file }}" rel="self" type="application/rss+xml" />
+		<link>{{ site.url }}</link>
+		<atom:link href="{{ site.url }}/{{ feed_file }}" rel="self" type="application/rss+xml" />
 		{% for post in feed_posts limit:20 %}
   		<item>
 				<title>{{ post.title }}</title>
 				<description>{{ post.content | xml_escape }}</description>
 				<pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
-				<link>{{ site.absoluteurl }}/{{ post.url }}</link>
-				<guid isPermaLink="true">{{ site.absoluteurl }}/{{ post.url }}</guid>
+				<link>{{ site.url }}/{{ post.url }}</link>
+				<guid isPermaLink="true">{{ site.url }}/{{ post.url }}</guid>
 			</item>
 		{% endfor %}
 	</channel>

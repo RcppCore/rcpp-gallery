@@ -1,7 +1,7 @@
 name: Rcpp Gallery
 description: Gallery of Rcpp Examples
 
-absoluteurl: http://gallery.rcpp.org
+url: http://gallery.rcpp.org
 baseurl: /
 permalink: ":year/:month/:day/:title"
 
