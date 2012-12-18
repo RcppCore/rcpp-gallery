@@ -37,6 +37,15 @@ summary: Articles and code that provide examples of using the Rcpp package
     {% endif %}
   </ul>
  
+  <h3 class="section_header">Recently Published</h3>
+  
+  <ul class = "posts">
+    {% for post in site.posts limit:10 %}
+       {% include post_item.html %}
+    {% endfor %}
+  </ul>
+ 
+  
 </div>
 
 
