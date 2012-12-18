@@ -22,13 +22,6 @@ body {
   text-align: center;
 }
 
-/* iPad */
-@media only screen 
-and (min-device-width : 768px) 
-and (max-device-width : 1024px) {
-  font-size: 17px
-}
-
 h2 {
   font-size: 140%;
   margin-bottom: 1em;
