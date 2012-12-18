@@ -21,5 +21,6 @@ code snippet to a longer form article with supporting code. Please see
 [contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing) for more details.
 
 The source code for this website and all of the examples within it
-is available [here](https://github.com/jjallaire/rcpp-gallery). 
+is available [here](https://github.com/jjallaire/rcpp-gallery) (the
+pages for individual examples also include a link to their source code).
 	
