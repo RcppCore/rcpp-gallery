@@ -1,5 +1,6 @@
 name: Rcpp Gallery
 description: Gallery of Rcpp Examples
+repo: https://github.com/jjallaire/rcpp-gallery
 
 url: http://gallery.rcpp.org
 baseurl: /
