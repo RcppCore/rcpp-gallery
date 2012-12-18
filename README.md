@@ -7,14 +7,12 @@ The goal is to provide a forum for easy sharing of technical insights and method
 of work. We hope this helps both beginners getting started with Rcpp as well as 
 more advanced users who  glean insights from seeing how others approach problems.
 
-To encourage broad use in both open-source and commercial projects, all of 
-the code in the Rcpp Gallery is published under the 
-[MIT License](https://github.com/jjallaire/rcpp-gallery/blob/gh-pages/LICENSE.txt).
+## Development
 
-If you are a user of Rcpp with code or insights you'd like to share, we'd 
-love to hear from you. It's possible to contribute everything from a small
-code snippet to a longer form article with supporting code. Please see 
-[contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing) for more details.
+To setup a development configuration of the Rcpp Gallery website you should clone it to your local system and then follow the instructions in the [Development Setup](https://github.com/jjallaire/rcpp-gallery/wiki/Development-Setup) article.
+
+Contributions to the Rcpp Gallery are very welcome. For more information on contributing see the [Contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery) article. To encourage broad use in both open-source and commercial projects, all of the code in the Rcpp Gallery is published under the 
+[MIT License](https://github.com/jjallaire/rcpp-gallery/blob/gh-pages/LICENSE.txt). 
 
 ## License
 
