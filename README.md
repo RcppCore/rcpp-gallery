@@ -1,11 +1,13 @@
 
 ## Rcpp Gallery
 
-The [Rcpp Gallery](http://gallery.rcpp.org) is a collection of community contributed code examples that 
-illustrate techniques for using the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) package. 
-The goal is to provide a forum for easy sharing of technical insights and methods
-of work. We hope this helps both beginners getting started with Rcpp as well as 
-more advanced users who  glean insights from seeing how others approach problems.
+The [Rcpp Gallery](http://gallery.rcpp.org) is a collection of community 
+contributed articles and code examples that  illustrate techniques for using 
+the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) package. The goal is 
+to provide a forum for easy sharing of technical insights and methods of work. 
+We hope this helps both beginners getting started with Rcpp as well as 
+more advanced users who  glean insights from seeing how others approach
+problems.
 
 ## Development
 
