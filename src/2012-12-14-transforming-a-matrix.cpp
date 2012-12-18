@@ -1,7 +1,7 @@
 /**
  * @title Transforming a Matrix
  * @author J.J. Allaire
- * @tags matrixes stl
+ * @tags matrix stl
  * @summary Demonstrates transforming a matrix passed to a function 
  *   using std::transform.
  * 

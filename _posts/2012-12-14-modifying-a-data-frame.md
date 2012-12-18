@@ -1,7 +1,7 @@
 ---
 title: Modifying a Data Frame
-author: J.J. Allaire
-tags: dataframes stl featured
+author: Dirk Eddelbuettel
+tags: dataframe
 summary: Demonstrates modifying a data frame passed to a function and 
   returning the modified version.
 layout: post
@@ -38,7 +38,8 @@ Note the use of the `_["a"]` syntax to create named arguments to the
 The function returns a modified copy of the data frame:
 
 {% highlight r %}
-df <- data.frame(a = c(1, 2, 3), b = c("x", "y", "z"))
+df <- data.frame(a = c(1, 2, 3),
+                 b = c("x", "y", "z"))
 
 modifyDataFrame(df)
 {% endhighlight %}

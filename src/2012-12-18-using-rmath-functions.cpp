@@ -1,7 +1,7 @@
 /**
  * @title Using Functions from Rmath.h
  * @author Dirk Eddelbuettel
- * @tags rmath
+ * @tags rmath featured
  * @summary Illustrates how to access statistical distribution functions from
  *   the standalone R math library (Rmath.h)
  *

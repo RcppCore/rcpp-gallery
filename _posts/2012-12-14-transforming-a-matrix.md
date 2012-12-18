@@ -1,7 +1,7 @@
 ---
 title: Transforming a Matrix
 author: J.J. Allaire
-tags: matrixes stl
+tags: matrix stl
 summary: Demonstrates transforming a matrix passed to a function 
   using std::transform.
 layout: post
@@ -36,7 +36,7 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
 Here we call the function from R:
 
 {% highlight r %}
-m <- matrix(c(1, 2, 3, 11, 12, 13), nrow = 2, ncol = 3)
+m <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol=3)
 matrixSqrt(m)
 {% endhighlight %}
 
