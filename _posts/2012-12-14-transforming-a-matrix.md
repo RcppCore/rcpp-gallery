@@ -1,6 +1,6 @@
 ---
 title: Transforming a Matrix
-author: J.J. Allaire
+author: Dirk Eddelbuettel
 tags: matrix stl
 summary: Demonstrates transforming a matrix passed to a function 
   using std::transform.
