@@ -1,5 +1,5 @@
 ---
-title: Simulating a First-Order Vector Autoregressive Process
+title: Simulating a Vector Autoregressive Process
 author: Dirk Eddelbuettel
 license: MIT
 tags: armadillo matrix
