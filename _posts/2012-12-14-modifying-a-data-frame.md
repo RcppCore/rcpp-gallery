@@ -48,9 +48,9 @@ modifyDataFrame(df)
 
 
 <pre class="output">
-##    a   b
-## 1  1   x
-## 2  2 foo
-## 3 42   z
+   a   b
+1  1   x
+2  2 foo
+3 42   z
 </pre>
 

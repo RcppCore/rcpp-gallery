@@ -83,10 +83,10 @@ rbenchmark::benchmark(rcppSim(a,e),
 
 
 <pre class="output">
-##             test replications elapsed relative user.self sys.self
-## 1  rcppSim(a, e)          100   0.024     1.00     0.020    0.004
-## 3 compRsim(a, e)          100   1.369    57.04     1.364    0.004
-## 2     rSim(a, e)          100   3.292   137.17     3.292    0.000
+            test replications elapsed relative user.self sys.self
+1  rcppSim(a, e)          100   0.027     1.00     0.026    0.001
+3 compRsim(a, e)          100   1.076    39.85     1.069    0.005
+2     rSim(a, e)          100   2.361    87.44     2.355    0.005
 </pre>
 
 
