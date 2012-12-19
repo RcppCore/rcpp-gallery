@@ -1,6 +1,6 @@
 /**
- * @title Transforming a Matrix
- * @author Dirk Eddelbuettel
+ * @title Transforming a Matrix with STL Algorithms
+ * @author Romain Francois 
  * @license MIT
  * @tags matrix stl featured
  * @summary Demonstrates transforming a matrix passed to a function 

@@ -1,5 +1,5 @@
 ---
-title: Fast Linear Model with Armadillo
+title: Fast Linear Models with Armadillo
 author: Dirk Eddelbuettel
 license: MIT
 tags: modeling armadillo 
