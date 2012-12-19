@@ -1,6 +1,7 @@
 /**
  * @title Modifying a Data Frame
  * @author Dirk Eddelbuettel
+ * @license MIT
  * @tags dataframe
  * @summary Demonstrates modifying a data frame passed to a function and 
  *   returning the modified version.

@@ -1,6 +1,7 @@
 ---
 title: Simulating a First-Order Vector Autoregressive Process
 author: Dirk Eddelbuettel
+license: MIT
 tags: armadillo matrix featured
 summary: Compares the simulation of a first-order vector autoregressive 
    process using R and RcppArmadillo.

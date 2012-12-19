@@ -54,6 +54,9 @@ readInputFile <- function(inputFile) {
   verifyField("title")
   verifyField("author")
   verifyField("summary")
+  license <- stripWhitespace(readField(frontMatter, "license"))
+  if (!identical(license, "MIT"))
+    stop("You must include a license field specifying the MIT license")
   
   # read tags and create tag directories as necessary
   tagsField <- readField(frontMatter, "tags")
@@ -93,12 +96,20 @@ readField <- function(frontMatter, field) {
   return(NULL)
 }   
 
+# strip whitespace from a string
+stripWhitespace <- function(x) {
+  if (!is.null(x))
+    gsub("^\\s+|\\s+$", "", x)
+  else
+    NULL
+}
+
 # ensure that all tags have a tags directory
 ensureTagDirs <- function(siteDir, tagsField) {
   
   # parse tags field into a list of tags
   tags <- strsplit(tagsField, "\\s+")
-  tags <- gsub("^\\s+|\\s+$", "", tags[[1]])
+  tags <- stripWhitespace(tags[[1]])
   tags <- tags[nzchar(tags)]
   
   # ensure main tags dir

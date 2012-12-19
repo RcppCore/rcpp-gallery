@@ -1,6 +1,7 @@
 ---
 title: Transforming a Matrix
 author: Dirk Eddelbuettel
+license: MIT
 tags: matrix stl
 summary: Demonstrates transforming a matrix passed to a function 
   using std::transform.
