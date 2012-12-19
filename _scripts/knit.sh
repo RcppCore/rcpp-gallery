@@ -31,16 +31,13 @@ readInputFile <- function(inputFile) {
     input <- cppToRmd(input)
   
   # read and validate that we have front matter
-  beginFrontMatter <- grep("^\\s*<\\!-{2,}\\s*$", input)
-  endFrontMatter <- grep("^\\s*-{2,}>\\s*$", input)
-  if (length(beginFrontMatter) == 0 || length(endFrontMatter) == 0)
-    stop("No front-matter section found in post")
-  if ((endFrontMatter[1] - beginFrontMatter[1]) <= 1)
-    stop("Empty front-matter section in post")
-  if (endFrontMatter[1] == length(input))
-    stop("No content after front matter in post")
-  frontMatter <- input[(beginFrontMatter+1):(endFrontMatter-1)]
-  
+  delimiters <- grep("^---\\s*$", input)
+  if (length(delimiters) < 2)
+     stop("No front-matter section found in post")
+  if (delimiters[2] - delimiters[1] <= 1)	
+     stop("Empty front-matter section in post")	
+  frontMatter <- input[(delimiters[1]+1):(delimiters[2]-1)]
+    
   # validate and ammend front matter as necessary
   hasField <- function(field) {
     any(grepl(paste("^", field, ":.*$" , sep=""), frontMatter))
@@ -79,10 +76,9 @@ readInputFile <- function(inputFile) {
   frontMatter <- append(frontMatter, paste("src:", src))
   
   # recompose modified document
-  input <- c("---",  
-             frontMatter,
-             "---",
-             input[(endFrontMatter[1]+1):length(input)])
+  input <- c(input[1:delimiters[1]],  
+             frontMatter, 
+             input[delimiters[2]:length(input)])
 }
 
 # read the value of a front-matter field
@@ -232,7 +228,7 @@ doxygenChunkToRmd <- function(chunk, frontMatter) {
   # start rmdLines 
   rmdLines <- character()
   if (frontMatter)
-    rmdLines <- c(rmdLines, "<!---")
+    rmdLines <- c(rmdLines, "---")
   else
     rmdLines <- c(rmdLines, "")
   
@@ -261,7 +257,7 @@ doxygenChunkToRmd <- function(chunk, frontMatter) {
         if (nchar(contentMatch[2]) > 1) {
           rmdLines <- c(rmdLines, paste("  ", contentMatch[3], sep=""))
         } else {
-          rmdLines <- c(rmdLines, "--->")
+          rmdLines <- c(rmdLines, "---")
           rmdLines <- c(rmdLines, contentMatch[3])
           frontMatter <- FALSE
         }
@@ -272,7 +268,7 @@ doxygenChunkToRmd <- function(chunk, frontMatter) {
     
     # empty line could mean the end of front matter
     else if (frontMatter) {
-      rmdLines <- c(rmdLines, "--->")
+      rmdLines <- c(rmdLines, "---")
       frontMatter <- FALSE
     }
     
@@ -284,7 +280,7 @@ doxygenChunkToRmd <- function(chunk, frontMatter) {
   
   # if we're still in front matter then exit it
   if (frontMatter) 
-    rmdLines <- c(rmdLines, "--->")
+    rmdLines <- c(rmdLines, "---")
     
   return(rmdLines)
 }

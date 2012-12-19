@@ -4,15 +4,12 @@ author: Dirk Eddelbuettel
 license: MIT
 tags: armadillo matrix featured
 summary: Compares the simulation of a first-order vector autoregressive 
-   process using R and RcppArmadillo.
+   process using RcppArmadillo.
 layout: post
 src: 2012-12-18-simulating-vector-autoregressive-process.Rmd
 ---
 
-This example simulates a first-order vector autoregressive process involving
-(simple) matrix multiplication in an iterative fashion. It was suggested by
-[Lance Bachmeier](http://www-personal.ksu.edu/~lanceb/) as a motivating 
-example for using Rcpp.
+This example simulates a first-order vector autoregressive process involving simple matrix multiplication in an iterative fashion. It was suggested by [Lance Bachmeier](http://www-personal.ksu.edu/~lanceb/) as a motivating  example for using Rcpp.
 
 So let's walk through the example. First the plain vanilla R version, this starts with a simple enough loop. After skipping the first row, each iteration multiplies the previous row with the parameters and adds error terms:
 
@@ -84,9 +81,9 @@ rbenchmark::benchmark(rcppSim(a,e),
 
 <pre class="output">
             test replications elapsed relative user.self sys.self
-1  rcppSim(a, e)          100   0.027     1.00     0.026    0.001
-3 compRsim(a, e)          100   1.076    39.85     1.069    0.005
-2     rSim(a, e)          100   2.361    87.44     2.355    0.005
+1  rcppSim(a, e)          100   0.024     1.00     0.020    0.004
+3 compRsim(a, e)          100   1.342    55.92     1.336    0.008
+2     rSim(a, e)          100   3.350   139.58     3.336    0.012
 </pre>
 
 

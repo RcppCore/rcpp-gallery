@@ -154,6 +154,7 @@ ul.posts {
   .site .footer {
     font-size: 80%;
     color: #666;
+    margin-bottom: 2em;
     margin-top: 2em;
     overflow: hidden;
   }
