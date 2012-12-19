@@ -5,11 +5,7 @@ title: About
 
 ## About
 
-The *Rcpp Gallery* is a collection of community contributed articles and code that 
-illustrate techniques for using the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) package. 
-The goal is to provide a forum for easy sharing of technical insights and methods
-of work. We hope this helps both beginners getting started with Rcpp as well as 
-more advanced users who  glean insights from seeing how others approach problems.
+The *Rcpp Gallery* is  a collection of community contributed articles and code examples that illustrate techniques for programming with [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html). The goal is to provide a forum for easy sharing of technical insights and methods of work. We hope this helps both beginners to get started with Rcpp as well as advanced users to glean insights from seeing how others use Rcpp to solve more challenging problems.
 
 To encourage broad use in both open-source and commercial projects, all of 
 the code in the Rcpp Gallery is published under the 
