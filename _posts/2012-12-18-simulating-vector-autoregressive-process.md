@@ -1,5 +1,5 @@
 ---
-title: Simulating a First-Order Vector Autoregressive Process
+title: Simulating a Vector Autoregressive Process
 author: Dirk Eddelbuettel
 license: MIT
 tags: armadillo matrix
@@ -81,9 +81,9 @@ rbenchmark::benchmark(rcppSim(a,e),
 
 <pre class="output">
             test replications elapsed relative user.self sys.self
-1  rcppSim(a, e)          100   0.024     1.00     0.024    0.000
-3 compRsim(a, e)          100   1.348    56.17     1.328    0.016
-2     rSim(a, e)          100   3.425   142.71     3.376    0.032
+1  rcppSim(a, e)          100   0.025        1     0.020    0.004
+3 compRsim(a, e)          100   1.350       54     1.292    0.048
+2     rSim(a, e)          100   3.400      136     3.372    0.024
 </pre>
 
 
