@@ -5,7 +5,7 @@ This is the repository for the [Rcpp Gallery](http://gallery.rcpp.org) website, 
 
 ## Contributing
 
-Contributions to the Rcpp Gallery are very welcome. For more information on contributing see the [Contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery) article. To encourage broad use in both open-source and commercial projects, all of the code in the Rcpp Gallery is published under the 
+Contributions to the Rcpp Gallery are very welcome. For more details see the [Contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery) article. To encourage broad use in both open-source and commercial projects, all of the code in the Rcpp Gallery is published under the 
 [MIT License](https://github.com/jjallaire/rcpp-gallery/blob/gh-pages/LICENSE.txt). 
 
 To setup a local development configuration of the Rcpp Gallery website you should clone it to your local system and then follow the instructions in the [Development Setup](https://github.com/jjallaire/rcpp-gallery/wiki/Development-Setup) article.
