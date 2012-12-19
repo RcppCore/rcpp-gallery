@@ -41,11 +41,12 @@ summary: Articles and code that illustrate the use of the Rcpp package
   
   <ul class = "posts">
     {% for post in site.posts limit:10 %}
-       {% include post_item.html %}
+    <li>
+    <span>{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span>&mdash; {{ post.author }}</span>
+    </li>
     {% endfor %}
   </ul>
  
-  
 </div>
 
 
