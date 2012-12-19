@@ -23,7 +23,21 @@
     <!-- Google site verification -->
     <meta name="google-site-verification" content="js0YHwQux5nJCo2n1RFkyQy0ZPycXEdv8bx45raEMNM" />
   
-  <!-- Google custom search engine -->
+  <!-- Google analytics -->
+  <script type="text/javascript">
+     var _gaq = _gaq || [];
+     _gaq.push(['_setAccount', 'UA-37160590-1']);
+     _gaq.push(['_trackPageview']);
+   
+     (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+     })();
+   </script>
+  
+  
+    <!-- Google custom search engine -->
    <script>
      (function() {
        var cx = '003241679836417614596:WMX-833312198';
@@ -46,18 +60,6 @@
         <a class="extra" href="{{ site.baseurl }}about.html">about</a>
         <a class="extra" href="{{ site.baseurl }}feed.xml">feed</a>  		
       </div>
-     
-      
-      <!-- Put the following javascript before the closing </head> tag. -->
-	   <script>
-		  (function() {
-		    var cx = '003241679836417614596:WMX-833312198';
-		    var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
-		    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
-		        '//www.google.com/cse/cse.js?cx=' + cx;
-		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-		  })();
-		</script>
       
       {{ content }}
       
