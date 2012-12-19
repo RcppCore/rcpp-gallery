@@ -204,6 +204,7 @@ ul.posts {
     background-color: #eef;
     padding: .4em .4em;
     line-height: 1.3em;
+    margin-top: .7em;
   }
   
   #post pre.output {

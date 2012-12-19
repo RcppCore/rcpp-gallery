@@ -318,6 +318,9 @@ stripWhitespaceLines <- function(chunk) {
   return(chunk[firstLine:lastLine])
 }
 
+# don't warn for no rcpp exports (allows for C++ code chunks
+# that illustrate a concept but don't export functions)
+options(rcpp.warnNoExports = FALSE)
 
 # get arguments and call knit
 set.seed(123)
