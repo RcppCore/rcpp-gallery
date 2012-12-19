@@ -18,5 +18,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-Individual contributions are owned by their authors. Please review the header
-information in the individual source files for more details. 
+Individual contributions are owned by their authors and are Copyright (c) 2012
+by each author. Please review the header information in the individual source
+files for more details. 
