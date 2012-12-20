@@ -6,24 +6,26 @@ layout: layout
   <div id="post">
     <h2>{{ page.title }}</h2>
     <p class="postinfo">
-       {{ page.author }} &mdash; <em>{{ page.date | date: "%b %e, %Y" }}</em> | 
-       {% for tag in page.tags %}
-          {% if tag != 'featured' %}
-            <a href="{{ site.baseurl }}tags/{{ tag }}/">{{ tag }}</a>&nbsp;
-          {% endif %}
-       {% endfor %}
+       {{ page.author }} &mdash; {{ page.date | date: "%b %e, %Y" }} | 
+       <a href="https://raw.github.com/jjallaire/rcpp-gallery/gh-pages/src/{{ page.src }}">source</a>
     </p>
       
     {{ content }}
      
   </div>
   
+  <p class="tags"><strong>tags:</strong> 
+    {% for tag in page.tags %}
+      {% if tag != 'featured' %}
+         <a href="{{ site.baseurl }}tags/{{ tag }}/">{{ tag }}</a>&nbsp;
+      {% endif %}
+    {% endfor %}
+  </p>
+
   <br/>
 
   {% include share_post.html %}
-
-  <p class="postinfo"><em>Source code:</em> <a href="https://raw.github.com/jjallaire/rcpp-gallery/gh-pages/src/{{ page.src }}">{{ page.src }}</a></p>
-
+  
 </div>
 
 

@@ -86,6 +86,10 @@ table {
   font-size: 140%;
 }
 
+.tags a {
+  text-decoration: none;
+}
+
 ul.posts {
   list-style-type: none;
   margin-bottom: 2em;
