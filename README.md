@@ -5,32 +5,13 @@ This is the repository for the [Rcpp Gallery](http://gallery.rcpp.org) website, 
 
 ## Contributing
 
-Contributions to the Rcpp Gallery are very welcome. For more details see the [Contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery) article. To encourage broad use in both open-source and commercial projects, all of the code in the Rcpp Gallery is published under the 
-[MIT License](https://github.com/jjallaire/rcpp-gallery/blob/gh-pages/LICENSE.txt). 
+Contributions to the Rcpp Gallery are very welcome. For more details see the [Contributing to the Rcpp Gallery](https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery) article. 
 
 To setup a local development configuration of the Rcpp Gallery website you should clone it to your local system and then follow the instructions in the [Development Setup](https://github.com/jjallaire/rcpp-gallery/wiki/Development-Setup) article.
 
 ## License
 
-These materials are made available to you pursuant to the terms of the MIT license: 
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
+These materials are made available to you under the terms of the GPLv2 (or later) license, which can be found here: http://www.gnu.org/licenses/gpl-2.0.html
 
 Individual contributions are owned by their authors and are Copyright (c) 2012
 by each author. Please review the header information in the individual source

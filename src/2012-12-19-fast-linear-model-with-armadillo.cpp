@@ -1,7 +1,7 @@
 /**
  * @title Fast Linear Models with Armadillo
  * @author Dirk Eddelbuettel
- * @license MIT
+ * @license GPL (>= 2)
  * @tags modeling armadillo 
  * @summary A simple implementation of of a fast linear regression using
  *   the Armadillo library

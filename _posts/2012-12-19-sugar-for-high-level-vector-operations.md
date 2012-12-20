@@ -1,7 +1,7 @@
 ---
 title: Using Sugar for High Level Vector Operations
 author: Romain Francois 
-license: MIT
+license: GPL (>= 2)
 tags: sugar featured
 summary: Demonstrates using Rcpp sugar's numeric and comparison operators
   and high-level logical functions to simplify code.

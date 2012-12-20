@@ -1,7 +1,7 @@
 /**
  * @title Reversing a Vector
  * @author Dirk Eddelbuettel
- * @license MIT
+ * @license GPL (>= 2)
  * @tags stl
  * @summary Compares reversing a numeric vector the R C API and Rcpp 
  *   with an STL algorithm.

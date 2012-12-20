@@ -52,8 +52,8 @@ readInputFile <- function(inputFile) {
   verifyField("author")
   verifyField("summary")
   license <- stripWhitespace(readField(frontMatter, "license"))
-  if (!identical(license, "MIT"))
-    stop("You must include a license field specifying the MIT license")
+  if (!identical(license, "GPL (>= 2)"))
+    stop("You must include a license field specifying GPL (>= 2)")
   
   # read tags and create tag directories as necessary
   tagsField <- readField(frontMatter, "tags")

@@ -1,7 +1,7 @@
 /**
  * @title Transforming a Matrix with STL Algorithms
  * @author Romain Francois 
- * @license MIT
+ * @license GPL (>= 2)
  * @tags matrix stl featured
  * @summary Demonstrates transforming a matrix passed to a function 
  *   using std::transform.
