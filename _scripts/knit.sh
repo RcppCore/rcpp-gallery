@@ -138,6 +138,13 @@ cppToRmd <- function(input) {
   # break into chunks
   chunks <- cppChunks(input)
   
+  # consoliate all of the cpp chunks into one hidden one
+  cppCode <- character()
+  for (chunk in chunks) {
+    if (identical(attr(chunk, "type"), "cpp"))
+      cppCode <- c(cppCode, chunk)
+  }
+  
   # generate Rmd
   rmdLines <- character()
   
@@ -145,8 +152,18 @@ cppToRmd <- function(input) {
   for (chunk in chunks) {     
     switch(attr(chunk, "type"),
            doxygen = {  
-             rmdLines <- c(rmdLines, doxygenChunkToRmd(chunk, frontMatter))
-             frontMatter <- FALSE
+             if (frontMatter) {
+               # output front matter chunk
+               rmdLines <- c(rmdLines, doxygenChunkToRmd(chunk, TRUE))
+               frontMatter <- FALSE
+               
+               # output hidden cpp code chunk
+               rmdLines <- c(rmdLines, "```{r engine='Rcpp', echo=FALSE}", 
+                             cppCode, 
+                             "```")
+             } else {
+              rmdLines <- c(rmdLines, doxygenChunkToRmd(chunk, FALSE))
+             }
            },
            r = {
              rmdLines <- c(rmdLines, "```{r}", 
@@ -154,7 +171,9 @@ cppToRmd <- function(input) {
                                      "```")
            },
            cpp = {
-             rmdLines <- c(rmdLines, "```{r engine='Rcpp'}", 
+             # show code but don't evaluate it (handled already by
+             # the consoliated cppCode chunk above)
+             rmdLines <- c(rmdLines, "```{r engine='Rcpp', eval=FALSE}", 
                                      stripWhitespaceLines(chunk), 
                                      "```")
            }

@@ -19,6 +19,8 @@ standalone R math library which Debian / Ubuntu have as a package `r-mathlib`
 The short example below shows this for a simple function taking a vector, 
 and returning its pnorm computed using the R `pnorm` function:
 
+
+
 {% highlight cpp %}
  #include <Rcpp.h>
 

@@ -50,9 +50,6 @@ foo <- function(x, y){
  * implementation:
  */
 
-#include <Rcpp.h>
-using namespace Rcpp;
-
 NumericVector fooSugar(NumericVector x, NumericVector y) {
    return ifelse( x < y, x*x, -(y*y) );
 }

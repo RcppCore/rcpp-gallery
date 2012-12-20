@@ -23,6 +23,8 @@ also provided by the
 [RcppArmadillo](http://cran.r-project.org/web/packages/RcppArmadillo/)
 package via the `fastLm()` function):
 
+
+
 {% highlight cpp %}
 // [[Rcpp::depends(RcppArmadillo)]]
 

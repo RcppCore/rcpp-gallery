@@ -12,6 +12,8 @@ Data frames can be manipulated using the `DataFrame` class. The
 indvidiual vectors composing a data frame can be accessed by name, 
 modified, and then recombined into a new data frame.
 
+
+
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;

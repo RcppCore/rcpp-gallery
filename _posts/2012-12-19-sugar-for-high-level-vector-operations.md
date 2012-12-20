@@ -15,6 +15,8 @@ equivilant using Rcpp sugar.
 The following function `foo` transforms two numeric vectors into a 
 third one:
 
+
+
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -52,9 +54,6 @@ numeric and comparison operators yields the identical one-line
 implementation:
 
 {% highlight cpp %}
-#include <Rcpp.h>
-using namespace Rcpp;
-
 NumericVector fooSugar(NumericVector x, NumericVector y) {
    return ifelse( x < y, x*x, -(y*y) );
 }

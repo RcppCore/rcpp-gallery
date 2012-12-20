@@ -13,6 +13,8 @@ new matrix with the tranformed values. We do this by using
 `std::transform` to call the `sqrt` function on each element of
 the matrix:
 
+
+
 {% highlight cpp %}
 #include <Rcpp.h>
 #include <cmath>

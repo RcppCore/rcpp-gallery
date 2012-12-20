@@ -9,22 +9,24 @@ layout: post
 src: 2012-12-19-reversing-a-vector.cpp
 ---
 
+
+
 To start with and for purposes of comparison, we reverse a numeric
 vector using the R C API (note that this example was taken from 
 Jeff Ryan's esotericR package):
 
 {% highlight cpp %}
-#include <R.h>
-#include <Rinternals.h>
+#include <Rcpp.h>
+using namespace Rcpp;
 
 SEXP rev (SEXP x) {
   SEXP res;
   int i, r, P=0;
-  PROTECT(res = allocVector(REALSXP, length(x))); P++;
-  for(i=length(x), r=0; i>0; i--, r++) {
+  PROTECT(res = Rf_allocVector(REALSXP, Rf_length(x))); P++;
+  for(i=::Rf_length(x), r=0; i>0; i--, r++) {
      REAL(res)[r] = REAL(x)[i-1];
   }
-  copyMostAttrib(x, res);
+  ::Rf_copyMostAttrib(x, res);
   UNPROTECT(P);
   return res;
 }
@@ -35,9 +37,6 @@ Here's the same operation implemented using Rcpp and calling the
 `std::reverse` function from the C++ standard library:
 
 {% highlight cpp %}
-#include <Rcpp.h>
-using namespace Rcpp;
-
 // [[Rcpp::export]]
 NumericVector rcppRev(NumericVector x) {
    NumericVector revX = clone<NumericVector>(x);

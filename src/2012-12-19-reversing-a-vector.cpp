@@ -13,17 +13,17 @@
  * Jeff Ryan's esotericR package):
  */
  
-#include <R.h>
-#include <Rinternals.h>
+#include <Rcpp.h>
+using namespace Rcpp;
 
 SEXP rev (SEXP x) {
   SEXP res;
   int i, r, P=0;
-  PROTECT(res = allocVector(REALSXP, length(x))); P++;
-  for(i=length(x), r=0; i>0; i--, r++) {
+  PROTECT(res = Rf_allocVector(REALSXP, Rf_length(x))); P++;
+  for(i=::Rf_length(x), r=0; i>0; i--, r++) {
      REAL(res)[r] = REAL(x)[i-1];
   }
-  copyMostAttrib(x, res);
+  ::Rf_copyMostAttrib(x, res);
   UNPROTECT(P);
   return res;
 }
@@ -32,9 +32,6 @@ SEXP rev (SEXP x) {
  * Here's the same operation implemented using Rcpp and calling the 
  * `std::reverse` function from the C++ standard library:
  */
-
-#include <Rcpp.h>
-using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector rcppRev(NumericVector x) {
