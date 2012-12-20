@@ -1,4 +1,4 @@
-#! /usr/bin/Rscript --vanilla
+#! /usr/bin/Rscript
 
 knit <- function (inputFile, outputFile) {
  
