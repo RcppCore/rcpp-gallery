@@ -86,6 +86,11 @@ table {
   font-size: 140%;
 }
 
+.tags {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
 .tags a {
   text-decoration: none;
 }
