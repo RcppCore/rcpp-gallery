@@ -4,7 +4,7 @@ repo: https://github.com/jjallaire/rcpp-gallery
 
 url: http://gallery.rcpp.org
 baseurl: /
-permalink: ":year/:month/:day/:title"
+permalink: "articles/:title"
 
 exclude: 
   - README.md 
