@@ -7,10 +7,10 @@ baseurl: /
 permalink: "articles/:title"
 
 exclude: 
+  - COPYING
   - README.md 
   - Makefile
   - src
-  - rcpp-gallery.Rproj
 
 pygments: true
 
