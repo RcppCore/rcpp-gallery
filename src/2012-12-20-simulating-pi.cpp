@@ -32,13 +32,14 @@ piR <- function(N) {
     d <- sqrt(x^2 + y^2)
     return(4 * sum(d < 1.0) / N)
 }
+
+set.seed(5)
+c(piR(1000), piR(10000), piR(100000), piR(1000000))
 */
 
 /**
  * The neat thing about Rcpp sugar enables us to write C++ code that
- * looks almost as compact.  much like we do in R. Re-writing using
- * the sugar `ifelse` function and numeric and comparison operators
- * yields the identical one-line implementation:
+ * looks almost as compact.  
  */
 
 #include <Rcpp.h>
@@ -55,4 +56,11 @@ double piSugar(const int N) {
 /**
  * Apart from using types (hey, this is C++) and assuring the RNG gets
  * set and reset, the code is essentially identical.
+ *
+ * And by using the same RNG, so are the results.
  */
+
+/*** R
+set.seed(5)
+c(piR(1000), piR(10000), piR(100000), piR(1000000))
+*/
