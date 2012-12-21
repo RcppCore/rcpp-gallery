@@ -45,6 +45,7 @@ c(piR(1000), piR(10000), piR(100000), piR(1000000))
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
 double piSugar(const int N) {
   RNGScope scope;		// ensure RNG gets set/reset
   NumericVector x = runif(N);

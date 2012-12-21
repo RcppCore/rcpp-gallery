@@ -21,6 +21,7 @@ third one:
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
 NumericVector foo(NumericVector x, NumericVector y) {
    int n = x.size() ;
    NumericVector res( n ) ;
@@ -54,6 +55,7 @@ numeric and comparison operators yields the identical one-line
 implementation:
 
 {% highlight cpp %}
+// [[Rcpp::export]]
 NumericVector fooSugar(NumericVector x, NumericVector y) {
    return ifelse( x < y, x*x, -(y*y) );
 }

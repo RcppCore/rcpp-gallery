@@ -54,6 +54,7 @@ looks almost as compact.
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
 double piSugar(const int N) {
   RNGScope scope;		// ensure RNG gets set/reset
   NumericVector x = runif(N);

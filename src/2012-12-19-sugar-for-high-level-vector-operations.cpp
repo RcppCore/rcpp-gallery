@@ -17,6 +17,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
 NumericVector foo(NumericVector x, NumericVector y) {
    int n = x.size() ;
    NumericVector res( n ) ;
@@ -50,6 +51,7 @@ foo <- function(x, y){
  * implementation:
  */
 
+// [[Rcpp::export]]
 NumericVector fooSugar(NumericVector x, NumericVector y) {
    return ifelse( x < y, x*x, -(y*y) );
 }
