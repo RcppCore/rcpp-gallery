@@ -19,7 +19,7 @@ computing simple vector norm given matrix.
 
 As explained in the package documentation, the RcppGSL clue code
 instantiates C language pointers suitable for GSL (here the matrix
-`M`). Those *must* be free manually, as shown before the `return`
+`M`). Those *must* be freed manually, as shown before the `return`
 statement.  Otherwise the example is straighforward: take a matrix,
 create a return vector and compute the chosen norm for each column
 of the matrix.  
@@ -52,7 +52,9 @@ Rcpp::NumericVector colNorm(Rcpp::NumericMatrix sM) {
 {% endhighlight %}
 
 
-A quick illustration, based on Section 8.4.13 of the GSL manual follows.
+A quick illustration, based on 
+[Section 8.4.13 of the GSL manual](http://www.gnu.org/software/gsl/manual/html_node/Example-programs-for-matrices.html) 
+(but thanks to R reduced to a one-liner for the data generation) follows.
 
 {% highlight r %}
 ## create M as a sum of two outer products

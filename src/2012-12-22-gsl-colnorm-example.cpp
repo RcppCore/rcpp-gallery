@@ -48,7 +48,9 @@ Rcpp::NumericVector colNorm(Rcpp::NumericMatrix sM) {
 
 
 /** 
- * A quick illustration, based on Section 8.4.13 of the GSL manual follows.
+ * A quick illustration, based on 
+ * [Section 8.4.13 of the GSL manual](http://www.gnu.org/software/gsl/manual/html_node/Example-programs-for-matrices.html) 
+ * (but thanks to R reduced to a one-liner for the data generation) follows.
  */
 
 /*** R
