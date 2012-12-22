@@ -21,17 +21,17 @@ using namespace Rcpp;
  
 // [[Rcpp::export]]
 NumericVector cumsum1(NumericVector x){
- 	// initialize an accumulator variable
-   double acc = 0;
- 	
- 	// initialize the result vector
- 	NumericVector res(x.size());
- 	
- 	for(int i = 0; i < x.size(); i++){
- 		acc += x[i];
- 		res[i] = acc;
- 	}
- 	return res;
+    // initialize an accumulator variable
+    double acc = 0;
+        
+    // initialize the result vector
+    NumericVector res(x.size());
+        
+    for(int i = 0; i < x.size(); i++){
+         acc += x[i];
+         res[i] = acc;
+    }
+    return res;
 }
 {% endhighlight %}
 
@@ -43,10 +43,10 @@ the function cumsum2().
 {% highlight cpp %}
 // [[Rcpp::export]]
 NumericVector cumsum2(NumericVector x){
- 	// initialize the result vector
- 	NumericVector res(x.size());
- 	std::partial_sum(x.begin(), x.end(), res.begin());
- 	return res;
+    // initialize the result vector
+    NumericVector res(x.size());
+    std::partial_sum(x.begin(), x.end(), res.begin());
+    return res;
  }
 {% endhighlight %}
 
@@ -57,9 +57,7 @@ this function in C++ very similar to using the cumsum function in R.
 {% highlight cpp %}
 // [[Rcpp::export]]
 NumericVector cumsum_sug(NumericVector x){
- 	// initialize the result vector
- 	NumericVector res = cumsum(x);
- 	return res;
+    return cumsum(x);    // compute the result vector and return it
 }
 {% endhighlight %}
 
