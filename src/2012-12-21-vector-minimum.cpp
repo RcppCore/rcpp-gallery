@@ -5,8 +5,10 @@
  * @tags stl featured
  * @summary Demonstrates how STL's min_element can be used.
  * 
- * This example was motivated by http://stackoverflow.com/questions/5158219/find-minimum-of-vector-in-rcpp
- * and addresses to find how to find the minumum value and its position index in vector.
+ * This example was motivated by
+ * [http://stackoverflow.com/questions/5158219/find-minimum-of-vector-in-rcpp](http://stackoverflow.com/questions/5158219/find-minimum-of-vector-in-rcpp)
+ * and addresses to find how to find the minumum value and its position index in
+ * vector.
  *
  */
 
