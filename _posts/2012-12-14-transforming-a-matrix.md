@@ -4,7 +4,7 @@ author: Romain Francois
 license: GPL (>= 2)
 tags: matrix stl featured
 summary: Demonstrates transforming a matrix passed to a function 
-  using std::transform.
+  using std:&#58;transform.
 layout: post
 src: 2012-12-14-transforming-a-matrix.cpp
 ---

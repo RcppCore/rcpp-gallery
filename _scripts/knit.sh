@@ -37,6 +37,10 @@ readInputFile <- function(inputFile) {
   if (delimiters[2] - delimiters[1] <= 1)	
      stop("Empty front-matter section in post")	
   frontMatter <- input[(delimiters[1]+1):(delimiters[2]-1)]
+  
+  # escape : globally then restore the initial :
+  frontMatter <- gsub(":", "&#58;", frontMatter, fixed = TRUE)
+  frontMatter <- sub("&#58;", ":", frontMatter, fixed = TRUE)
     
   # validate and ammend front matter as necessary
   hasField <- function(field) {
