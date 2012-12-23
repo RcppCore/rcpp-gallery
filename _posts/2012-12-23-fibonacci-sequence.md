@@ -38,13 +38,13 @@ fibR <- function(n) {
         return(fibR(n-1) + fibR(n-2))
 }
 
-fibR(10)
+fibR(20)
 {% endhighlight %}
 
 
 
 <pre class="output">
-[1] 89
+[1] 10946
 </pre>
 
 
@@ -64,13 +64,13 @@ int fibCpp(int n) {
 
 
 {% highlight r %}
-fibCpp(10)
+fibCpp(20)
 {% endhighlight %}
 
 
 
 <pre class="output">
-[1] 89
+[1] 10946
 </pre>
 
 
@@ -79,14 +79,14 @@ We can time this easily thanks to the rbenchmark package:
 {% highlight r %}
 library(rbenchmark)
 
-benchmark(fibR(10), fibCpp(10))[,1:4]
+benchmark(fibR(20), fibCpp(20))[,1:4]
 {% endhighlight %}
 
 
 
 <pre class="output">
         test replications elapsed relative
-2 fibCpp(10)          100   0.001        1
-1   fibR(10)          100   0.063       63
+2 fibCpp(20)          100   0.006        1
+1   fibR(20)          100   6.725     1121
 </pre>
 

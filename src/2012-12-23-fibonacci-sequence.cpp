@@ -35,7 +35,7 @@ fibR <- function(n) {
         return(fibR(n-1) + fibR(n-2))
 }
 
-fibR(10)
+fibR(20)
  */
 
 /** 
@@ -54,7 +54,7 @@ int fibCpp(int n) {
 }
 
 /*** R
-fibCpp(10)
+fibCpp(20)
  */
 
 /** 
@@ -64,5 +64,5 @@ fibCpp(10)
 /*** R
 library(rbenchmark)
 
-benchmark(fibR(10), fibCpp(10))[,1:4]
+benchmark(fibR(20), fibCpp(20))[,1:4]
 */
