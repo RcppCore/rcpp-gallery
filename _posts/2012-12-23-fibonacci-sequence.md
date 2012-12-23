@@ -1,5 +1,5 @@
 ---
-title: Accelerating recursive function calls: Fibonacci sequence
+title: Accelerating recursive function calls in the Fibonacci sequence
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: recursion function benchmark featured
@@ -86,8 +86,8 @@ benchmark(fibR(10), fibCpp(10))
 
 <pre class="output">
         test replications elapsed relative user.self sys.self user.child
-2 fibCpp(10)          100   0.001        1      0.00        0          0
-1   fibR(10)          100   0.318      318      0.32        0          0
+2 fibCpp(10)          100   0.002      1.0     0.000        0          0
+1   fibR(10)          100   0.319    159.5     0.316        0          0
   sys.child
 2         0
 1         0

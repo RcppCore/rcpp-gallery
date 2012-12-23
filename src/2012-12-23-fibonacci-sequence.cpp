@@ -1,5 +1,5 @@
 /**
- * @title Accelerating recursive function calls: Fibonacci sequence
+ * @title Accelerating recursive function calls in the Fibonacci sequence
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
  * @tags recursion function benchmark featured
