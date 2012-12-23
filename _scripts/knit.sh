@@ -207,7 +207,7 @@ cppChunks <- function(input) {
     }
     
     # start doxygen
-    else if (grepl("^\\/\\*[\\*\\!].*$", line)) {
+    else if (grepl("^\\s*\\/\\*[\\*\\!].*$", line)) {
       chunks <- addChunk(chunks, "cpp", chunkLines)
       chunkLines <- character()
       inDoxygen <- TRUE
