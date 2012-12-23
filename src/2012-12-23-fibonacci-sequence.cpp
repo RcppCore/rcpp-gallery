@@ -1,5 +1,5 @@
 /**
- * @title Accelerating recursive function calls in the Fibonacci sequence
+ * @title Faster recursion: The Fibonacci sequence
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
  * @tags recursion function benchmark featured
@@ -66,3 +66,10 @@ library(rbenchmark)
 
 benchmark(fibR(20), fibCpp(20))[,1:4]
 */
+
+/** 
+ * This demonstrates a rather tangible speed gain illustrating that
+ * function calls can indeed be expensive.  As for the Fibonacci
+ * sequence, non-recursive approaches can of course be used to provide
+ * a speedier implementation in either R or C++.
+ */

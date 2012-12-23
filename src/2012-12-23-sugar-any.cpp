@@ -27,6 +27,15 @@ bool any_sug(LogicalVector x){
    // Note the use of is_true to return a bool type
    return is_true(any(x == TRUE));
 }
+
+/*** R
+ x <- c(3, 9, 0, 2, 7, -1, 6)
+ y <- c(8, 3, 2, 6, 1, 5, 0)
+ any_sug(x < 10)
+ any_sug(x != 3)
+ any_sug(x >= y)
+ any_sug(y == 0)
+*/
  
 /**
  * While the above function may seem trivial, it can be easy to forget is_true()
@@ -47,12 +56,6 @@ void check_negative(NumericVector x) {
 }
  
 /*** R
- x <- c(3, 9, 0, 2, 7, -1, 6)
- y <- c(8, 3, 2, 6, 1, 5, 0)
- any_sug(x < 10)
- any_sug(x != 3)
- any_sug(x >= y)
- any_sug(y == 0)
  check_negative(x)
  check_negative(y)
  */

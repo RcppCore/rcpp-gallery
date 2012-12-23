@@ -20,6 +20,13 @@ using namespace Rcpp;
 NumericVector diff_sug(NumericVector x){
    return diff(x);
 }
+
+/*** R
+ x <- rnorm(10)
+ diff_sug(x)
+ # base R function
+ diff(x)
+*/
  
 /**
  * One can use the diff() function to compute one period simple returns of stock
@@ -39,12 +46,8 @@ NumericVector ret_simple(NumericVector x) {
 }
 
 /*** R
- x <- rnorm(10)
  # Close prices of S&P 500
  y <- c(1418.55, 1427.84, 1428.48, 1419.45, 1413.58, 
         1430.36, 1446.79, 1435.81, 1443.69, 1430.15)
- diff_sug(x)
- # base R function
- diff(x)
  ret_simple(y)
  */

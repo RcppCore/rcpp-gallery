@@ -25,6 +25,15 @@ bool all_sug(LogicalVector x) {
    // Note the use of is_true to return a bool type.
    return is_true(all(x == TRUE));
 }
+
+/*** R
+x <- c(3, 9, 0, 2, 7, 5, 6)
+y <- c(0, 0, 0, 0, 0, 0, 0)
+all_sug(x < 10)
+all_sug(x != 3)
+all_sug(x >= y)
+all_sug(y == 0)
+*/
  
 /**
  * While the above function may seem trivial, it can be easy to forget is_true() when
@@ -46,12 +55,6 @@ void check_equal(NumericVector x, NumericVector y) {
  
  
 /*** R
-x <- c(3, 9, 0, 2, 7, 5, 6)
-y <- c(0, 0, 0, 0, 0, 0, 0)
-all_sug(x < 10)
-all_sug(x != 3)
-all_sug(x >= y)
-all_sug(y == 0)
 check_equal(x, y)
 check_equal(x, c(3, 9, 0, 2, 7, 5, 6))
 */
