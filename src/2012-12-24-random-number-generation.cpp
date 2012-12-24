@@ -45,11 +45,11 @@ NumericMatrix rngCpp(const int N) {
 */
 
 
-/*
+/**
  * The other method of using the R random-number generator is in
  * <em>scalar</em> mode, one variable and draw at a time. This is very
  * similar to the description of this API in the
- * [Writing R Extension](http://cran.r-project.org/doc/manual/R-Exts.html) 
+ * [Writing R Extensions](http://cran.r-project.org/doc/manuals/R-exts.html) 
  * manual, and provided by Rcpp in the <code>R</code> namespace:
  */
 
