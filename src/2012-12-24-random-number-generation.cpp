@@ -11,9 +11,8 @@
  *
  * Rcpp builds on this, and provides access to the same random number
  * generators, and distributions.  Moreover, thanks to Rcpp sugar,
- * these can be accessed in a vectorised manner (which we illustrated
- * in the post [simulating
- * pi](http://gallery.rcpp.org/articles/simulating-pi)).
+ * these can be accessed in a vectorised manner, as we illustrated
+ * in the post [simulating pi](../simulating-pi).
  */
 
 
