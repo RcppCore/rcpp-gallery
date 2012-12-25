@@ -19,8 +19,7 @@
     <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}css/syntax.css">
     
     <!-- Atom feeds -->
-    <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery (All)" href="{{ site.baseurl }}feed.xml" />
-    <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery (Featured)" href="{{ site.baseurl }}featured.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery" href="http://feeds.feedburner.com/rcpp-gallery" />
   
     <!-- Google site verification -->
     <meta name="google-site-verification" content="js0YHwQux5nJCo2n1RFkyQy0ZPycXEdv8bx45raEMNM" />
@@ -64,14 +63,30 @@
         <a href="{{ site.baseurl }}">Rcpp Gallery</a>
         <a class="extra" href="{{ site.baseurl }}">home</a>
         <a class="extra" href="{{ site.baseurl }}about.html">about</a>
-        <a class="extra" href="{{ site.baseurl }}feed.xml">feed</a>  		
+        <a class="extra" href="http://feeds.feedburner.com/rcpp-gallery">feed</a>  		
       </div>
       
       {{ content }}
       
       <div class="footer">
-        &nbsp;
+        <div class="about">
+         Rcpp Gallery &mdash;
+           <a href="http://www.gnu.org/licenses/gpl-2.0.html">License (GPLv2)</a> &nbsp;
+           <a href="https://github.com/jjallaire/rcpp-gallery/wiki/Contributing-to-the-Rcpp-Gallery">Contributing</a>
+           
+        </div>
+      
+        <div class="subscribe">
+        Subscribe: &nbsp; <a href="http://feeds.feedburner.com/rcpp-gallery" rel="alternate" type="application/rss+xml"><img src="http://www.feedburner.com/fb/images/pub/feed-icon16x16.png" alt="" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://feeds.feedburner.com/rcpp-gallery" rel="alternate" type="application/rss+xml">RSS</a>&nbsp; &nbsp;
+        <a href="http://feedburner.google.com/fb/a/mailverify?uri=rcpp-gallery&amp;loc=en_US">
+        <img src="{{ site.baseurl }}img/mail.png" alt="" style="vertical-align:middle;border:0"/></a>&nbsp; <a href="http://feedburner.google.com/fb/a/mailverify?uri=rcpp-gallery&amp;loc=en_US">Email</a>
+      
+         </div>
+         
+         &nbsp;
       </div>
+      
+      
     </div>
   
    
