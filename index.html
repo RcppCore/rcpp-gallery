@@ -13,18 +13,40 @@ summary: Articles and code that illustrate the use of the Rcpp package
   	
   </p>
 
-
-
-  <h3 class="section_header">Tags</h3>
-
-  {% for tag in site.tags %}
+   <h3 class="section_header">Tags</h3>
+   
+   {% for tag in site.tags %}
     {% capture tag_name %}{{ tag | first }}{% endcapture %}
       {% if tag_name != 'featured' %}
-  	    <a class="topic_link" href="{{ site.baseurl }}tags/{{ tag_name }}/">{{ tag_name }}</a>
-        &nbsp;
-  	  {% endif %}
-  {% endfor %}
+       <a class="__{{ tag[0] }}" 
+          style="margin: 5px; text-decoration: none;"
+            href="{{ site.baseurl }}tags/{{ tag_name }}/">
+            {{ tag_name }}
+       </a>
+       {% endif %}
+   {% endfor %}
   
+   <script type="text/javascript">
+      $(function() {
+         var minFont = 15.0,
+             maxFont = 40.0,
+             diffFont = maxFont - minFont,
+             size = 0;
+      
+         {% assign max = 1.0 %}
+         {% for tag in site.tags %}
+            {% if tag[1].size > max %}
+                {% assign max = tag[1].size %}
+            {% endif %}
+         {% endfor %}
+         
+         {% for tag in site.tags %}
+            size = (Math.log({{ tag[1].size }}) / Math.log({{ max }})) 
+                   * diffFont + minFont;
+            $(".__{{ tag[0] }}").css("font-size", size + "px");
+         {% endfor %}
+      });
+   </script>
   
   <h3 class="section_header">Featured</h3>
   
