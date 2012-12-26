@@ -119,12 +119,6 @@ SpMat res:
 </pre>
 
 
-
-<pre class="output">
-NULL
-</pre>
-
-
 Support for sparse matrix is currently still limited in Armadillo,
 but expected to grow.  Likewise, RcppArmadillo does not yet have
 `as<>()` and `wrap()` converters but we expect to add these
