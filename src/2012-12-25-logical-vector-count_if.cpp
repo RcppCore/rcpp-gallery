@@ -25,17 +25,17 @@ int count_if(LogicalVector x) {
     int counter = 0;
     for(int i = 0; i < x.size(); i++) {
         if(x[i] == TRUE) {
-            counter ++;
+            counter++;
         }
     }
-return counter;
+    return counter;
 }
 
 /*** R
- x <- 1:10
- count_if(x < 4)
- count_if(x != 8)
- */
+x <- 1:10
+count_if(x < 4)
+count_if(x != 8)
+*/
 
 /**
  * A simple function using just C++ and the STL to count the
@@ -57,6 +57,6 @@ int count_if_lt(std::vector<double> x, int n) {
 }
 
 /*** R
- x <- 1:10
- count_if_lt(x, 4)
- */
+x <- 1:10
+count_if_lt(x, 4)
+*/
