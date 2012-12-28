@@ -24,13 +24,13 @@ using namespace Rcpp;
  
 // [[Rcpp::export]]
 int count_if(LogicalVector x) {
-	int counter = 0;
-	for(int i = 0; i < x.size(); i++) {
-		if(x[i] == TRUE) {
-			counter += 1;
-		}
-	}
-	return counter;
+    int counter = 0;
+    for(int i = 0; i < x.size(); i++) {
+        if(x[i] == TRUE) {
+            counter += 1;
+        }
+    }
+    return counter;
 }
 {% endhighlight %}
 
@@ -72,7 +72,7 @@ written for other logical operators and other types.
 
 // [[Rcpp::export]]
 int count_if_lt(std::vector<double> x, int n) {
-	return count_if(x.begin(), x.end(), bind2nd(std::less<double>(), n));
+    return count_if(x.begin(), x.end(), bind2nd(std::less<double>(), n));
 }
 {% endhighlight %}
 
