@@ -9,7 +9,6 @@ src: 2012-12-25-logical-vector-count_if.cpp
 ---
 
 
-
 The fact that expressions with binary logical operators 
 such as `x < 4` create a logical sugar expression 
 (i.e. a LogicalVector type) is very powerful. This enables
