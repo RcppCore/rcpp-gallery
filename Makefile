@@ -11,5 +11,5 @@ clean:
 	$(MAKE) clean -C src
 
 preview: knit
-	jekyll --server --auto --url http://localhost:4000
+	jekyll --server --auto --no-pygments --url http://localhost:4000
 
