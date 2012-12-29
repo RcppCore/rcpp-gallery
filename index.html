@@ -28,8 +28,8 @@ summary: Articles and code that illustrate the use of the Rcpp package
   
    <script type="text/javascript">
       $(function() {
-         var minFont = 15.0,
-             maxFont = 30.0,
+         var minFont = 1.2,
+             maxFont = 2.4,
              diffFont = maxFont - minFont,
              size = 0;
       
@@ -43,7 +43,7 @@ summary: Articles and code that illustrate the use of the Rcpp package
          {% for tag in site.tags %}
             size = (Math.log({{ tag[1].size }}) / Math.log({{ max }})) 
                    * diffFont + minFont;
-            $(".__{{ tag[0] }}").css("font-size", size + "px");
+            $(".__{{ tag[0] }}").css("font-size", size + "em");
          {% endfor %}
       });
    </script>
