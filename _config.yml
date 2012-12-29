@@ -12,6 +12,6 @@ exclude:
   - Makefile
   - src
 
-pygments: true
+pygments: false
 
 
