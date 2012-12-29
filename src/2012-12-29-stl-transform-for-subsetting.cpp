@@ -26,16 +26,16 @@ inline double flag(double a, bool b) { return b ? a : flagval; }
 
 // [[Rcpp::export]]
 NumericVector subsetter(NumericVector a, LogicalVector b) {
-  // We use the flag() function to make values of 'a' 
-  // for which 'b' is false with the 'flagval'
-  transform(a.begin(), a.end(), b.begin(), a.begin(), flag);
+    // We use the flag() function to mark values of 'a' 
+    // for which 'b' is false with the 'flagval'
+    transform(a.begin(), a.end(), b.begin(), a.begin(), flag);
 
-  // We use sugar's sum to compute how many true values to expect
-  NumericVector res = NumericVector(sum(b));
+    // We use sugar's sum to compute how many true values to expect
+    NumericVector res = NumericVector(sum(b));
 
-  // And then copy the ones different from flagval
-  remove_copy(a.begin(), a.end(), res.begin(), flagval);
-  return res;    
+    // And then copy the ones different from flagval
+    remove_copy(a.begin(), a.end(), res.begin(), flagval);
+    return res;    
 }
 
 /** 
