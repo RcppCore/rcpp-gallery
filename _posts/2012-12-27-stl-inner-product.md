@@ -24,7 +24,7 @@ the sum oof the elements of two vectors.
 
 // [[Rcpp::export]]
 double innerProduct(const std::vector<double>& x, 
-                     const std::vector<double>& y) {
+                    const std::vector<double>& y) {
     double val = std::inner_product(x.begin(), x.end(), y.begin(), 0);
     return val;
 }
