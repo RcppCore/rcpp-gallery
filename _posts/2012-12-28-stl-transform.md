@@ -72,17 +72,3 @@ NumericVector transformEx2(NumericVector x, NumericVector y) {
 [1] 2.236 2.828 4.243 5.000
 </pre>
 
-
-We can build on this to construct logical indexing.
-
-{% highlight cpp %}
-inline double copyOrNA(double x, bool y) { return (y ? x : NA_REAL); }
-
-// [[Rcpp::export]]
-NumericVector transformEx3(NumericVector x, LogicalVector y) {
-    NumericVector z(x.size());
-    std::transform(x.begin(), x.end(), y.begin(), z.begin(), copyOrNA);
-    return z;
-}
-{% endhighlight %}
-
