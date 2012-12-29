@@ -21,8 +21,6 @@ double innerProduct(std::vector<double> x, std::vector<double> y) {
 }
 
 /*** R
-  #x <- seq(1.1, 5.5, by=1.1)
-  #y <- seq(5.5, 1.1, by=-1.1)
   x <- c(1,2,3)
   y <- c(4,5,6)
   cbind(x,y)
