@@ -15,7 +15,8 @@
 #include <numeric>
 
 // [[Rcpp::export]]
-double innerProduct(std::vector<double> x, std::vector<double> y) {
+double innerProduct(const std::vector<double>& x, 
+                     const std::vector<double>& y) {
     double val = std::inner_product(x.begin(), x.end(), y.begin(), 0);
     return val;
 }
