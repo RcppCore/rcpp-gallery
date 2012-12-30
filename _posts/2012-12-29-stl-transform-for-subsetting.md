@@ -41,7 +41,8 @@ NumericVector subsetter(NumericVector a, LogicalVector b) {
     // We use sugar's sum to compute how many true values to expect
     NumericVector res = NumericVector(sum(b));
 
-    // And then copy the ones different from flagval
+    // And then copy the ones different from flagval from a into
+    // res using the remove_copy function from the STL
     remove_copy(a.begin(), a.end(), res.begin(), flagval);
     return res;    
 }
@@ -73,3 +74,6 @@ subsetter(a, a > 2)
 [1] 3 4 5
 </pre>
 
+
+Casual benchmarking (not shown) shows this to be comparable to and
+even slightly faster than basic indexing in `R` itself.
