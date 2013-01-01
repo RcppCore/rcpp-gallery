@@ -58,19 +58,6 @@ top_n(x, 3)
 </pre>
 
 
-
-{% highlight r %}
-x
-{% endhighlight %}
-
-
-
-<pre class="output">
- [1]  1.37096 -0.56470  0.36313  0.63286  0.40427 -0.10612  1.51152
- [8] -0.09466  2.01842 -0.06271
-</pre>
-
-
 Here we use `std::sort` from the STL and then `head` to return the bottom
 n items (items with the lowest values) of the input vector.
 
