@@ -10,28 +10,30 @@ src: 2013-01-01-sugar-head-tail.cpp
 
 
 
-The sugar function `head` returns the first n elements of the input vector.
-The sugar function `tail` returns the last n elements of the input vector.
-With Rcpp sugar, the functions `head` and `tail` work the same way
-as they do in R.
-
+The R functions `head` and `tail` return the first (last) n elements
+of the input vector.  With Rcpp sugar, the functions `head` and `tail`
+work the same way as they do in R.
+ 
 Here we use `std::sort` from the STL and then `tail` to return the top
 n items (items with the highest values) of the input vector.
 
 {% highlight cpp %}
-#include <algorithm>	// for sort
 #include <Rcpp.h>
 using namespace Rcpp;
  
 // [[Rcpp::export]]
-NumericVector top_n(NumericVector x, int n){
+NumericVector top_n(NumericVector y, int n){
+    NumericVector x = clone(y);
     std::sort(x.begin(), x.end());	// sort x in ascending order
     return tail(x, n);
 }
 {% endhighlight %}
 
 
+A simple illustration:
+
 {% highlight r %}
+set.seed(42)
 x <- rnorm(10)
 x
 {% endhighlight %}
@@ -39,8 +41,8 @@ x
 
 
 <pre class="output">
- [1] -0.23018  1.55871  0.07051  0.12929  1.71506  0.46092 -1.26506
- [8] -0.68685 -0.44566  1.22408
+ [1]  1.37096 -0.56470  0.36313  0.63286  0.40427 -0.10612  1.51152
+ [8] -0.09466  2.01842 -0.06271
 </pre>
 
 
@@ -52,7 +54,20 @@ top_n(x, 3)
 
 
 <pre class="output">
-[1] 1.224 1.559 1.715
+[1] 1.371 1.512 2.018
+</pre>
+
+
+
+{% highlight r %}
+x
+{% endhighlight %}
+
+
+
+<pre class="output">
+ [1]  1.37096 -0.56470  0.36313  0.63286  0.40427 -0.10612  1.51152
+ [8] -0.09466  2.01842 -0.06271
 </pre>
 
 
@@ -61,7 +76,8 @@ n items (items with the lowest values) of the input vector.
 
 {% highlight cpp %}
 // [[Rcpp::export]]
-NumericVector bottom_n(NumericVector x, int n){
+NumericVector bottom_n(NumericVector y, int n){
+    NumericVector x = clone(y);
     std::sort(x.begin(), x.end());	// sort x in ascending order
     return head(x, n);
 }
@@ -75,6 +91,6 @@ bottom_n(x, 3)
 
 
 <pre class="output">
-[1] -1.2651 -0.6869 -0.4457
+[1] -0.56470 -0.10612 -0.09466
 </pre>
 
