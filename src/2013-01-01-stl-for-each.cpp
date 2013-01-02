@@ -18,9 +18,9 @@
 using namespace Rcpp;
 
 // somewhat silly little class derived from unary_function<T, void> to
-// illustrate keeping state state -- we interpret the vector x as
-// containing growth rates (or returns), and we compute cumulative as
-// well as relative gains
+// illustrate keeping state -- we interpret the vector x as containing
+// growth rates (or returns), and we compute cumulative as well as
+// relative gains.
 template<class T> class cumProd : public std::unary_function<T, void> {
 public:
     cumProd() : cp(1.0), cnt(1) {}      // constructor
