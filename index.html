@@ -4,72 +4,70 @@ title: Rcpp Gallery
 summary: Articles and code that illustrate the use of the Rcpp package
 ---
 
+<div class="page-header">
+  <h1>Rcpp Gallery<small> Articles and code that provide examples of using <a href="http://dirk.eddelbuettel.com/code/rcpp.html">Rcpp</a> to integrate R and C++</small></h1>
   <gcse:search></gcse:search>
-
-<div class="content">
-
-  <p>
-    Articles and code that provide examples of using the <a href="http://dirk.eddelbuettel.com/code/rcpp.html">Rcpp</a> package to integrate R and C++
-  	
-  </p>
-
-   <h3 class="section_header">Tags</h3>
-   
-   {% for tag in site.tags %}
-    {% capture tag_name %}{{ tag | first }}{% endcapture %}
-      {% if tag_name != 'featured' %}
-       <a class="__{{ tag[0] }}" 
-          style="margin: 5px; text-decoration: none;"
-            href="{{ site.baseurl }}tags/{{ tag_name }}/">
-            {{ tag_name }}
-       </a>
-       {% endif %}
-   {% endfor %}
   
-   <script type="text/javascript">
-      $(function() {
-         var minFont = 1.2,
-             maxFont = 2.4,
-             diffFont = maxFont - minFont,
-             size = 0;
-      
-         {% assign max = 1.0 %}
-         {% for tag in site.tags %}
-            {% if tag[1].size > max %}
-                {% assign max = tag[1].size %}
-            {% endif %}
-         {% endfor %}
-         
-         {% for tag in site.tags %}
-            size = (Math.log({{ tag[1].size }}) / Math.log({{ max }})) 
-                   * diffFont + minFont;
-            $(".__{{ tag[0] }}").css("font-size", size + "em");
-         {% endfor %}
-      });
-   </script>
-  
-  <h3 class="section_header">Featured</h3>
-  
-  <ul class = "posts">
-    {% for post in site.tags.featured limit:10 %}
-       {% include post_item.html %}
-    {% endfor %}
-    {% if site.tags.featured.size > 10 %}
-      <li><a href="{{ site.baseurl }}tags/featured/">More &raquo;</a></li>
+  {% for tag in site.tags %}
+ {% capture tag_name %}{{ tag | first }}{% endcapture %}
+   {% if tag_name != 'featured' %}
+    <a class="__{{ tag[0] }}" 
+       style="margin: 5px; text-decoration: none;"
+         href="{{ site.baseurl }}tags/{{ tag_name }}/">
+         {{ tag_name }}
+    </a>
     {% endif %}
-  </ul>
- 
-  <h3 class="section_header">Recently Published</h3>
-  
-  <ul class = "posts">
-    {% for post in site.posts limit:10 %}
-    <li>
-    <span>{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span>&mdash; {{ post.author }}</span>
-    </li>
-    {% endfor %}
-  </ul>
- 
+{% endfor %}
 </div>
+
+<!-- Tag cloud -->
+<script type="text/javascript">
+   $(function() {
+      var minFont = 1.2,
+          maxFont = 2.4,
+          diffFont = maxFont - minFont,
+          size = 0;
+   
+      {% assign max = 1.0 %}
+      {% for tag in site.tags %}
+         {% if tag[1].size > max %}
+             {% assign max = tag[1].size %}
+         {% endif %}
+      {% endfor %}
+      
+      {% for tag in site.tags %}
+         size = (Math.log({{ tag[1].size }}) / Math.log({{ max }})) 
+                * diffFont + minFont;
+         $(".__{{ tag[0] }}").css("font-size", size + "em");
+      {% endfor %}
+   });
+</script>
+
+<h3>Featured Articles</h3>
+
+<ul class="unstyled">
+ {% for post in site.tags.featured limit:10 %}
+    {% include post_item.html %}
+ {% endfor %}
+ {% if site.tags.featured.size > 10 %}
+   <li><a href="{{ site.baseurl }}tags/featured/">More &raquo;</a></li>
+ {% endif %}
+</ul>
+
+<h3>Recently Published</h3>
+
+<ul class="unstyled">
+ {% for post in site.posts limit:10 %}
+ <li>
+ <span class="muted">{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span class="muted">&mdash; {{ post.author }}</span>
+ </li>
+ {% endfor %}
+</ul>
+      
+
+
+
+
 
 
 

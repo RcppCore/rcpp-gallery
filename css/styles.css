@@ -1,0 +1,28 @@
+
+pre.output {
+   background-color: white;
+}
+
+.footer {
+   font-size: .9em;
+   color: #666;
+   border-top: 4px solid #eee;
+   margin-bottom: 2em;
+   margin-top: 2em;
+   overflow: hidden;
+}
+
+.footer .about {
+   float: left;
+   margin-bottom: 2em;
+}
+
+.footer a {
+   color: #8085C1;
+   text-decoration: none;
+}
+
+.footer .subscribe {
+   float: right;
+   margin-bottom: 2em;
+}
