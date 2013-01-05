@@ -21,7 +21,9 @@
  * calculations and decompositions.  
  *
  * And with facilities that were added to Rcpp in the 0.10.* release
- * series, this effectively becomes a one-liner!
+ * series, this effectively becomes a one-liner of code! (Nitpickers
+ * will note that there are also one include statement, two attributes
+ * declarations and the function name itself.)
  */
 
 
@@ -29,10 +31,8 @@
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-using namespace Rcpp ;
-
 // [[Rcpp::export]]
-arma::vec getEigen(arma::mat M) {
+arma::vec getEigenValues(arma::mat M) {
     return arma::eig_sym(M);
 }
 
@@ -45,7 +45,7 @@ set.seed(42)
 X <- matrix(rnorm(4*4), 4, 4)
 Z <- X %*% t(X)
 
-getEigen(Z)
+getEigenValues(Z)
 */
 
 /**
