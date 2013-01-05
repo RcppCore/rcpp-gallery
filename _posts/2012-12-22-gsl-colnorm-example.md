@@ -46,7 +46,7 @@ Rcpp::NumericVector colNorm(Rcpp::NumericMatrix sM) {
         RcppGSL::vector_view<double> colview = gsl_matrix_column (M, j);
 	n[j] = gsl_blas_dnrm2(colview);
     }
-    M.free() ;                          // important as GSL wrappers use C structure
+    M.free() ;                          // important: GSL wrappers use C structure
     return n;				// return vector  
 }
 {% endhighlight %}
