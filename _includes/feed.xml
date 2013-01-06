@@ -7,13 +7,7 @@
 		{% for post in feed_posts limit:20 %}
   		<item>
 				<title>{{ post.title }}</title>
-				<description>
-            <![CDATA[
-                 <p>{{ post.author }} &mdash; {{ post.date | date: "%b %e, %Y" }} | 
-    <a href="https://raw.github.com/jjallaire/rcpp-gallery/gh-pages/src/{{ post.src }}">source</a></p>
-                {{ post.content }}
-            ]]>
-            </description>
+				<description>{{ post.content | xml_escape }}</description>
 				<pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
 				<link>{{ site.url }}/{{ post.url }}</link>
 				<guid isPermaLink="true">{{ site.url }}/{{ post.url }}</guid>
