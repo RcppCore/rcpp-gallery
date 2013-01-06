@@ -2,7 +2,7 @@
 title: Accessing environments
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: environment
+tags: basics environment
 summary: This example shows how to access R environments
 layout: post
 src: 2013-01-03-accessing-environments.cpp

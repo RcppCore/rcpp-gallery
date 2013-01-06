@@ -3,7 +3,7 @@
  * @title Calling R Functions from C++
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
- * @tags function featured
+ * @tags basics function featured
  * @summary This post discusses calling R functions from C++
  *
  *
