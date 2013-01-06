@@ -12,7 +12,7 @@ src: 2012-12-28-run-functions.cpp
 
 Writing running functions in R can be slow because of the loops
 involved. The TTR package contains several run functions
-that are very fast because they call Fortran routines. With Rcpp and
+that are very fast because they call Fortran and C routines. With Rcpp and
 the C++ STL one can easily write run functions to use in R.
 
 {% highlight cpp %}
