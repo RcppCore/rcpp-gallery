@@ -1,8 +1,3 @@
-
-{% highlight cpp %}
-// -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-{% endhighlight %}
-
 ---
 title: Calling R Functions from C++
 author: Dirk Eddelbuettel
@@ -33,9 +28,9 @@ But before we proceed, a warning.  Calling a function is simple and
 tempting. It is also slow as there are overheads involved.  And
 calling it repeatedly from inside your C++ code, possibly buried
 within several loops, is outright silly. This _has to be_ slower
-than equivalent C++ code, and even slower than just the R (because
-of the marshalling).  Do it when it makes sense, and not simply
-because it is available.
+than equivalent C++ code, and even slower than just the R code
+(because of the marshalling of data).  Do it when it makes sense,
+and not simply because it is available.
 
 
 

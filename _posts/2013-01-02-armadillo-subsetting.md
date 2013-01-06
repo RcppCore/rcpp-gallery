@@ -1,8 +1,3 @@
-
-{% highlight cpp %}
-// -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
-{% endhighlight %}
-
 ---
 title: Armadillo subsetting
 author: Dirk Eddelbuettel

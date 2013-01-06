@@ -153,8 +153,14 @@ cppToRmd <- function(input) {
   rmdLines <- character()
   
   frontMatter <- TRUE
-  for (chunk in chunks) {     
-    switch(attr(chunk, "type"),
+  for (chunk in chunks) {
+    
+    # skip chunks thare aren't doxygen until we've processed front matter
+    chunkType <- attr(chunk, "type")
+    if (frontMatter && !identical(chunkType, "doxygen"))
+       next
+    
+    switch(chunkType,
            doxygen = {  
              if (frontMatter) {
                # output front matter chunk
