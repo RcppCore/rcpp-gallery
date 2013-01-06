@@ -11,13 +11,12 @@ src: 2012-12-28-run-functions.cpp
 
 
 Writing running functions in R can be slow because of the loops
-involved. The TTR package contains several "run" functions
-that are very fast because they call Fortran routines. With Rcpp and
+involved. The TTR package contains several run functions
+that are very fast because they call Fortran and C routines. With Rcpp and
 the C++ STL one can easily write run functions to use in R.
 
 {% highlight cpp %}
 #include <Rcpp.h>
-#include <algorithm>    // for max_element and min_element
 #include <numeric>      // for accumulate
 
 using namespace Rcpp;
@@ -26,38 +25,52 @@ using namespace Rcpp;
 NumericVector run_sum(NumericVector x, int n) {
     int sz = x.size();
     NumericVector res(sz);
-    for(int i = 0; i < sz; i++){
-        res[i+n-1] = std::accumulate(x.begin()+i, x.end()-sz+n+i, 0.0);
+    
+    res[n-1] = std::accumulate(x.begin(), x.end()-sz+n, 0.0);
+    
+    for(int i = n; i < sz; i++) {
+       res[i] = res[i-1] + x[i] - x[i-n];
     }
     // pad the first n-1 elements with NA
     std::fill(res.begin(), res.end()-sz+n-1, NA_REAL);
-	return res;
+    return res;
 }
 {% endhighlight %}
 
 
 {% highlight r %}
- x <- sample(10)
- x
+suppressMessages(library(TTR))
+
+# use a small sample set for demonstration purposes
+set.seed(123)
+x <- rnorm(10)
+x
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1]  5  8  9  1  4 10  3  2  6  7
+ [1] -0.56048 -0.23018  1.55871  0.07051  0.12929  1.71506  0.46092
+ [8] -1.26506 -0.68685 -0.44566
 </pre>
 
 
 
 {% highlight r %}
- n <- 3
- run_sum(x, n)
+n <- 4
+
+# Check to make sure that the result of run_sum matches
+# runSum from the TTR package
+stopifnot(all.equal(run_sum(x, n), runSum(x, n)))
+
+run_sum(x, n)
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1] NA NA 22 18 14 15 17 15 11 15
+ [1]      NA      NA      NA  0.8386  1.5283  3.4736  2.3758  1.0402
+ [9]  0.2241 -1.9367
 </pre>
 
 
@@ -76,13 +89,18 @@ NumericVector run_mean(NumericVector x, int n) {
 
 
 {% highlight r %}
- run_mean(x, n)
+# Check to make sure that the result of run_mean matches
+# runMean from the TTR package
+stopifnot(all.equal(run_mean(x, n), runMean(x, n)))
+
+run_mean(x, n)
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1]    NA    NA 7.333 6.000 4.667 5.000 5.667 5.000 3.667 5.000
+ [1]       NA       NA       NA  0.20964  0.38208  0.86839  0.59394
+ [8]  0.26005  0.05602 -0.48416
 </pre>
 
 
@@ -97,7 +115,7 @@ for another example of using `min_element`.
 NumericVector run_min(NumericVector x, int n){
     int sz = x.size();
     NumericVector res(sz);
-    for(int i = 0; i < sz; i++){
+    for(int i = 0; i < (sz-n+1); i++){
         res[i+n-1] = *std::min_element(x.begin() + i, x.end() - sz + n + i);
     }
     // pad the first n-1 elements with NA
@@ -108,13 +126,18 @@ NumericVector run_min(NumericVector x, int n){
 
 
 {% highlight r %}
- run_min(x, n)
+# Check to make sure that the result of run_min matches
+# runMin from the TTR package
+stopifnot(all.equal(run_min(x, n), runMin(x, n)))
+
+run_min(x, n)
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1] NA NA  5  1  1  1  3  2  2  2
+ [1]       NA       NA       NA -0.56048 -0.23018  0.07051  0.07051
+ [8] -1.26506 -1.26506 -1.26506
 </pre>
 
 
@@ -123,7 +146,7 @@ NumericVector run_min(NumericVector x, int n){
 NumericVector run_max(NumericVector x, int n){
     int sz = x.size();
     NumericVector res(sz);
-    for(int i = 0; i < sz; i++){
+    for(int i = 0; i < (sz-n+1); i++){
         res[i+n-1] = *std::max_element(x.begin() + i, x.end() - sz + n + i);
     }
     // pad the first n-1 elements with NA
@@ -134,18 +157,20 @@ NumericVector run_max(NumericVector x, int n){
 
 
 {% highlight r %}
- run_max(x, n)
+# Check to make sure that the result of run_max matches
+# runMax from the TTR package
+stopifnot(all.equal(run_max(x, n), runMax(x, n)))
+
+run_max(x, n)
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1] NA NA  9  9  9 10 10 10  6  7
+ [1]     NA     NA     NA 1.5587 1.5587 1.7151 1.7151 1.7151 1.7151 0.4609
 </pre>
 
 
 This post demonstrates how to incorporate a few useful functions 
-from the STL. The STL functions `accumulate`, `min_element`, and 
-`max_element` utilize iterators to iterate over a range. The run
-functions above demonstrate how one can use a for loop and and 
-some math with the iterators to write running functions.
+from the STL, `accumulate`, `min_element`, and 
+`max_element`, to write 'run' functions with Rcpp.
