@@ -5,7 +5,7 @@ license: GPL (>= 2)
 tags: benchmark rng featured
 summary: This post shows how to use the Timer class in Rcpp
 layout: post
-src: 2012-01-06-Using-the-Rcpp-Timer.cpp
+src: 2012-01-06-using-the-rcpp-timer.cpp
 ---
 
 Sine the 0.10.2 release, Rcpp contains an internal class `Timer`
@@ -67,7 +67,7 @@ useTimer()
 
 <pre class="output">
       get/put g/p + rnorm()    empty loop 
-    1.623e+03     2.698e+03     3.600e-04 
+    1.604e+03     2.534e+03     4.010e-04 
 </pre>
 
 
