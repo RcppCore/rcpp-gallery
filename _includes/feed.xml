@@ -7,8 +7,9 @@
 		{% for post in feed_posts limit:20 %}
   		<item>
 				<title>{{ post.title }}</title>
+   			<author>{{ post.author }}</author>
 				<description>
-					&lt;p&gt;{{ post.author }} &amp;mdash; {{ post.date | date: "%b %e, %Y" }}&lt;/p&gt; 
+					&lt;p&gt; {{ post.author }} &amp;mdash; {{ post.date | date: "%b %e, %Y" }}&lt;/p&gt; 
 					{{ post.content | xml_escape }}
 				</description>
 				<pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
