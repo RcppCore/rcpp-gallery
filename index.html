@@ -7,9 +7,13 @@ summary: Articles and code that illustrate the use of the Rcpp package
 <div class="page-header">
   <h1>Rcpp Gallery<small> Articles and code examples for the <a href="http://dirk.eddelbuettel.com/code/rcpp.html">Rcpp</a> package</small></h1>
   
-  <div style="margin-top: 1.5em;">
-  <gcse:searchbox-only newWindow="false"></gcse:searchbox-only>
+  <div style="margin-top: 1.5em; margin-bottom: -1em;" >
+   <gcse:searchbox newWindow="false" enableHistory="true">
+   </gcse:searchbox>
   </div>
+  
+  <gcse:searchresults linktarget="_parent"></gcse:searchresults> 
+     
   
   {% for tag in site.tags %}
  {% capture tag_name %}{{ tag | first }}{% endcapture %}
