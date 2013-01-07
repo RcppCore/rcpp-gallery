@@ -178,7 +178,7 @@ benchmark(runSum(x, 500),  runSum(x, 2500),
  * about a seven tenths of a second and is fairly constant across the
  * given values of `n`. It should be noted that `runSum` does some extra
  * work in R such as checking for a valid `n`, non-leading NAs, etc.
- * and should be considered when comparing the benchark results of 
+ * and should be considered when comparing the benchmark results of 
  * `run_sum_v2` to `runSum`.
  */
 

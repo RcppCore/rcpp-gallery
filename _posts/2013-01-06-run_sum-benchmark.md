@@ -62,10 +62,10 @@ benchmark(run_sum_R(x, 500),  run_sum_R(x, 2500),
 
 <pre class="output">
                 test replications elapsed relative
-1  run_sum_R(x, 500)          100   33.21    1.063
-2 run_sum_R(x, 2500)          100   32.52    1.041
-3 run_sum_R(x, 4500)          100   31.86    1.019
-4 run_sum_R(x, 6500)          100   31.26    1.000
+1  run_sum_R(x, 500)          100   49.53    1.000
+2 run_sum_R(x, 2500)          100   52.99    1.070
+3 run_sum_R(x, 4500)          100   61.07    1.233
+4 run_sum_R(x, 6500)          100   65.01    1.313
 </pre>
 
 
@@ -117,10 +117,10 @@ benchmark(run_sum_v1(x, 500),  run_sum_v1(x, 2500),
 
 <pre class="output">
                  test replications elapsed relative
-1  run_sum_v1(x, 500)          100   4.183    1.000
-2 run_sum_v1(x, 2500)          100  20.598    4.924
-3 run_sum_v1(x, 4500)          100  36.360    8.692
-4 run_sum_v1(x, 6500)          100  51.459   12.302
+1  run_sum_v1(x, 500)          100   7.635    1.000
+2 run_sum_v1(x, 2500)          100  39.827    5.216
+3 run_sum_v1(x, 4500)          100  75.232    9.854
+4 run_sum_v1(x, 6500)          100 147.537   19.324
 </pre>
 
 
@@ -181,10 +181,10 @@ benchmark(run_sum_v2(x, 500),  run_sum_v2(x, 2500),
 
 <pre class="output">
                  test replications elapsed relative
-1  run_sum_v2(x, 500)          100   0.092    1.011
-2 run_sum_v2(x, 2500)          100   0.091    1.000
-3 run_sum_v2(x, 4500)          100   0.109    1.198
-4 run_sum_v2(x, 6500)          100   0.091    1.000
+1  run_sum_v2(x, 500)          100   0.183    1.052
+2 run_sum_v2(x, 2500)          100   0.182    1.046
+3 run_sum_v2(x, 4500)          100   0.174    1.000
+4 run_sum_v2(x, 6500)          100   0.224    1.287
 </pre>
 
 
@@ -206,10 +206,10 @@ benchmark(runSum(x, 500),  runSum(x, 2500),
 
 <pre class="output">
              test replications elapsed relative
-1  runSum(x, 500)          100   0.703    1.077
-2 runSum(x, 2500)          100   0.653    1.000
-3 runSum(x, 4500)          100   0.764    1.170
-4 runSum(x, 6500)          100   0.740    1.133
+1  runSum(x, 500)          100   2.080    1.094
+2 runSum(x, 2500)          100   1.976    1.039
+3 runSum(x, 4500)          100   1.902    1.000
+4 runSum(x, 6500)          100   1.970    1.036
 </pre>
 
 
@@ -217,5 +217,5 @@ The benchmark results of `runSum` are also quite good. The elapsed time is
 about a seven tenths of a second and is fairly constant across the
 given values of `n`. It should be noted that `runSum` does some extra
 work in R such as checking for a valid `n`, non-leading NAs, etc.
-and should be considered when comparing the benchark results of 
+and should be considered when comparing the benchmark results of 
 `run_sum_v2` to `runSum`.

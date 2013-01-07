@@ -41,7 +41,7 @@ NumericVector useTimer() {
         rnorm(10, 0.0, 1.0);
         PutRNGstate();
     }
-    timer.step("g/p + rnorm()");
+    timer.step("g/p+rnorm()");
 
     for(int i=0; i<n; i++) {
         // empty loop
@@ -66,8 +66,8 @@ useTimer()
 
 
 <pre class="output">
-      get/put g/p + rnorm()    empty loop 
-    1.361e+03     1.988e+03     5.510e-04 
+    get/put g/p+rnorm()  empty loop 
+  1.634e+03   2.573e+03   2.620e-04 
 </pre>
 
 
@@ -78,4 +78,4 @@ helper functions once per subroutine called from R (rather than
 repeatedly as shown here) so this is not really a permanent cost to
 bear when running simulations with R. 
 
-It also show the useful of a fine-grained timer at the code level.
+It also show the usefulness of a fine-grained timer at the code level.
