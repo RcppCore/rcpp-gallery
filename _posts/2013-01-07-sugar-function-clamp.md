@@ -2,7 +2,7 @@
 title: Using the Rcpp sugar function clamp
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: sugar benchmark
+tags: sugar benchmark featured
 summary: This post illustrates the sugar function clamp
 layout: post
 src: 2013-01-07-sugar-function-clamp.cpp
@@ -76,10 +76,10 @@ benchmark(pminpmaxClamp(x, a, b),
 
 <pre class="output">
                       test replications elapsed relative
-4       rcppClamp(x, a, b)          100   0.120    1.000
-3 operationsClamp(x, a, b)          100   0.506    4.217
-1   pminpmaxClamp(x, a, b)          100   0.529    4.408
-2     ifelseClamp(x, a, b)          100   5.282   44.017
+4       rcppClamp(x, a, b)          100   0.134    1.000
+3 operationsClamp(x, a, b)          100   0.509    3.799
+1   pminpmaxClamp(x, a, b)          100   0.532    3.970
+2     ifelseClamp(x, a, b)          100   5.266   39.299
 </pre>
 
 
