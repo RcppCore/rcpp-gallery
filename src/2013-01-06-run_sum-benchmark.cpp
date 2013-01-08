@@ -20,13 +20,9 @@
 
 /*** R
 run_sum_R <- function(x, n) {
-  # x : input vector
-  # n : size of window
 
-  # size of input vector
   sz <- length(x)
   
-  # initialize the output vector
   ov <- vector(mode = "numeric", length = sz)
   
   # sum the values from the beginning of the vector to n
@@ -39,6 +35,7 @@ run_sum_R <- function(x, n) {
   
   # pad the first n-1 values with NA
   ov[1:(n-1)] <- NA
+  
   return(ov)
 }
 
@@ -46,92 +43,71 @@ suppressMessages(library(TTR))
 library(rbenchmark)
 
 set.seed(123)
-x <- rnorm(100000)
-
-stopifnot(all.equal(run_sum_R(x, 500), runSum(x, 500)))
+x <- rnorm(10000)
 
 # benchmark run_sum_R for given values of x and n
-benchmark(run_sum_R(x, 500),  run_sum_R(x, 2500),
-          run_sum_R(x, 4500), run_sum_R(x, 6500),
+benchmark( run_sum_R(x, 50), run_sum_R(x, 100),
+          run_sum_R(x, 150), run_sum_R(x, 200),
           order = NULL)[,1:4]
 
 */
 
 /**
+ * For these benchmarks, I will just focus on the performance of the functions
+ * for a fixed `x` and varying the value of `n`. The results of the benchmark 
+ * of `run_sum_R` show that the elapsed time is fairly constant for the 
+ * given values of `n` (i.e. O(1)).
+ * 
  * Now let us consider a running sum function in C++, call it `run_sum_v1`.
  * One approach is to loop through each element of the given vector
- * calling std::accumulate to compute the running sum over the window.
+ * calling std::accumulate to compute the running sum.
  */
 
 #include <Rcpp.h>
-#include <numeric>      // for accumulate
-#include <vector>
 
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-std::vector<double> run_sum_v1(std::vector<double> x, int n) {
-    // x : input vector
-    // n : size of window
+NumericVector run_sum_v1(NumericVector x, int n) {
     
-    // size of the input vector
     int sz = x.size();
+
+    NumericVector res(sz);
     
-    // initialize res vector
-    std::vector<double> res(sz);
-    
-    // loop through the vector calling std::accumulate to
-    // compute the running sum
+    // loop through the vector calling std::accumulate
     for(int i = 0; i < (sz-n+1); i++){
         res[i+n-1] = std::accumulate(x.begin()+i, x.end()-sz+n+i, 0.0);
     }
     
     // pad the first n-1 elements with NA
     std::fill(res.begin(), res.end()-sz+n-1, NA_REAL);
+    
 	return res;
 }
 
 /*** R
-stopifnot(all.equal(run_sum_v1(x, 500), runSum(x, 500)))
-
 # benchmark run_sum_v1 for given values of x and n
-benchmark(run_sum_v1(x, 500),  run_sum_v1(x, 2500),
-          run_sum_v1(x, 4500), run_sum_v1(x, 6500),
+benchmark( run_sum_v1(x, 50), run_sum_v1(x, 100),
+          run_sum_v1(x, 150), run_sum_v1(x, 200),
           order = NULL)[,1:4]
 
 */
 
 /**
- * The benchmark results of `run_sum_v1` are not very impressive. The
- * time increases fairly linearly as `n` increases.
- * This is due to having `std::accumulate` inside the for loop.
- * For a vector of size 100,000 and `n = 5000`, `std::accumulate` is 
- * called 95,001 times.
- * 
- * An interesting result is that `run_sum_R` is faster than `run_sum_v1` for
- * `n=4500` and `n=6500` of the benchmark. This example demonstrates that it 
- * is not always the case that C++ code is faster than R code.
- * 
- * This is obviously not an "apples-to-apples" comparison because a different
- * algorithm is used, but the point of the example is to demonstrate the 
- * importance of the algorithm regardless of the programming language.
- */
-
-/**
+ * Although the elapsed times of `run_sum_v1` are quite fast, note that the
+ * time increases approximately linearly as `n` increases (i.e. O(N)). This 
+ * will become a problem if we use this function with large values of `n`. 
+ *
  * Now let us write another running sum function in C++ that uses
  * the same algorithm that is used in `run_sum_R`, call it `run_sum_v2`. 
  */
 
 // [[Rcpp::export]]
-std::vector<double> run_sum_v2(std::vector<double> x, int n) {
-    // x : input vector
-    // n : size of window
+NumericVector run_sum_v2(NumericVector x, int n) {
     
-    // size of input vector
     int sz = x.size();
     
-    // initialize res vector
-    std::vector<double> res(sz);
+    NumericVector res(sz);
     
     // sum the values from the beginning of the vector to n 
     res[n-1] = std::accumulate(x.begin(), x.end()-sz+n, 0.0);
@@ -143,40 +119,52 @@ std::vector<double> run_sum_v2(std::vector<double> x, int n) {
     
     // pad the first n-1 elements with NA
     std::fill(res.begin(), res.end()-sz+n-1, NA_REAL);
+    
     return res;
 }
 
 /*** R
-stopifnot(all.equal(run_sum_v2(x, 500), runSum(x, 500)))
-
 # benchmark run_sum_v2 for given values of x and n
-benchmark(run_sum_v2(x, 500),  run_sum_v2(x, 2500),
-          run_sum_v2(x, 4500), run_sum_v2(x, 6500),
+benchmark( run_sum_v2(x, 50), run_sum_v2(x, 100),
+          run_sum_v2(x, 150), run_sum_v2(x, 200),
           order = NULL)[,1:4]
 
 */
 
 /**
- * The benchmark results of `run_sum_v2` are relatively fast and much more
+ * The benchmark results of `run_sum_v2` are quite fast and much more
  * favorable than both `run_sum_R` and `run_sum_v1`. The elapsed time is 
- * about a tenth of a second and is fairly constant across the given 
- * values of `n`.
+ * approximately constant across the given  values of `n` (i.e O(N)).
  * 
- * Finally, let us benchmark `runSum` from the TTR package.
+ * Finally, let us benchmark all three functions as well as `runSum` from 
+ * the TTR package for a point of reference using larger values for the 
+ * size of `x` and `n`.
  */
 
 /*** R
+set.seed(42)
+y <- rnorm(100000)
+
 # benchmark runSum for given values of x and n
-benchmark(runSum(x, 500),  runSum(x, 2500),
-          runSum(x, 4500), runSum(x, 6500),
-          order = NULL)[,1:4]
+benchmark(    runSum(y, 4500), run_sum_v1(y, 4500),
+          run_sum_v2(y, 4500),  run_sum_R(y, 4500),
+          order = "relative")[,1:4]
 
 */
 
-/**
- * The benchmark results of `runSum` are also quite good. The elapsed time is
- * about a seven tenths of a second and is fairly constant across the
- * given values of `n`. It should be noted that `runSum` does some extra
+ /**
+ * An interesting result of benchmarking with these larger values is 
+ * that `run_sum_R` is faster than `run_sum_v1` for the given values.
+ * This example demonstrates that it is not always the case that C++ code 
+ * is faster than R code. The inefficiency of `run_sum_v1` is due to having 
+ * `std::accumulate` inside the for loop. For a vector of size 100,000 and 
+ * `n = 5000`, `std::accumulate` is called 95,001 times!
+ *  
+ * This is obviously not an "apples-to-apples" comparison because a different
+ * algorithm is used, but the point of the example is to demonstrate the 
+ * importance of the algorithm regardless of the programming language.
+ *
+ * It should be noted that `runSum` does some extra
  * work in R such as checking for a valid `n`, non-leading NAs, etc.
  * and should be considered when comparing the benchmark results of 
  * `run_sum_v2` to `runSum`.
