@@ -24,8 +24,13 @@ link to their source code). The source code published in the Rcpp Gallery is
 licensed under the [GPLv2](http://www.gnu.org/licenses/gpl-2.0.html) (or
 later).
 
-The site for this gallery portion is hosted at
-[Github](http://www.github.com), and built using
-[Jekyll](http://jekyllrb.com) with a custom [Twitter
-Bootstrap](http://twitter.github.com/bootstrap) theme.
+The gallery is published with 
+[Github Pages](http://pages.github.com/), 
+styled using [Bootstrap](http://twitter.github.com/bootstrap) and
+[Pygments](http://pygments.org/),
+and built with 
+[R](http://www.r-project.org/), 
+[Rcpp](http://cran.rstudio.com/web/packages/Rcpp/), 
+[knitr](http://yihui.name/knitr/), and
+[Jekyll](http://jekyllrb.com).
 	
