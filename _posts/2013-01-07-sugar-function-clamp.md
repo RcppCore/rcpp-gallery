@@ -9,7 +9,7 @@ src: 2013-01-07-sugar-function-clamp.cpp
 ---
 Since the 0.10.* release series, Rcpp contains a new sugar function `clamp`
 which can be used to limit vectors to both a minimum and maximim value.
-[This recent StackOverflow question]() permitted `clamp` to
+[This recent StackOverflow question](http://stackoverflow.com/questions/13868963/clip-values-between-a-minimum-and-maximum-allowed-value-in-r/13870367#13870367) permitted `clamp` to
 shine. We retake some of the answers, including the `clamp` entry
 by Romain.
 
