@@ -9,9 +9,8 @@ src: 2013-01-07-sugar-function-clamp.cpp
 ---
 Since the 0.10.* release series, Rcpp contains a new sugar function `clamp`
 which can be used to limit vectors to both a minimum and maximim value.
-[This recent StackOverflow question](http://stackoverflow.com/questions/13868963/clip-values-between-a-minimum-and-maximum-allowed-value-in-r/13870367#13870367) permitted `clamp` to
-shine. We retake some of the answers, including the `clamp` entry
-by Romain.
+[This recent StackOverflow question](http://stackoverflow.com/questions/13868963/clip-values-between-a-minimum-and-maximum-allowed-value-in-r/) permitted `clamp` to
+shine. We retake some of the answers, including the `clamp` [entry by Romain](http://stackoverflow.com/questions/13868963/clip-values-between-a-minimum-and-maximum-allowed-value-in-r/13870367#13870367).
 
 We first define the three R versions.
 
@@ -76,10 +75,10 @@ benchmark(pminpmaxClamp(x, a, b),
 
 <pre class="output">
                       test replications elapsed relative
-4       rcppClamp(x, a, b)          100   0.134    1.000
-3 operationsClamp(x, a, b)          100   0.509    3.799
-1   pminpmaxClamp(x, a, b)          100   0.532    3.970
-2     ifelseClamp(x, a, b)          100   5.266   39.299
+4       rcppClamp(x, a, b)          100   0.119    1.000
+3 operationsClamp(x, a, b)          100   0.505    4.244
+1   pminpmaxClamp(x, a, b)          100   0.530    4.454
+2     ifelseClamp(x, a, b)          100   5.268   44.269
 </pre>
 
 
