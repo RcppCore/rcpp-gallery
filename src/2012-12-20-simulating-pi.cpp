@@ -63,5 +63,5 @@ double piSugar(const int N) {
 
 /*** R
 set.seed(5)
-c(piR(1000), piR(10000), piR(100000), piR(1000000))
+c(piSugar(1000), piSugar(10000), piSugar(100000), piSugar(1000000))
 */
