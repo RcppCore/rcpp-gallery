@@ -2,7 +2,7 @@
 title: First steps in using C++11 with Rcpp
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: basics c++11
+tags: basics c++11 featured
 summary: This post shows how to experiment with C++11 features
 layout: post
 src: 2013-01-09-first-steps-with-C++11.Rmd
@@ -22,8 +22,8 @@ Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 
 C++11 has a lot of nice features; the [Wikipedia
 page](http://en.wikipedia.org/wiki/C%2B%2B11) is pretty thorough in
-describing them, and the recently made-available [isocpp
-website](http://isocpp.org/) has a lot of additional material.
+describing them, and the recently-created 
+[ISO C++](http://isocpp.org/) website has a lot of additional material.
 
 In a first example, we look at the `auto` keyword which allows the compiler
 to infer the type based on the assignment.
@@ -81,6 +81,38 @@ useInitLists()
 
 <pre class="output">
 [1] "larry" "curly" "moe"  
+</pre>
+
+
+Lastly, we can appreciate the addition _loops over ranges_:
+
+
+{% highlight cpp %}
+
+#include <Rcpp.h>
+
+// [[Rcpp::export]]
+int simpleProd(std::vector<int> vec) {
+    int prod = 1;
+    for (int &x : vec) {       // loop over all values of vec
+       prod *= x;              // access each elem., comp. product
+    }
+    return prod;
+}
+{% endhighlight %}
+
+
+This third example we can also look at:
+
+
+{% highlight r %}
+simpleProd(1:5)
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 120
 </pre>
 
 
