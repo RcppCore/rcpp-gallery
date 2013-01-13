@@ -9,8 +9,8 @@ layout: post
 src: 2012-12-10-setting-object-attributes.cpp
 ---
 All R objects have attributes, which can be queried and modified with the
-attr method. Rcpp also provides a names() method for the commonly used
-attribute: attr("names"). The following code snippet illustrates these
+`attr` method. Rcpp also provides a `names()` method for the commonly used
+attribute: `attr("names")`. The following code snippet illustrates these
 methods:
 
 
