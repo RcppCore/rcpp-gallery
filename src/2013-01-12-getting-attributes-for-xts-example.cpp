@@ -36,7 +36,7 @@ std::vector<std::string> xtsAttributes(NumericMatrix X) {
   suppressMessages(library(xts))
   set.seed(42)
   n <- 20
-  Z <- xts(100+cumsum(rnorm(n)), order.by=round(Sys.time() + 60*(1:n)))
+  Z <- xts(100+cumsum(rnorm(n)), order.by=ISOdatetime(2013,1,12,20,21,22) + 60*(1:n))
   xtsAttributes(Z)
 */
 

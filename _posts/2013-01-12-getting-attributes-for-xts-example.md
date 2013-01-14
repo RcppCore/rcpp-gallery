@@ -26,10 +26,6 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 std::vector<std::string> xtsAttributes(NumericMatrix X) {
     std::vector<std::string> nm = RObject(X).attributeNames();
-    //int n = nm.size();
-    //for (int i=0; i<n; i++) {
-    //   Rcout << "Attribute " << i << " : " << nm[i] << std::endl;
-    //}
     return nm;
 }
 {% endhighlight %}
@@ -42,7 +38,7 @@ We then examine the set of attributes and return it in a first program.
   suppressMessages(library(xts))
   set.seed(42)
   n <- 20
-  Z <- xts(100+cumsum(rnorm(n)), order.by=round(Sys.time() + 60*(1:n)))
+  Z <- xts(100+cumsum(rnorm(n)), order.by=ISOdatetime(2013,1,12,20,21,22) + 60*(1:n))
   xtsAttributes(Z)
 {% endhighlight %}
 
@@ -101,16 +97,16 @@ DatetimeVector xtsIndex(NumericMatrix X) {
 
 
 <pre class="output">
- [1] "2013-01-12 22:52:31 CST" "2013-01-12 22:53:31 CST"
- [3] "2013-01-12 22:54:31 CST" "2013-01-12 22:55:31 CST"
- [5] "2013-01-12 22:56:31 CST" "2013-01-12 22:57:31 CST"
- [7] "2013-01-12 22:58:31 CST" "2013-01-12 22:59:31 CST"
- [9] "2013-01-12 23:00:31 CST" "2013-01-12 23:01:31 CST"
-[11] "2013-01-12 23:02:31 CST" "2013-01-12 23:03:31 CST"
-[13] "2013-01-12 23:04:31 CST" "2013-01-12 23:05:31 CST"
-[15] "2013-01-12 23:06:31 CST" "2013-01-12 23:07:31 CST"
-[17] "2013-01-12 23:08:31 CST" "2013-01-12 23:09:31 CST"
-[19] "2013-01-12 23:10:31 CST" "2013-01-12 23:11:31 CST"
+ [1] "2013-01-12 20:22:22 CST" "2013-01-12 20:23:22 CST"
+ [3] "2013-01-12 20:24:22 CST" "2013-01-12 20:25:22 CST"
+ [5] "2013-01-12 20:26:22 CST" "2013-01-12 20:27:22 CST"
+ [7] "2013-01-12 20:28:22 CST" "2013-01-12 20:29:22 CST"
+ [9] "2013-01-12 20:30:22 CST" "2013-01-12 20:31:22 CST"
+[11] "2013-01-12 20:32:22 CST" "2013-01-12 20:33:22 CST"
+[13] "2013-01-12 20:34:22 CST" "2013-01-12 20:35:22 CST"
+[15] "2013-01-12 20:36:22 CST" "2013-01-12 20:37:22 CST"
+[17] "2013-01-12 20:38:22 CST" "2013-01-12 20:39:22 CST"
+[19] "2013-01-12 20:40:22 CST" "2013-01-12 20:41:22 CST"
 </pre>
 
 
