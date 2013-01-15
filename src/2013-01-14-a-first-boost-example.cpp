@@ -48,7 +48,7 @@ int computeLCM(int a, int b) {
     return boost::math::lcm(a, b);
 }
 
-/*
+/**
  * We can test these:
  *
  */

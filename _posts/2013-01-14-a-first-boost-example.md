@@ -49,12 +49,10 @@ int computeGCD(int a, int b) {
 int computeLCM(int a, int b) {
     return boost::math::lcm(a, b);
 }
-
-/*
- * We can test these:
- *
- */
 {% endhighlight %}
+
+
+We can test these:
 
 
 {% highlight r %}
