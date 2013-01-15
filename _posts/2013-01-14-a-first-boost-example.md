@@ -82,3 +82,30 @@ cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
 4 11616 
 </pre>
 
+
+Benchmark
+
+
+{% highlight r %}
+library(rbenchmark)
+library(numbers)
+
+a <- 962
+b <- 4842
+
+benchmark(r1 = c(computeGCD(a,b), computeLCM(a,b)),
+          r2 = c(GCD(a,b), LCM(a,b)),
+          replications = 1000)
+{% endhighlight %}
+
+
+
+<pre class="output">
+  test replications elapsed relative user.self sys.self user.child
+1   r1         1000   0.010      1.0     0.009    0.001          0
+2   r2         1000   0.057      5.7     0.058    0.000          0
+  sys.child
+1         0
+2         0
+</pre>
+
