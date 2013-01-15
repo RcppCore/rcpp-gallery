@@ -62,3 +62,20 @@ a <- 96
 b <- 484
 cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
 */
+
+/**
+ * Benchmark
+ *
+ */
+
+/*** R
+library(rbenchmark)
+library(numbers)
+
+a <- 962
+b <- 4842
+
+benchmark(r1 = c(computeGCD(a,b), computeLCM(a,b)),
+          r2 = c(GCD(a,b), LCM(a,b)),
+          replications = 1000)
+ */
