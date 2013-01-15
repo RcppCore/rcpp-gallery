@@ -82,3 +82,30 @@ cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
 4 11616 
 </pre>
 
+
+And as kindly suggested and submitted by Kohske Takahashi, we can also benchmark this 
+against an R solution using the [numbers](http://cran.r-project.org/package=numbers) package:
+
+{% highlight r %}
+library(rbenchmark)
+library(numbers)
+
+a <- 962
+b <- 4842
+
+res <- benchmark(r1 = c(computeGCD(a,b), computeLCM(a,b)),
+                 r2 = c(GCD(a,b), LCM(a,b)),
+                 replications = 5000)
+print(res[,1:4])
+{% endhighlight %}
+
+
+
+<pre class="output">
+  test replications elapsed relative
+1   r1         5000   0.054    1.000
+2   r2         5000   0.421    7.796
+</pre>
+
+
+This shows a nice performance gain.
