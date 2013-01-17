@@ -1,0 +1,136 @@
+---
+title: Timing normal RNGs
+author: Dirk Eddelbuettel
+license: GPL (>= 2)
+tags: rng boost c++11 featured
+summary: This post compares drawing N(0,1) vectors from R, Boost and C++11
+---
+
+In previous articles, we have seen that Rcpp can be particularly
+useful for simulations as it executes code at C++ speed. A very
+useful feature the API provided by R is the access to the R RNGs
+so that simulations at the C++ level can get precisely the same
+stream of random numbers as an R application would. 
+
+But sometimes that is not a requirement, and here will look into
+drawing normals from R, from the random number generator in Boost
+and the new one in C++11.
+
+A first approach is by far the easiest: using Rcpp and its sugar
+function which reduces this to a single statement.
+
+```{r engine="Rcpp"}
+#include <Rcpp.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector rcppNormals(int n) {
+    RNGScope scope;             // also done by sourceCpp()
+    return rnorm(n);
+}
+```
+
+A quick test:
+
+```{r}
+set.seed(42)
+rcppNormals(10)
+```
+
+Next, the same via Boost. The caveats from the previous two Boost
+pieces apply: on some systems you may have to ensure access to the
+Boost headers, on some (such as my Linux system) it just works.
+
+
+```{r engine="Rcpp"}
+
+#include <Rcpp.h>
+
+#include <boost/random.hpp>
+#include <boost/generator_iterator.hpp>
+#include <boost/random/normal_distribution.hpp>
+
+using namespace std;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector boostNormals(int n) {
+    
+    typedef boost::mt19937 RNGType; 	// select a generator, MT good default
+    RNGType rng(123456);			// instantiate and seed
+
+    boost::normal_distribution<> n01(0.0, 1.0);
+    boost::variate_generator< RNGType, boost::normal_distribution<> > rngNormal(rng, n01);
+
+    NumericVector V(n);
+    for ( int i = 0; i < n; i++ ) {
+        V[i] = rngNormal();
+    };
+  
+    return V;
+}
+```
+
+A second test:
+
+```{r}
+boostNormals(10)
+```
+
+And now for the same using the random number generator added to
+C++11. Here, the same caveats apply as before: we need to enable
+the C++11 extensions:
+
+```{r}
+Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+```
+
+That way, we can compile this code:
+
+```{r engine="Rcpp"}
+
+#include <Rcpp.h>
+#include <random>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector cxx11Normals(int n) {
+
+    std::mt19937 engine(42);
+    std::normal_distribution<> normal(0.0, 1.0);
+
+    NumericVector V(n);
+    for ( int i = 0; i < n; i++ ) {
+        V[i] = normal(engine);
+    };
+
+    return V;
+}
+```
+
+And run it:
+
+```{r}
+cxx11Normals(10)
+```
+
+Lastly, we can compare the runtime for these three in a quick benchmark study.
+
+```{r}
+library(rbenchmark)
+
+n <- 1e5
+
+res <- benchmark(rcppNormals(n),
+                 boostNormals(n),
+                 cxx11Normals(n),
+                 order="relative",
+                 replications = 500)
+print(res[,1:4])
+```
+
+In this particularly example, all the RNGs take roughly the same time. It would be 
+interesting to see how the Ziggurat algorithm (which is known to produce Normals rather 
+fast) would fare.
