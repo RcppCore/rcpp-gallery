@@ -84,6 +84,8 @@ the C++11 extensions:
 
 ```{r}
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+# or
+# Sys.setenv("PKG_CXXFLAGS"="-std=c++0x")
 ```
 
 That way, we can compile this code:
