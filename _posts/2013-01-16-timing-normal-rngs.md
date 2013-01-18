@@ -109,6 +109,8 @@ the C++11 extensions:
 
 {% highlight r %}
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+# or
+# Sys.setenv("PKG_CXXFLAGS"="-std=c++0x")
 {% endhighlight %}
 
 
@@ -173,9 +175,9 @@ print(res[,1:4])
 
 <pre class="output">
              test replications elapsed relative
-3 cxx11Normals(n)          500   3.997    1.000
-1  rcppNormals(n)          500   4.123    1.032
-2 boostNormals(n)          500   4.353    1.089
+3 cxx11Normals(n)          500   3.764    1.000
+1  rcppNormals(n)          500   4.102    1.090
+2 boostNormals(n)          500   4.353    1.156
 </pre>
 
 

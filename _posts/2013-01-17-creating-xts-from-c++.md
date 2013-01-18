@@ -7,10 +7,18 @@ summary: This post shows how to create an xts object at C++ source level
 layout: post
 src: 2013-01-17-creating-xts-from-c++.cpp
 ---
-A recent post showed how to 
-[access the attributes of an xts object](../getting-attributes-for-xts-example/). 
-We can also do the inverse in order to _create_ an xts object.
+A recent post showed how to access the 
+[attributes of an xts object](../getting-attributes-for-xts-example/). 
+We used an `xts` object as these are powerful and popular---but any R object
+using attributed could be used to illustrate the point.
 
+In this short post, we show how one can also do the inverse in
+order to _create_ an xts object at the C++ source level.
+
+We use a somewhat useless object with values from `1:10` index by
+dates in the same range. As zero corresponds to the epoch, these
+will be early 1970-dates. But the values do not matter when showing
+the principle.
 
 
 
@@ -22,14 +30,14 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 Rcpp::NumericVector createXts() {
 
-    IntegerVector ind = seq(1, 10);
+    IntegerVector ind = seq(1, 10);      // values
 
-    NumericVector dv(ind);
-    dv = dv * 86400;
-    dv.attr("tzone")    = "UTC";
+    NumericVector dv(ind);               // date(time)s are real values
+    dv = dv * 86400;                     // scaled to days
+    dv.attr("tzone")    = "UTC";         // the index has attributes
     dv.attr("tclass")   = "Date";
 
-    NumericVector xv(ind);
+    NumericVector xv(ind);               // data her same index
     xv.attr("dim")      = IntegerVector::create(10,1);
     xv.attr("index")    = dv;
     CharacterVector klass = CharacterVector::create("xts", "zoo");
@@ -45,7 +53,7 @@ Rcpp::NumericVector createXts() {
 {% endhighlight %}
 
 
-We can run this, and look at the attributes the generated object:
+We can run this function, and look at the (numerous) attributes in the generated object:
 
 {% highlight r %}
 suppressMessages(library(xts))
@@ -105,7 +113,7 @@ $tzone
 </pre>
 
 
-It turns out that creating an `xts` object the usual creates an identical object:
+It turns out that creating an `xts` object the usual way creates an object that is equal:
 
 {% highlight r %}
 bar <- xts(1:10, order.by=as.Date(1:10)) 
@@ -118,3 +126,5 @@ all.equal(foo, bar)
 [1] TRUE
 </pre>
 
+
+So now we can create `xts` objects at the source level.  
