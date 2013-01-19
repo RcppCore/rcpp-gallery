@@ -28,9 +28,9 @@ the principle.
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-Rcpp::NumericVector createXts() {
+Rcpp::NumericVector createXts(int sv, int ev) {
 
-    IntegerVector ind = seq(1, 10);      // values
+    IntegerVector ind = seq(sv, ev);     // values
 
     NumericVector dv(ind);               // date(time)s are real values
     dv = dv * 86400;                     // scaled to days
@@ -38,14 +38,14 @@ Rcpp::NumericVector createXts() {
     dv.attr("tclass")   = "Date";
 
     NumericVector xv(ind);               // data her same index
-    xv.attr("dim")      = IntegerVector::create(10,1);
-    xv.attr("index")    = dv;
-    CharacterVector klass = CharacterVector::create("xts", "zoo");
-    xv.attr("class")    = klass;
+    xv.attr("dim")         = IntegerVector::create(ev-sv+1,1);
+    xv.attr("index")       = dv;
+    CharacterVector klass  = CharacterVector::create("xts", "zoo");
+    xv.attr("class")       = klass;
     xv.attr(".indexCLASS") = "Date";
-    xv.attr("tclass")   = "Date";
-    xv.attr(".indexTZ") = "UTC";
-    xv.attr("tzone")   = "UTC";
+    xv.attr("tclass")      = "Date";
+    xv.attr(".indexTZ")    = "UTC";
+    xv.attr("tzone")       = "UTC";
     
     return xv;
 
@@ -57,7 +57,7 @@ We can run this function, and look at the (numerous) attributes in the generated
 
 {% highlight r %}
 suppressMessages(library(xts))
-foo <- createXts() 
+foo <- createXts(1, 10) 
 foo
 {% endhighlight %}
 
@@ -128,3 +128,5 @@ all.equal(foo, bar)
 
 
 So now we can create `xts` objects at the source level.  
+
+Upated to add `sv` and `ev` start and end values.
