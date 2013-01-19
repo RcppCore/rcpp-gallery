@@ -29,18 +29,20 @@ Rcpp::NumericVector getEigenValues(Rcpp::NumericMatrix sM) {
 
     RcppGSL::matrix<double> M(sM); 	// create gsl data structures from SEXP
     int k = M.ncol();
-    Rcpp::NumericVector N(k); 		// to store results 
 
-    gsl_vector *eigval = gsl_vector_alloc(k);
+    RcppGSL::vector<double> ev(k);  	// instead of gsl_vector_alloc(k);
     gsl_eigen_symm_workspace *w = gsl_eigen_symm_alloc(k);
-    gsl_eigen_symm (M, eigval, w);
+    gsl_eigen_symm (M, ev, w);
     gsl_eigen_symm_free (w);
 
-    for (int j = 0; j < k; j++) {
-        N[j] = gsl_vector_get(eigval, j);
-    }
-    M.free();                          // important: GSL wrappers use C structure
-    return N;				// return vector  
+    // we need to invoke wrap() here to help the compiler, but at least we save a loop
+    // we also need to create a new Rcpp object as the RcppGSL one needs to be free'd.
+    Rcpp::NumericVector res(Rcpp::wrap(ev));
+
+    M.free();               		// important: GSL wrappers use C structure
+    ev.free();
+
+    return res;				// return results vector  
 }
 
 

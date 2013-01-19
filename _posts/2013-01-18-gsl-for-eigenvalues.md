@@ -34,16 +34,20 @@ Rcpp::NumericVector getEigenValues(Rcpp::NumericMatrix sM) {
     int k = M.ncol();
     Rcpp::NumericVector N(k); 		// to store results 
 
-    gsl_vector *eigval = gsl_vector_alloc(k);
+    RcppGSL::vector<double> eigval(k);  // instead of gsl_vector_alloc(k);
     gsl_eigen_symm_workspace *w = gsl_eigen_symm_alloc(k);
     gsl_eigen_symm (M, eigval, w);
     gsl_eigen_symm_free (w);
 
-    for (int j = 0; j < k; j++) {
-        N[j] = gsl_vector_get(eigval, j);
-    }
-    M.free();                          // important: GSL wrappers use C structure
-    return N;				// return vector  
+    Rcpp::NumericVector res(Rcpp::wrap(eigval));
+    //res = eigval;
+    //for (int j = 0; j < k; j++) {
+    //    N[j] = gsl_vector_get(eigval, j);
+    //}
+    M.free();               		// important: GSL wrappers use C structure
+    eigval.free();
+
+    return res;				// return vector  
 }
 {% endhighlight %}
 
