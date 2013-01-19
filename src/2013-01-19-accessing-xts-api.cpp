@@ -1,6 +1,6 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
- * @title Using Rcpp to accessing the C API of xts 
+ * @title Using Rcpp to access the C API of xts 
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
  * @tags featured xts
