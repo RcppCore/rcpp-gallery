@@ -3,7 +3,7 @@
  * @title Getting attributes to use xts objects
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
- * @tags basics
+ * @tags basics xts
  * @summary We show how to access attributes and illustrate the use with an xts object.
  *
  * [An earlier post](../setting-object-attributes) illustrated that R object attributes

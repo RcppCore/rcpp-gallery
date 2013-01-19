@@ -3,7 +3,7 @@
  * @title Creating xts objects from source
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
- * @tags basics 
+ * @tags basics xts
  * @summary This post shows how to create an xts object at C++ source level
  *
  * A recent post showed how to access the 
