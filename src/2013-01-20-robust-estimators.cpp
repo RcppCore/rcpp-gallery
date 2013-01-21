@@ -1,5 +1,5 @@
 /**
- * @title Robust Estimators
+ * @title Robust Estimators of Location and Scale
  * @author Ross Bennett
  * @license GPL (>= 2)
  * @tags stl benchmark

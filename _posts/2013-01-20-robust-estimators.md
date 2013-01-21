@@ -1,5 +1,5 @@
 ---
-title: Robust Estimators
+title: Robust Estimators of Location and Scale
 author: Ross Bennett
 license: GPL (>= 2)
 tags: stl benchmark
@@ -83,8 +83,8 @@ benchmark(median_rcpp(z), median(z), order="relative")[,1:4]
 
 <pre class="output">
             test replications elapsed relative
-1 median_rcpp(z)          100   1.336    1.000
-2      median(z)          100   2.723    2.038
+1 median_rcpp(z)          100   1.747    1.000
+2      median(z)          100   5.991    3.429
 </pre>
 
 
@@ -111,7 +111,7 @@ benchmark(mad_rcpp(z), mad(z), order="relative")[,1:4]
 
 <pre class="output">
          test replications elapsed relative
-1 mad_rcpp(z)          100   2.976    1.000
-2      mad(z)          100   7.167    2.408
+1 mad_rcpp(z)          100   3.678    1.000
+2      mad(z)          100  13.443    3.655
 </pre>
 

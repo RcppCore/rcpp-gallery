@@ -1,0 +1,96 @@
+---
+title: Coercion of matrix to sparse matrix (dgCMatrix) and maintaining dimnames.
+author: Søren Højsgaard
+license: GPL (>= 2)
+tags: eigen matrix
+summary: We illustrate 1) a fast way of coercing a dense matrix to a sparse matrix and 2) how to copy the dimnames from the dense to the sparse matrix.
+---
+
+
+Consider the following matrix
+
+```{r}
+nr <- nc <- 6
+set.seed <- 123
+m  <- matrix(sample(c(rep(0,9), 1),nr*nc, replace=T), nrow=nr, ncol=nc)
+sum(m)/length(m)
+dimnames(m) <- list(letters[1:nr], letters[1:nc])
+m
+```
+This matrix can be coerced to a sparse matrix with
+
+```{r}
+library("Matrix")
+M1 <- as(m, "dgCMatrix")
+M1 
+str(M1)
+```
+
+Using [Eigen](http://eigen.tuxfamily.org) via
+[RcppEigen](http://cran.r-project.org/web/packages/RcppEigen/index.html) we
+can obtain the coercion as:
+
+```{r, engine="Rcpp"}
+// [[Rcpp::depends(RcppEigen)]]
+
+#include <RcppEigen.h>
+#include <Rcpp.h>
+
+using namespace Rcpp;
+// [[Rcpp::export]]
+SEXP asdgCMatrix_( SEXP XX_ ){
+  typedef Eigen::SparseMatrix<double> SpMat;   
+  typedef Eigen::Map<Eigen::MatrixXd> MapMatd; // Input: must be double
+  MapMatd X(Rcpp::as<MapMatd>(XX_));
+  SpMat Xsparse = X.sparseView();              // Output: sparse matrix
+  S4 Xout(wrap(Xsparse));                      // Output: as S4 object
+  NumericMatrix Xin(XX_);                      // Copy dimnames
+  Xout.slot("Dimnames") = clone(List(Xin.attr("dimnames")));
+  return(Xout);
+}
+```
+
+
+```{r}
+(M2 <- asdgCMatrix_(m * 1.0))
+str(M2)
+```
+
+
+
+```{r}
+identical(M1, M2)
+```
+
+Compare the performance:
+
+```{r}
+cols <- c("test", "replications", "elapsed", "relative", "user.self", "sys.self")	
+rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),	
+                      columns=cols, order="relative", replications=1000)
+```
+
+For larger matrices the difference in performance gain is smaller:
+
+```{r}
+## 100 x 100 matrix
+nr <- nc <- 100
+set.seed <- 123
+m  <- matrix(sample(c(rep(0,9), 1),nr*nc, replace=T), nrow=nr, ncol=nc)
+rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),	
+                      columns=cols, order="relative", replications=1000)
+
+## 1000 x 1000 matrix
+nr <- nc <- 1000
+set.seed <- 123
+m  <- matrix(sample(c(rep(0,9), 1),nr*nc, replace=T), nrow=nr, ncol=nc)
+rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),	
+                      columns=cols, order="relative", replications=100)
+
+## 3000 x 3000 matrix
+nr <- nc <- 3000
+set.seed <- 123
+m  <- matrix(sample(c(rep(0,9), 1),nr*nc, replace=T), nrow=nr, ncol=nc)
+rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),	
+                      columns=cols, order="relative", replications=100)
+```
