@@ -1,5 +1,5 @@
 ---
-title: Convert a list of lists into a data frame
+title: Quicker conversion of a list of lists into a data frame
 author: John Merrill
 license: GPL (>= 2)
 tags: dataframe benchmark featured
@@ -67,8 +67,8 @@ res[,1:4]
 
 <pre class="output">
                       test replications elapsed relative
-2 CheapDataFrameBuilder(a)          500   0.106      1.0
-1         as.data.frame(a)          500  16.888    159.3
+2 CheapDataFrameBuilder(a)          500   0.103      1.0
+1         as.data.frame(a)          500  16.905    164.1
 </pre>
 
 

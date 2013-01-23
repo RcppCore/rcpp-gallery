@@ -1,6 +1,6 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
- * @title Convert a list of lists into a data frame
+ * @title Quicker conversion of a list of lists into a data frame
  * @author John Merrill
  * @license GPL (>= 2)
  * @tags dataframe benchmark featured
