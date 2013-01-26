@@ -94,3 +94,5 @@ m  <- matrix(sample(c(rep(0,9), 1),nr*nc, replace=T), nrow=nr, ncol=nc)
 rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),	
                       columns=cols, order="relative", replications=100)
 ```
+
+Thanks to Doug Bates for illustrating to me how set the dimnames attribute.

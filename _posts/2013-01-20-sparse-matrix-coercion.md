@@ -197,8 +197,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)         1000   0.024     1.00     0.020    0.004
-2  as(m, "dgCMatrix")         1000   0.243    10.12     0.232    0.012
+1 asdgCMatrix_(m * 1)         1000   0.025     1.00     0.024    0.000
+2  as(m, "dgCMatrix")         1000   0.246     9.84     0.240    0.004
 </pre>
 
 
@@ -218,8 +218,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)         1000   0.138    1.000     0.132    0.004
-2  as(m, "dgCMatrix")         1000   0.436    3.159     0.436    0.000
+1 asdgCMatrix_(m * 1)         1000   0.137    1.000     0.136    0.000
+2  as(m, "dgCMatrix")         1000   0.443    3.234     0.432    0.008
 </pre>
 
 
@@ -238,8 +238,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)          100   1.198    1.000     1.192    0.000
-2  as(m, "dgCMatrix")          100   2.093    1.747     1.968    0.116
+1 asdgCMatrix_(m * 1)          100   1.193    1.000     1.180    0.008
+2  as(m, "dgCMatrix")          100   2.201    1.845     2.064    0.128
 </pre>
 
 
@@ -258,7 +258,9 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)          100   8.644    1.000      5.96    2.616
-2  as(m, "dgCMatrix")          100  21.307    2.465     16.91    4.244
+1 asdgCMatrix_(m * 1)          100   8.911    1.000     6.024    2.828
+2  as(m, "dgCMatrix")          100  21.557    2.419    16.930    4.500
 </pre>
 
+
+Thanks to Doug Bates for illustrating to me how set the dimnames attribute.
