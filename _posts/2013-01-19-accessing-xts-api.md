@@ -7,7 +7,7 @@ summary: This post shows how to use the exported API functions of xts
 layout: post
 src: 2013-01-19-accessing-xts-api.cpp
 ---
-Jeff Ryan's [xts](https://r-forge.r-project.org/projects/xts/) package is an immensely powerful
+The [xts](https://r-forge.r-project.org/projects/xts/) package by Jeff Ryan and Josh Ulrich is an immensely powerful
 tool that is widely used for timeseries work with R.  Recently, the question about how to
 use it from Rcpp came up [on StackOverflow](http://stackoverflow.com/questions/14274055/how-to-use-c-api-of-xts-package-in-rcpp)
 and in [a thread on the rcpp-devel list](http://thread.gmane.org/gmane.comp.lang.r.rcpp/4697).
