@@ -72,7 +72,7 @@ getIMMDate(6, 2013)
 </pre>
 
 
-And for kicks, the similarly for 2033:
+And for kicks, the same for 2033:
 
 {% highlight r %}
 getIMMDate(3, 2033)
