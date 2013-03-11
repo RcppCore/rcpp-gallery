@@ -129,9 +129,9 @@ require(rbenchmark)
 
 ```r
 benchmark(mvrnormR(10000, mu, sigma), 
- 	  MASS::mvrnorm(10000, mu, sigma), 
+ 	      MASS::mvrnorm(10000, mu, sigma), 
           mvrnormArma(10000, mu, sigma), 
-	  columns = c("test", "replications", "relative", "elapsed"), 
+	      columns = c("test", "replications", "relative", "elapsed"), 
           order = "elapsed")
 ```
 
