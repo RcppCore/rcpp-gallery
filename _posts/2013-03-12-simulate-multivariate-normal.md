@@ -4,6 +4,8 @@ author: Ahmadou Dicko
 license: GPL (>= 2)
 tags: matrix armadillo random number
 summary: Demonstrate how to sample from a multivariate gaussian using a Cholesky decomposition
+layout: post
+src: 2013-03-12-simulate-multivariate-normal.Rmd
 ---
 
 There are many ways to simulate a multivariate gaussian distribution assuming that you can simulate from independent univariate normal distributions. 
@@ -12,7 +14,7 @@ Let's see how `Rcpp` and `Armadillo` perform on this task.
 
 
 
-```cpp
+{% highlight cpp %}
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -27,7 +29,7 @@ mat mvrnormArma(int n, vec mu, mat sigma) {
    mat Y = randn(n, ncols);
    return repmat(mu, 1, n).t() + Y * chol(sigma);
 }
-```
+{% endhighlight %}
 
 
 
@@ -35,20 +37,20 @@ The easiest way to perform a Cholesky distribution in R is to use  the ``chol`` 
 
 
 
-```r
+{% highlight r %}
 ### naive implementation in R
 mvrnormR <- function(n, mu, sigma) {
     ncols <- ncol(sigma)
-    mu <- rep(mu, each = n)  ## not obliged to use a matrix (recycling)
+    mu <- rep(mu, each = n) ## not obliged to use a matrix (recycling)
     mu + matrix(rnorm(n * ncols), ncol = ncols) %*% chol(sigma)
 }
-```
+{% endhighlight %}
 
 
 We will also use ``MASS:mvrnorm`` which implemented it differently
 
 
-```r
+{% highlight r %}
 require(MASS)
 ### Covariance matrix and mean vector
 sigma <- matrix(c(1, 0.9, -0.3, 0.9, 1, -0.4, -0.3, -0.4, 1), ncol = 3)
@@ -57,90 +59,118 @@ mu <- c(10, 5, -3)
 require(MASS)
 ### checking variance
 set.seed(123)
-cor(mvrnormR(100, mu, sigma))
-```
+cor(mvrnormR(100, mu,  sigma))
+{% endhighlight %}
 
-```
-##         [,1]    [,2]    [,3]
-## [1,]  1.0000  0.8851 -0.3830
-## [2,]  0.8851  1.0000 -0.4675
-## [3,] -0.3830 -0.4675  1.0000
-```
 
-```r
+
+<pre class="output">
+        [,1]    [,2]    [,3]
+[1,]  1.0000  0.8851 -0.3830
+[2,]  0.8851  1.0000 -0.4675
+[3,] -0.3830 -0.4675  1.0000
+</pre>
+
+
+
+{% highlight r %}
 cor(MASS::mvrnorm(100, mu, sigma))
-```
+{% endhighlight %}
 
-```
-##         [,1]    [,2]    [,3]
-## [1,]  1.0000  0.9106 -0.3016
-## [2,]  0.9106  1.0000 -0.4599
-## [3,] -0.3016 -0.4599  1.0000
-```
 
-```r
+
+<pre class="output">
+        [,1]    [,2]    [,3]
+[1,]  1.0000  0.9106 -0.3016
+[2,]  0.9106  1.0000 -0.4599
+[3,] -0.3016 -0.4599  1.0000
+</pre>
+
+
+
+{% highlight r %}
 cor(mvrnormArma(100, mu, sigma))
-```
+{% endhighlight %}
 
-```
-##         [,1]    [,2]    [,3]
-## [1,]  1.0000  0.9098 -0.3174
-## [2,]  0.9098  1.0000 -0.4194
-## [3,] -0.3174 -0.4194  1.0000
-```
 
-```r
+
+<pre class="output">
+        [,1]    [,2]    [,3]
+[1,]  1.0000  0.8948 -0.3322
+[2,]  0.8948  1.0000 -0.4663
+[3,] -0.3322 -0.4663  1.0000
+</pre>
+
+
+
+{% highlight r %}
 
 ## checking means
 colMeans(mvrnormR(100, mu, sigma))
-```
+{% endhighlight %}
 
-```
-## [1]  9.850  4.911 -2.902
-```
 
-```r
+
+<pre class="output">
+[1]  9.850  4.911 -2.902
+</pre>
+
+
+
+{% highlight r %}
 colMeans(MASS::mvrnorm(100, mu, sigma))
-```
+{% endhighlight %}
 
-```
-## [1] 10.051  5.046 -2.914
-```
 
-```r
+
+<pre class="output">
+[1] 10.051  5.046 -2.914
+</pre>
+
+
+
+{% highlight r %}
 colMeans(mvrnormArma(100, mu, sigma))
-```
+{% endhighlight %}
 
-```
-## [1] 10.210  5.211 -3.095
-```
+
+
+<pre class="output">
+[1]  9.881  4.922 -3.033
+</pre>
 
 
 Now, let's benchmark the different versions
 
 
-```r
+{% highlight r %}
 require(rbenchmark)
-```
+{% endhighlight %}
 
-```
-## Loading required package: rbenchmark
-```
 
-```r
-benchmark(mvrnormR(10000, mu, sigma), 
- 	      MASS::mvrnorm(10000, mu, sigma),
-          mvrnormArma(10000, mu, sigma), 
-	      columns = c("test", "replications", "relative", "elapsed"), 
-          order = "elapsed")
-```
 
-```
-##                              test replications relative elapsed
-## 3   mvrnormArma(10000, mu, sigma)          100    1.000   0.592
-## 1      mvrnormR(10000, mu, sigma)          100    2.054   1.216
-## 2 MASS::mvrnorm(10000, mu, sigma)          100    2.262   1.339
-```
+<pre class="output">
+Loading required package: rbenchmark
+</pre>
+
+
+
+{% highlight r %}
+benchmark(mvrnormR(1e4, mu, sigma),
+          MASS::mvrnorm(1e4, mu, sigma),
+          mvrnormArma(1e4, mu, sigma),
+          columns = c('test', 'replications', 'relative', 'elapsed'),
+          order = 'elapsed')
+{% endhighlight %}
+
+
+
+<pre class="output">
+                             test replications relative elapsed
+3   mvrnormArma(10000, mu, sigma)          100    1.000   0.831
+1      mvrnormR(10000, mu, sigma)          100    2.124   1.765
+2 MASS::mvrnorm(10000, mu, sigma)          100    2.557   2.125
+</pre>
 
 
 The ``RcppArmadillo`` function outperforms the MASS implementation and the naive R code, but more surprisinugly ``mvrnormR`` is slightly faster than ``mvrnorm`` in this benchmark.
