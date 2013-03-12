@@ -13,18 +13,15 @@ Let's see how `Rcpp` and `Armadillo` perform on this task.
 
 ```{r engine='Rcpp'}
 #include <RcppArmadillo.h>
-
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// [[Rcpp::export]]
-
-using namespace arma;
 using namespace Rcpp;
 
-mat mvrnormArma(int n, vec mu, mat sigma) {
+// [[Rcpp::export]]
+arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
    int ncols = sigma.n_cols;
-   mat Y = randn(n, ncols);
-   return repmat(mu, 1, n).t() + Y * chol(sigma);
+   arma::mat Y = arma::randn(n, ncols);
+   return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
 }
 ```
 

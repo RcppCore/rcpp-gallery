@@ -16,18 +16,15 @@ Let's see how `Rcpp` and `Armadillo` perform on this task.
 
 {% highlight cpp %}
 #include <RcppArmadillo.h>
-
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// [[Rcpp::export]]
-
-using namespace arma;
 using namespace Rcpp;
 
-mat mvrnormArma(int n, vec mu, mat sigma) {
+// [[Rcpp::export]]
+arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
    int ncols = sigma.n_cols;
-   mat Y = randn(n, ncols);
-   return repmat(mu, 1, n).t() + Y * chol(sigma);
+   arma::mat Y = arma::randn(n, ncols);
+   return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
 }
 {% endhighlight %}
 
@@ -96,9 +93,9 @@ cor(mvrnormArma(100, mu, sigma))
 
 <pre class="output">
         [,1]    [,2]    [,3]
-[1,]  1.0000  0.8948 -0.3322
-[2,]  0.8948  1.0000 -0.4663
-[3,] -0.3322 -0.4663  1.0000
+[1,]  1.0000  0.9103 -0.4405
+[2,]  0.9103  1.0000 -0.4880
+[3,] -0.4405 -0.4880  1.0000
 </pre>
 
 
@@ -136,7 +133,7 @@ colMeans(mvrnormArma(100, mu, sigma))
 
 
 <pre class="output">
-[1]  9.881  4.922 -3.033
+[1]  9.987  5.091 -2.907
 </pre>
 
 
@@ -167,9 +164,9 @@ benchmark(mvrnormR(1e4, mu, sigma),
 
 <pre class="output">
                              test replications relative elapsed
-3   mvrnormArma(10000, mu, sigma)          100    1.000   0.831
-1      mvrnormR(10000, mu, sigma)          100    2.124   1.765
-2 MASS::mvrnorm(10000, mu, sigma)          100    2.557   2.125
+3   mvrnormArma(10000, mu, sigma)          100    1.000   0.651
+1      mvrnormR(10000, mu, sigma)          100    2.197   1.430
+2 MASS::mvrnorm(10000, mu, sigma)          100    3.281   2.136
 </pre>
 
 
