@@ -2,7 +2,7 @@
 title: Generating a multivariate gaussian distribution using RcppArmadillo
 author: Ahmadou Dicko
 license: GPL (>= 2)
-tags: matrix armadillo random number
+tags: matrix armadillo rng
 summary: Demonstrate how to sample from a multivariate gaussian using a Cholesky decomposition
 ---
 
@@ -38,7 +38,7 @@ mvrnormR <- function(n, mu, sigma) {
 }
 ```
 
-We will also use ``MASS:mvrnorm`` which implemented it differently
+We will also use ``MASS:mvrnorm`` which implements it differently:
 
 ```{r}
 require(MASS)
@@ -59,7 +59,7 @@ colMeans(MASS::mvrnorm(100, mu, sigma))
 colMeans(mvrnormArma(100, mu, sigma))
 ```
 
-Now, let's benchmark the different versions
+Now, let's benchmark the different versions:
 
 ```{r}
 require(rbenchmark)

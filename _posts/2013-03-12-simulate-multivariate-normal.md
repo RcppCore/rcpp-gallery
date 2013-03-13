@@ -2,7 +2,7 @@
 title: Generating a multivariate gaussian distribution using RcppArmadillo
 author: Ahmadou Dicko
 license: GPL (>= 2)
-tags: matrix armadillo random number
+tags: matrix armadillo rng
 summary: Demonstrate how to sample from a multivariate gaussian using a Cholesky decomposition
 layout: post
 src: 2013-03-12-simulate-multivariate-normal.Rmd
@@ -44,11 +44,22 @@ mvrnormR <- function(n, mu, sigma) {
 {% endhighlight %}
 
 
-We will also use ``MASS:mvrnorm`` which implemented it differently
+We will also use ``MASS:mvrnorm`` which implements it differently:
 
 
 {% highlight r %}
 require(MASS)
+{% endhighlight %}
+
+
+
+<pre class="output">
+Loading required package: MASS
+</pre>
+
+
+
+{% highlight r %}
 ### Covariance matrix and mean vector
 sigma <- matrix(c(1, 0.9, -0.3, 0.9, 1, -0.4, -0.3, -0.4, 1), ncol = 3)
 mu <- c(10, 5, -3)
@@ -92,10 +103,10 @@ cor(mvrnormArma(100, mu, sigma))
 
 
 <pre class="output">
-        [,1]    [,2]    [,3]
-[1,]  1.0000  0.9103 -0.4405
-[2,]  0.9103  1.0000 -0.4880
-[3,] -0.4405 -0.4880  1.0000
+       [,1]    [,2]    [,3]
+[1,]  1.000  0.9020 -0.3530
+[2,]  0.902  1.0000 -0.4889
+[3,] -0.353 -0.4889  1.0000
 </pre>
 
 
@@ -133,11 +144,11 @@ colMeans(mvrnormArma(100, mu, sigma))
 
 
 <pre class="output">
-[1]  9.987  5.091 -2.907
+[1]  9.825  4.854 -2.873
 </pre>
 
 
-Now, let's benchmark the different versions
+Now, let's benchmark the different versions:
 
 
 {% highlight r %}
@@ -164,9 +175,9 @@ benchmark(mvrnormR(1e4, mu, sigma),
 
 <pre class="output">
                              test replications relative elapsed
-3   mvrnormArma(10000, mu, sigma)          100    1.000   0.651
-1      mvrnormR(10000, mu, sigma)          100    2.197   1.430
-2 MASS::mvrnorm(10000, mu, sigma)          100    3.281   2.136
+3   mvrnormArma(10000, mu, sigma)          100    1.000   0.219
+1      mvrnormR(10000, mu, sigma)          100    1.913   0.419
+2 MASS::mvrnorm(10000, mu, sigma)          100    2.046   0.448
 </pre>
 
 
