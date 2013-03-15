@@ -28,9 +28,6 @@ shows.
 #include <bigmemory/MatrixAccessor.hpp>
 #include <numeric>
 
-// We define a simple function, and pass the incoming XPtr as a SEXP;
-// we could also pass a templated XPtr. Function returns only a bool.
-
 // [[Rcpp::export]]
 Rcpp::NumericVector BigColSums(Rcpp::XPtr<BigMatrix> pBigMat) {
 
@@ -46,7 +43,7 @@ Rcpp::NumericVector BigColSums(Rcpp::XPtr<BigMatrix> pBigMat) {
 {% endhighlight %}
 
 
-A `BigMatrix` object stores elements in a _column_major_ format, meaning that
+A `BigMatrix` object stores elements in a _column major_ format, meaning that
 values are accessed and filled in by column, rather than by row. The
 `MatrixAccessor` implements the bracket operator, returning a pointer to the
 first element of a column. As a result, for a MatrixAccessor `ma`, the i-th
@@ -89,6 +86,7 @@ bigmat <- filebacked.big.matrix(nrow=nrows, ncol=3, type="double",
   
 # Each column value with be the column number multiplied by 
 # samples from a standard normal distribution.
+set.seed(123)
 for (i in 1:3) bigmat[,i] = rnorm(nrows)*i
 
 # Call the Rcpp function.
@@ -99,15 +97,14 @@ print(res)
 
 
 <pre class="output">
-[1]  -20.79 -188.54 -211.05
+[1]  -23.72 -182.13 -212.98
 </pre>
 
 
 
 {% highlight r %}
   
-# Verify that it is that same as running colSums on a matrix with
-# equal values.
+# Verify that it is that same as running colSums on a matrix with equal values.
 print(all.equal(res, colSums(bigmat[,])))  
 {% endhighlight %}
 
