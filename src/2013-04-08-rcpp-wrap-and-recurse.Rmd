@@ -22,15 +22,15 @@ work Rcpp does in insulating us from the ugliness of the R API.)
 From the R API, we'll be using the `TYPEOF` macro, as well as referencing the
 internal R types:
  
- * `REALSXP` for numeric vectors,
- * `INTSXP` for integer vectors,
- * `VECSXP` for lists
+* `REALSXP` for numeric vectors,
+* `INTSXP` for integer vectors,
+* `VECSXP` for lists
 
 We'll start with a simple example: an Rcpp function that takes a list,
 loops through it, and:
  
- * if we encounter a numeric vector, double each element in it;
- * if we encounter an integer vector, add 1 to each element in it
+* if we encounter a numeric vector, double each element in it;
+* if we encounter an integer vector, add 1 to each element in it
  
 ```{r engine='Rcpp'}
 #include <Rcpp.h>
@@ -74,18 +74,18 @@ print(tmp)
  
 Some notes on the above:
  
-  1. We clone the list passed through to ensure we work with a copy, rather
-  than the original list passed in,
-  2. We switch over the internal R type using `TYPEOF`, and do something 
-  for the case of numeric vectors (`REALSXP`), and integer vectors (`INTSXP`),
-  3. After we've figured out what kind of object we have, we can use `Rcpp::as`
-  to wrap the R object with the appropriate container,
-  4. Because Rcpp's wrappers point to the internal R structures, any changes made
-  to them are reflected in the R object wrapped,
-  5. We use Rcpp sugar to easily add and multiply each element in a vector,
-  6. We throw an error if a non-numeric / non-integer object is encountered.
-  One could leave the `default:` switch just to do nothing or fall through,
-  or handle other `SEXP`s as needed as well.
+1. We clone the list passed through to ensure we work with a copy, rather
+than the original list passed in,
+2. We switch over the internal R type using `TYPEOF`, and do something 
+for the case of numeric vectors (`REALSXP`), and integer vectors (`INTSXP`),
+3. After we've figured out what kind of object we have, we can use `Rcpp::as`
+to wrap the R object with the appropriate container,
+4. Because Rcpp's wrappers point to the internal R structures, any changes made
+to them are reflected in the R object wrapped,
+5. We use Rcpp sugar to easily add and multiply each element in a vector,
+6. We throw an error if a non-numeric / non-integer object is encountered.
+One could leave the `default:` switch just to do nothing or fall through,
+or handle other `SEXP`s as needed as well.
   
 We also check that we fail gracefully when we encounter a non-accepted `SEXP`:
 
