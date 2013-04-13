@@ -326,7 +326,7 @@ renderJekyll <- function(extra = '') {
   }
   hook.t = function(x, options) {
     stringr::str_c('\n\n<pre class="output">\n', 
-                   x, 
+                   knitr:::escape_html(x), 
                    '</pre>\n\n')
   }
   hook.o = function(x, options) {
