@@ -1,0 +1,211 @@
+---
+title: Using the RcppArmadillo-based Implementation of R's sample()
+author: Christian Gunning and Jonathan Olmsted
+license: GPL (>= 2)
+tags: rng
+summary: Demonstrates the use and performance of an RcppArmadillo-based `sample()` implementation
+---
+
+### Overview and Motivation
+
+All of R's (r\*, p\*, q\*, d\*) distribution functions are available in C++ via
+the [R API] [1].  R is written in C, and the R API has no concept of a vector (at
+least not in the STL sense).  Consequently, R's `sample()` function can't just be
+exported via the R API, despite its importance and usefulness. The purpose of
+`RcppArmadilloExtensions/sample.h` (written by Christian Gunning) is to provide
+this functionaility within C++ programs.
+
+Given sampling's central role in statistical programming, it is surprising that
+no standard library implementation for C or C++ is commonly available.  There
+have been repeated questions about this on the Rcpp mailing list.  StackExchange
+contains an extensive discussion of this question, but there is no "canonical"
+implementation.
+
+In general, it's best to use R's tried-and-true RNG-related functions leaving
+the praise (and blame) for their performance to others. R's C routines for
+sampling can be found in `src/main/random.c`, with a discussion of the
+associated algorithms in [Ripley 87] [2].
+
+#### Goal 
+
+The goal is to exactly reproduce the behavior of R's sample() function in a
+templated C++/Rcpp function.  So far, we've reproduced everything but R's
+implementation of the Walker Alias method (used only when sampling with
+replacement using >200 non-zero weights). It uses convenience functions from
+Armadillo, and thus is added to RcppArmadillo as an extension.  (The hope is
+that future extensions will follow!)  All you need is this simple call, which
+should work for any Rcpp Vector: `RcppArmadillo::sample(x, size, replace,
+prob)`.
+
+### Dependencies
+
+Make sure you have a recent version of `RcppArmadillo`. The earliest adequate
+release is 3.800.1. The usual ``install.packages("RcppArmadillo")`` will help if
+you need to update.
+
+You are ready to go from there:
+```{r}
+require(RcppArmadillo)
+```
+
+### Quick Example
+
+Here's a quick test to make sure it works.
+
+Some C++ code that can be hooked into with `sourceCpp()`:
+
+```{r engine='Rcpp'}
+// [[Rcpp::depends(RcppArmadillo)]]
+
+#include <RcppArmadilloExtensions/sample.h>
+
+using namespace Rcpp ;
+
+// [[Rcpp::export]]
+CharacterVector csample_char( CharacterVector x, 
+                              int size,
+                              bool replace, 
+                              NumericVector prob = NumericVector::create()
+                              ) {
+  RNGScope scope ;
+  CharacterVector ret = RcppArmadillo::sample(x, size, replace, prob) ;
+  return ret ;
+}
+```
+
+Notice that we only need `#include <RcppArmadilloExtensions/sample.h>` because
+`sample.h` then `#include`-s RcppArmadillo.
+
+
+We invoke the (automatically defined) `csample_char()` R function:
+```{r}
+N <- 10
+set.seed(7)
+
+sample.r <- sample(letters, N, replace=T)
+
+set.seed(7)
+sample.c <- csample_char(letters, N, replace=T)
+
+print(identical(sample.r, sample.c))
+```
+
+Of course, R's sample() function is "internally" vectorized and
+already fast.  This functionality was *not* added to speed up
+`sample()`!  Instead, this lets you stay in C++ when you need to sample
+from an Rcpp Vector, be it Numeric, Character, or whatever else. 
+
+### Performance 
+
+That said, performance is still a concern. A quick test shows a dead-heat for
+sampling with replacement when compared to vanilla R:
+
+```{r engine='Rcpp'}
+#include <RcppArmadilloExtensions/sample.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+
+using namespace Rcpp ;
+
+// [[Rcpp::export]]
+NumericVector csample_num( NumericVector x,
+                           int size,
+                           bool replace,
+                           NumericVector prob = NumericVector::create()
+                           ) {
+  RNGScope scope;
+  NumericVector ret = RcppArmadillo::sample(x, size, replace, prob);
+  return ret;
+}
+```
+
+Consider the following timing where we compare vanilla R's `sample()` to
+`RcppArmadillo::sample()`. See the results for sampling with replacement with
+and without probability weights.
+
+```{r}
+require(rbenchmark)
+set.seed(7)
+
+## Definition of Sampling Frame
+n.elem <- 1e2
+frame1 <- rnorm(n.elem)
+probs1 <- runif(n.elem)
+
+## Definition of sampling regime
+## Use replacement throughout
+.replace <- TRUE
+## Samplesize
+n.samples1 <- 1e4
+
+## Without probabilities
+benchmark(r = sample(frame1, n.samples1, replace=.replace),        
+          cpp = csample_num(frame1, n.samples1, replace=.replace),
+          replications = 1e3,
+          order = 'relative',
+          columns = c("test", "replications", "relative", "elapsed")
+          )
+
+## With probabilities
+benchmark(r.prob = sample(frame1, n.samples1, prob = probs1, replace = .replace),
+          cpp.prob = csample_num(frame1, n.samples1, prob = probs1, replace = .replace),
+          replications = 1e3,
+          order = 'relative',
+          columns = c("test", "replications", "relative", "elapsed")
+          )
+```
+
+The two perform equally well.
+
+Next we look at the performance of sampling without replacement.  The number of draws can be no larger than the number of elements.  Thus we're sampling fewer elements.  Otherwise, the code is identical.
+
+```{r}
+## Use the same sampling frame as before
+## Definition of sampling regime
+## No replacement
+.replace <- FALSE
+## Since sample size can't exceed number elements, set them equal
+n.samples2 <- n.elem
+
+## Without probabilities
+benchmark(r = sample(frame1, n.samples2, replace=.replace),        
+          cpp = csample_num(frame1, n.samples2, replace=.replace),
+          replications = 1e3,
+          order = 'relative',
+          columns = c("test", "replications", "relative", "elapsed")
+          )
+
+## With probabilities
+benchmark(r.prob = sample(frame1, n.samples2, prob = probs1, replace = .replace),
+          cpp.prob = csample_num(frame1, n.samples2, prob = probs1, replace = .replace),
+          replications = 1e3,
+          order = 'relative',
+          columns = c("test", "replications", "relative", "elapsed")
+          )
+```
+
+Finally, what we haven't done.  For sampling with replacement and more than
+200 non-zero weights, R uses Walker's Alias method.  This method can be
+substantially faster than the vanilla sampling method (with replacement, less
+than 200 non-zero weights).  Rather than risk leading users astray with
+inefficient and inappropriate methods, we throw an error.
+
+
+```{r}
+## Definition of Sampling Frame
+n.elem <- 1e3
+frame2 <- rnorm(n.elem)
+probs2 <- runif(n.elem)
+
+## Definition of sampling regime
+## Use replacement throughout
+.replace <- TRUE
+## Samplesize
+n.samples1 <- 1e4
+
+## With probabilities
+r.prob <- sample(frame2, n.samples1, prob = probs2, replace = .replace)
+cpp.prob <- csample_num(frame2, n.samples1, prob = probs2, replace = .replace)
+```
+
+[1]: http://cran.r-project.org/doc/manuals/R-exts.html#Random-numbers
+[2]: http://onlinelibrary.wiley.com/book/10.1002/9780470316726
