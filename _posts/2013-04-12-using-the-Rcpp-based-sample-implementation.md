@@ -42,9 +42,9 @@ prob)`.
 ### Dependencies
 
 Make sure you have a recent version of `RcppArmadillo`. The earliest adequate
-release is 3.800.1. The usual ``install.packages("RcppArmadillo")`` will help if
+release is 3.800.1 or preferably release 0.3.810.0. The usual
+``install.packages("RcppArmadillo")`` command will help if 
 you need to update.
-
 You are ready to go from there:
 
 {% highlight r %}
@@ -190,8 +190,8 @@ benchmark(r = sample(frame1, n.samples1, replace=.replace),
 
 <pre class="output">
   test replications relative elapsed
-2  cpp         1000    1.000   0.181
-1    r         1000    1.182   0.214
+2  cpp         1000    1.000   0.186
+1    r         1000    1.188   0.221
 </pre>
 
 
@@ -212,7 +212,7 @@ benchmark(r.prob = sample(frame1, n.samples1, prob = probs1, replace = .replace)
 <pre class="output">
       test replications relative elapsed
 1   r.prob         1000    1.000   0.759
-2 cpp.prob         1000    1.026   0.779
+2 cpp.prob         1000    1.009   0.766
 </pre>
 
 
@@ -243,7 +243,7 @@ benchmark(r = sample(frame1, n.samples2, replace=.replace),
 <pre class="output">
   test replications relative elapsed
 2  cpp         1000    1.000   0.011
-1    r         1000    1.273   0.014
+1    r         1000    1.364   0.015
 </pre>
 
 
@@ -303,6 +303,13 @@ Warning: Walker's alias method used: results are different from R &lt; 2.2.0
 {% highlight r %}
 cpp.prob <- csample_num(frame2, n.samples1, prob = probs2, replace = .replace)
 {% endhighlight %}
+
+
+
+<pre class="output">
+Error: Walker Alias method not implemented. R-core sample() is likely
+faster for this problem.
+</pre>
 
 
 [1]: http://cran.r-project.org/doc/manuals/R-exts.html#Random-numbers

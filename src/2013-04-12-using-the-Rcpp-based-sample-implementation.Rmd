@@ -40,9 +40,9 @@ prob)`.
 ### Dependencies
 
 Make sure you have a recent version of `RcppArmadillo`. The earliest adequate
-release is 3.800.1. The usual ``install.packages("RcppArmadillo")`` will help if
+release is 3.800.1 or preferably release 0.3.810.0. The usual
+``install.packages("RcppArmadillo")`` command will help if 
 you need to update.
-
 You are ready to go from there:
 ```{r}
 require(RcppArmadillo)
