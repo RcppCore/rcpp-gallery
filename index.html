@@ -20,7 +20,7 @@ summary: Articles and code that illustrate the use of the Rcpp package
    {% if tag_name != 'featured' %}
     <a class="__{{ tag[0] }}" 
        style="margin: 5px; text-decoration: none;"
-         href="{{ site.baseurl }}tags/{{ tag_name }}/">
+         href="tags/{{ tag_name }}/">
          {{ tag_name }}
     </a>
     {% endif %}
@@ -57,7 +57,7 @@ summary: Articles and code that illustrate the use of the Rcpp package
     {% include post_item.html %}
  {% endfor %}
  {% if site.tags.featured.size > 10 %}
-   <li><a href="{{ site.baseurl }}tags/featured/">More &raquo;</a></li>
+   <li><a href="tags/featured/">More &raquo;</a></li>
  {% endif %}
 </ul>
 
@@ -66,7 +66,7 @@ summary: Articles and code that illustrate the use of the Rcpp package
 <ul class="unstyled">
  {% for post in site.posts limit:10 %}
  <li>
- <span class="muted">{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span class="muted">&mdash; {{ post.author }}</span>
+ <span class="muted">{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a> <span class="muted">&mdash; {{ post.author }}</span>
  </li>
  {% endfor %}
 </ul>

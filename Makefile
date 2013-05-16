@@ -1,6 +1,6 @@
 
 all: knit
-	jekyll --no-server --no-auto
+	jekyll build
 
 knit:
 	$(MAKE) -C src
@@ -11,5 +11,5 @@ clean:
 	$(MAKE) clean -C src
 
 preview: knit
-	jekyll --server --auto --no-pygments --url http://localhost:4000
+	jekyll serve --watch
 
