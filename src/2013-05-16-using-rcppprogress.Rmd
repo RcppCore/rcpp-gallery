@@ -11,12 +11,12 @@ Usually you write c++ code with R when you want to speedup some calculations.
 Depending on the parameters, and especially during the development, it is difficult to anticipate the execution 
 time of your computation, so that you do not know if you have to wait for 1 minute or hours.
 
-[RcppProgress](http://cran.at.r-project.org/web/packages/RcppProgress/index.html) is a tool to help you monitoring 
+[RcppProgress](http://cran.at.r-project.org/web/packages/RcppProgress/index.html) is a tool to help you monitor 
 the execution time of your C++ code, by providing a way to interrupt 
 the execution inside the c++ code, and also to display a progress bar indicative of the state of your computation.
 
 Additionally, it is compatible with multithreaded code, for example using OpenMP, which is not as trivial as it may
-seem since you cannot just stop the execution in one thread, and not all theads should be writing in the console to
+seem since you cannot just stop the execution in one thread, and not all threads should be writing in the console to
 avoid a garbled output.
  
 ```{r long_computation, engine="Rcpp"}
