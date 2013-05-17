@@ -13,12 +13,12 @@ Usually you write c++ code with R when you want to speedup some calculations.
 Depending on the parameters, and especially during the development, it is difficult to anticipate the execution 
 time of your computation, so that you do not know if you have to wait for 1 minute or hours.
 
-[RcppProgress](http://cran.at.r-project.org/web/packages/RcppProgress/index.html) is a tool to help you monitoring 
+[RcppProgress](http://cran.at.r-project.org/web/packages/RcppProgress/index.html) is a tool to help you monitor 
 the execution time of your C++ code, by providing a way to interrupt 
 the execution inside the c++ code, and also to display a progress bar indicative of the state of your computation.
 
 Additionally, it is compatible with multithreaded code, for example using OpenMP, which is not as trivial as it may
-seem since you cannot just stop the execution in one thread, and not all theads should be writing in the console to
+seem since you cannot just stop the execution in one thread, and not all threads should be writing in the console to
 avoid a garbled output.
  
 
@@ -47,7 +47,7 @@ double long_computation(int nb) {
 
 <pre class="output">
    user  system elapsed 
-  0.092   0.004   0.096 
+  0.096   0.000   0.095 
 </pre>
 
 
@@ -158,7 +158,7 @@ double long_computation3(int nb, bool display_progress=true) {
 
 <pre class="output">
    user  system elapsed 
-  0.852   0.000   0.852 
+  0.848   0.000   0.848 
 </pre>
 
 
@@ -227,7 +227,7 @@ Now check that it is parallelized:
 
 <pre class="output">
    user  system elapsed 
-  2.260   0.004   0.573 
+  2.264   0.000   0.572 
 </pre>
 
 
@@ -252,7 +252,7 @@ Now check that it is parallelized:
 
 <pre class="output">
    user  system elapsed 
-  2.252   0.000   2.251 
+  2.248   0.000   2.247 
 </pre>
 
 
@@ -312,7 +312,7 @@ double long_computation_omp2(int nb, int threads=1) {
 
 <pre class="output">
    user  system elapsed 
-  2.272   0.008   0.585 
+  2.268   0.008   0.582 
 </pre>
 
 
