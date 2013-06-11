@@ -1,1 +1,6 @@
-_site/
+.Rproj.user
+.Rhistory
+.RData
+*.Rproj
+_site
+.DS_Store
