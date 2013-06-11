@@ -2,7 +2,7 @@
 title: Sobol Sensitivity Analysis
 author: Robin Girard
 license: GPL (>= 2)
-tags: Sensitivity performance 
+tags: Sensitivity benchmark 
 summary: Compares speed performances of Monte Carlo estimation of Sobol indices with Rcpp and sensitivity package
 ---
 
@@ -49,7 +49,6 @@ inline NumericVector special_Cat(NumericVector X1,NumericVector X2,int i)
 // [[Rcpp::export]]
 Rcpp::List FirstOrderSobol(int n) {
   // n is the number of replicates in the Riemann sum
-    RNGScope(); // for the random generator
     int p=8; // number of input variables 
     double tmpval,f0square=0,f0f0=0;
     NumericVector tmpcat(p),X1(p),X2(p),fj(p,0.),Dj(p,0.);
