@@ -38,7 +38,7 @@ to infer the type based on the assignment.
 #include <Rcpp.h>
 
 // Enable C++11 via this plugin (Rcpp 0.10.3 or later)
-// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::plugins(cpp11)]]
 
 // [[Rcpp::export]]
 int useAuto() {
