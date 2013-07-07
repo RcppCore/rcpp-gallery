@@ -9,9 +9,10 @@ src: 2013-01-09-first-steps-with-C++11.Rmd
 ---                                                                                                                                                          
 The recent release of the C++11 standard has brought a lot of
 attention to the new language features.  Rcpp, as a CRAN package,
-follows CRAN policy in not (yet!!) supporting the standard for its
-purported _non-portable_ status. Even as of the current `g++` version, we
-still need to explicitly enable C++11 support which we can do here from R
+follows CRAN policy in not (yet at least) supporting this standard for its
+purported _non-portable_ status. As even the current `g++` version
+does of course support C++11 by default, one
+still needs to explicitly enable C++11 support which we can do here from R
 prior to compiling:
 
 
@@ -19,6 +20,9 @@ prior to compiling:
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 {% endhighlight %}
 
+
+Starting with version 0.10.3 of Rcpp, one can also enable this via the
+'cpp11' plugin as shown below.
 
 C++11 has a lot of nice features; the [Wikipedia
 page](http://en.wikipedia.org/wiki/C%2B%2B11) is pretty thorough in
@@ -32,6 +36,9 @@ to infer the type based on the assignment.
 {% highlight cpp %}
 
 #include <Rcpp.h>
+
+// Enable C++11 via this plugin (Rcpp 0.10.3 or later)
+// [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]
 int useAuto() {
@@ -80,7 +87,7 @@ useInitLists()
 
 
 <pre class="output">
-[1] "larry" "curly" "moe"  
+[1] &quot;larry&quot; &quot;curly&quot; &quot;moe&quot;  
 </pre>
 
 
