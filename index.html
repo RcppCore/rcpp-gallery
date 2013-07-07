@@ -53,18 +53,18 @@ summary: Articles and code that illustrate the use of the Rcpp package
 <h3>Featured Articles</h3>
 
 <ul class="unstyled">
- {% for post in site.tags.featured limit:10 %}
+ {% for post in site.tags.featured limit:20 %}
     {% include post_item.html %}
  {% endfor %}
- {% if site.tags.featured.size > 10 %}
+ {% if site.tags.featured.size > 20 %}
    <li><a href="tags/featured/">More &raquo;</a></li>
  {% endif %}
 </ul>
 
-<h3>Recently Published</h3>
+<h3>Published Articles</h3>
 
 <ul class="unstyled">
- {% for post in site.posts limit:10 %}
+ {% for post in site.posts limit:75 %}
  <li>
  <span class="muted">{{ post.date | date: "%b %e, %Y" }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a> <span class="muted">&mdash; {{ post.author }}</span>
  </li>
