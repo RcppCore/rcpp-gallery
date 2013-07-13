@@ -3,7 +3,7 @@ title: Faster Multivariate Normal densities with RcppArmadillo and OpenMP
 author: Nino Hardt, Dicko Ahmadou
 license: GPL (>= 2)
 tags: armadillo openmp
-summary: Fast implementation of Multivariate Normal density using RcppArmadillo and openmp.
+summary: Fast implementation of Multivariate Normal density using RcppArmadillo and OpenMP.
 layout: post
 src: 2013-07-13-dmvnorm_arma.Rmd
 ---
@@ -14,7 +14,7 @@ evaluation is important. Multivariate Normal Likelihoods,
 Priors and mixtures of Multivariate Normals require numerous 
 evaluations, thus speed of computation is vital. 
 We show a twofold increase in speed by using RcppArmadillo, 
-and some extra gain by using openmp.
+and some extra gain by using OpenMP.
 
 This project is based on this [StackOverflow post](http://stackoverflow.com/questions/17617618/dmvnorm-mvn-density-rcpparmadillo-implementation-slower-than-r-package-includi). 
 
@@ -33,7 +33,7 @@ for (i in 1:length(libs)) {
 
 
 
-First, we show the RcppArmadillo implementation without openmp.
+First, we show the RcppArmadillo implementation without OpenMP.
 
 {% highlight cpp %}
 #include <RcppArmadillo.h>
@@ -88,8 +88,8 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma),
 
 <pre class="output">
                                test replications elapsed relative
-2     dmvnorm_arma(X, means, sigma)           50   5.027    1.000
-1 mvtnorm::dmvnorm(X, means, sigma)           50   9.915    1.972
+2     dmvnorm_arma(X, means, sigma)           50   3.378    1.000
+1 mvtnorm::dmvnorm(X, means, sigma)           50   6.933    2.052
 </pre>
 
 
@@ -125,9 +125,9 @@ arma::vec Mahalanobis_mc(arma::mat x, arma::rowvec center, arma::mat cov, int co
     arma::mat x_cen;
     x_cen.copy_size(x);
     #pragma omp parallel for schedule(dynamic)   
-        for (int i=0; i < n; i++) {
-            x_cen.row(i) = x.row(i) - center;
-        }
+    for (int i=0; i < n; i++) {
+        x_cen.row(i) = x.row(i) - center;
+    }
     return sum((x_cen * cov.i()) % x_cen, 1);    
 }
 
@@ -136,9 +136,9 @@ arma::vec dmvnorm_arma_mc ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, b
     arma::vec distval = Mahalanobis_mc(x,  mean, sigma, cores);
     double logdet = sum(arma::log(arma::eig_sym(sigma)));
     double log2pi = std::log(2.0 * M_PI);
-    arma::vec logretval = -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
+    arma::vec logretval = - ((x.n_cols * log2pi + logdet + distval)/2);
     
-    if (log){ 
+    if (log) { 
         return(logretval);
     } else { 
         return(exp(logretval));
@@ -153,7 +153,6 @@ We need to set the number of cores to be used.
 {% highlight r %}
 cores <- detectCores()
 {% endhighlight %}
-
 
 
 Now we are ready to benchmark again. The speed gain of 
@@ -171,9 +170,9 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma),
 
 <pre class="output">
                                      test replications elapsed relative
-3 dmvnorm_arma_mc(X, means, sigma, cores)           50   4.484    1.000
-2           dmvnorm_arma(X, means, sigma)           50   5.811    1.296
-1       mvtnorm::dmvnorm(X, means, sigma)           50  10.206    2.276
+3 dmvnorm_arma_mc(X, means, sigma, cores)           50   2.726    1.000
+2           dmvnorm_arma(X, means, sigma)           50   3.265    1.198
+1       mvtnorm::dmvnorm(X, means, sigma)           50   8.238    3.022
 </pre>
 
 
