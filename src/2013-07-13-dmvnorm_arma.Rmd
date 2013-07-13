@@ -99,7 +99,7 @@ arma::vec dmvnorm_arma_mc ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, b
 
 arma::vec distval = Mahalanobis_mc(x,  mean, sigma, cores);
 double logdet = sum(arma::log(arma::eig_sym(sigma)));
-double log2pi = 1.8378770664093454835606594728112352797227949472755668;
+double log2pi = std::log(2.0 * arma::datum::pi);
 arma::vec logretval = -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
 
 if(log){ 
@@ -112,7 +112,14 @@ return(exp(logretval));
 ```
 
 
+We need to set the number of cores to be used. 
+```{r}
+cores=detectCores()
+```
+
+
 Now we are ready to benchmark again. The speed gain of the OpenMP version is not big, but noticable. 
+
 ```{r}
 benchmark( mvtnorm::dmvnorm(X,means,sigma), 
            dmvnorm_arma(X,means,sigma) ,
