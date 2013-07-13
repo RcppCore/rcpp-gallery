@@ -1,0 +1,121 @@
+---
+title: Faster Multivariate Nnormal densities with RcppArmadillo and OpenMP
+author: Nino Hardt, Dicko Ahmadou
+license: GPL (>= 2)
+tags: RcppArmadillo, MVN, openMP
+summary: Fast implementation of Multivariate Nnormal density using RcppArmadillo and OpenMP.
+---
+
+Load packages, and install if necessary. Note: Rcpp requires Rtools on Windows.
+```{r}
+libs=c("mvtnorm","inline","Rcpp","RcppArmadillo","rbenchmark","bayesm","parallel")
+if( sum(!(libs %in% .packages(all.available = TRUE)))>0){ install.packages(libs[!(libs %in% .packages(all.available = TRUE))])}
+for(i in 1:length(libs)) {library(libs[i],character.only = TRUE,quietly=TRUE)}
+```
+
+
+First, this is the regular implementation without openMP.
+```{r, engine='Rcpp'}
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+
+// [[Rcpp::depends("RcppArmadillo")]]
+// [[Rcpp::export]]
+arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
+int n = x.n_rows;
+arma::mat x_cen;
+x_cen.copy_size(x);
+for (int i=0; i < n; i++) {
+x_cen.row(i) = x.row(i) - center;
+}
+return sum((x_cen * cov.i()) % x_cen, 1);    
+}
+
+// [[Rcpp::export]]
+arma::vec dmvnorm_arma ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, bool log = false){ 
+
+arma::vec distval = Mahalanobis(x,  mean, sigma);
+
+double logdet = sum(arma::log(arma::eig_sym(sigma)));
+double log2pi = 1.8378770664093454835606594728112352797227949472755668;
+arma::vec logretval = -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
+
+if(log){ 
+return(logretval);
+
+}else { 
+return(exp(logretval));
+}
+}
+```
+
+Now we simulate some data for benchmarking:
+```{r}
+#simulate data
+set.seed(3242352532)
+sigma= rwishart(10,diag(4))$IW
+means= rnorm(4)
+X=rmvnorm(500000, means, sigma)
+```
+
+And run benchmark:
+```{r}
+#benchmark
+benchmark( mvtnorm::dmvnorm(X,means,sigma), 
+           dmvnorm_arma(X,means,sigma) , order="relative", replications=50    )
+```
+
+
+For the openMP implementation, we need to run the following commands under windows:
+```{r}
+if(Sys.info()['sysname']=="Windows"){
+  Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
+  Sys.setenv("PKG_LIBS"="-fopenmp")
+}
+```
+
+The source code only changes slightly. I have chosen a dynamic schedule for openMP, although a static schedule might be faster in some cases. This is left to further experimentation.
+```{r, engine='Rcpp'}
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <omp.h>
+
+// [[Rcpp::depends("RcppArmadillo")]]
+// [[Rcpp::export]]
+arma::vec Mahalanobis_mc(arma::mat x, arma::rowvec center, arma::mat cov, int cores=1){
+omp_set_num_threads( cores );
+int n = x.n_rows;
+arma::mat x_cen;
+x_cen.copy_size(x);
+#pragma omp parallel for schedule(dynamic)   
+for (int i=0; i < n; i++) {
+x_cen.row(i) = x.row(i) - center;
+}
+return sum((x_cen * cov.i()) % x_cen, 1);    
+}
+
+// [[Rcpp::export]]
+arma::vec dmvnorm_arma_mc ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, bool log = false, int cores=1){ 
+
+arma::vec distval = Mahalanobis_mc(x,  mean, sigma, cores);
+double logdet = sum(arma::log(arma::eig_sym(sigma)));
+double log2pi = 1.8378770664093454835606594728112352797227949472755668;
+arma::vec logretval = -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
+
+if(log){ 
+return(logretval);
+
+}else { 
+return(exp(logretval));
+}
+}
+```
+
+
+Now we are ready to benchmark again. The speed gain of the OpenMP version is not big, but noticable. 
+```{r}
+benchmark( mvtnorm::dmvnorm(X,means,sigma), 
+           dmvnorm_arma(X,means,sigma) ,
+           dmvnorm_arma_mc(X,means,sigma, cores), order="relative", replications=50    )
+```
+
