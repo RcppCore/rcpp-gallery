@@ -4,6 +4,8 @@ author: Nino Hardt, Dicko Ahmadou
 license: GPL (>= 2)
 tags: armadillo openmp
 summary: Fast implementation of Multivariate Normal density using RcppArmadillo and openmp.
+layout: post
+src: 2013-07-13-dmvnorm_arma.Rmd
 ---
 
 The Multivariate Normal density function is used frequently
@@ -17,20 +19,47 @@ and some extra gain by using openmp.
 This project is based on the following [StackOverflow post](http://stackoverflow.com/questions/17617618/dmvnorm-mvn-density-rcpparmadillo-implementation-slower-than-r-package-includi). 
 
 Loading necessary packages:
-```{r}
+
+{% highlight r %}
 libs <- c("mvtnorm","RcppArmadillo","rbenchmark","bayesm","parallel")
 if (sum(!(libs %in% .packages(all.available = TRUE))) > 0) {
     install.packages(libs[!(libs %in% .packages(all.available = TRUE))])
 }
+{% endhighlight %}
+
+
+
+<pre class="output">
+Installing packages into '/usr/local/lib/R/site-library' (as 'lib' is
+unspecified)
+</pre>
+
+
+
+<pre class="output">
+Error: trying to use CRAN without setting a mirror
+</pre>
+
+
+
+{% highlight r %}
 
 for (i in 1:length(libs)) {
     library(libs[i],character.only = TRUE,quietly=TRUE)
 }
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: there is no package called 'mvtnorm'
+</pre>
+
 
 
 First, we show the RcppArmadillo implementation without openmp.
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends("RcppArmadillo")]]
@@ -58,38 +87,86 @@ arma::vec dmvnorm_arma ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, bool
       return(exp(logretval));
     }
 }
-```
+{% endhighlight %}
+
 
 Now we simulate some data for benchmarking:
-```{r}
+
+{% highlight r %}
 #simulate data
     set.seed(3242352532)
+{% endhighlight %}
+
+
+
+<pre class="output">
+Warning: NAs introduced by coercion
+</pre>
+
+
+
+<pre class="output">
+Error: supplied seed is not a valid integer
+</pre>
+
+
+
+{% highlight r %}
     sigma = rwishart(10,diag(4))$IW
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;rwishart&quot;
+</pre>
+
+
+
+{% highlight r %}
     means = rnorm(4)
     X     = rmvnorm(500000, means, sigma)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;rmvnorm&quot;
+</pre>
+
 
 And run benchmark:
-```{r}
+
+{% highlight r %}
 #benchmark
 benchmark( mvtnorm::dmvnorm(X,means,sigma), 
            dmvnorm_arma(X,means,sigma) , order="relative", replications=50    )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;benchmark&quot;
+</pre>
+
 
 
 For the openmp implementation, we need to run the following 
 commands under windows:
-```{r}
+
+{% highlight r %}
 if(Sys.info()['sysname']=="Windows"){
     Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
     Sys.setenv("PKG_LIBS"="-fopenmp")
 }
-```
+{% endhighlight %}
+
 
 The source code only changes slightly. I have chosen a dynamic 
 schedule for openmp, although a static schedule might be faster 
 in some cases. This is left to further experimentation.
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <omp.h>
@@ -121,23 +198,40 @@ arma::vec dmvnorm_arma_mc ( arma::mat x,  arma::rowvec mean,  arma::mat sigma, b
         return(exp(logretval));
     }
 }
-```
+{% endhighlight %}
+
 
 
 We need to set the number of cores to be used. 
-```{r}
+
+{% highlight r %}
     cores=detectCores()
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;detectCores&quot;
+</pre>
+
 
 
 Now we are ready to benchmark again. The speed gain of 
 the openmp version is not big, but noticable. 
 
-```{r}
+
+{% highlight r %}
 benchmark( mvtnorm::dmvnorm(X,means,sigma), 
            dmvnorm_arma(X,means,sigma) ,
            dmvnorm_arma_mc(X,means,sigma, cores), order="relative", replications=50    )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;benchmark&quot;
+</pre>
+
 
 The use of RcppArmadillo brings about a significant increase 
 in speed. The addition of openmp leads to only little 
