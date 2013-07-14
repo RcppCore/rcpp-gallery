@@ -1,6 +1,6 @@
 ---
 title: Faster Multivariate Normal densities with RcppArmadillo and OpenMP
-author: Nino Hardt, Dicko Ahmadou
+author: Nino Hardt and Dicko Ahmadou
 license: GPL (>= 2)
 tags: armadillo openmp
 summary: Fast implementation of Multivariate Normal density using RcppArmadillo and OpenMP.

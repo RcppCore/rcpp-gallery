@@ -1,6 +1,6 @@
 ---
 title: Faster Multivariate Normal densities with RcppArmadillo and OpenMP
-author: Nino Hardt, Dicko Ahmadou
+author: Nino Hardt and Dicko Ahmadou
 license: GPL (>= 2)
 tags: armadillo openmp
 summary: Fast implementation of Multivariate Normal density using RcppArmadillo and OpenMP.
@@ -88,8 +88,8 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma),
 
 <pre class="output">
                                test replications elapsed relative
-2     dmvnorm_arma(X, means, sigma)           50   3.378    1.000
-1 mvtnorm::dmvnorm(X, means, sigma)           50   6.933    2.052
+2     dmvnorm_arma(X, means, sigma)           50   3.414     1.00
+1 mvtnorm::dmvnorm(X, means, sigma)           50   6.932     2.03
 </pre>
 
 
@@ -170,9 +170,9 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma),
 
 <pre class="output">
                                      test replications elapsed relative
-3 dmvnorm_arma_mc(X, means, sigma, cores)           50   2.726    1.000
-2           dmvnorm_arma(X, means, sigma)           50   3.265    1.198
-1       mvtnorm::dmvnorm(X, means, sigma)           50   8.238    3.022
+3 dmvnorm_arma_mc(X, means, sigma, cores)           50   2.782    1.000
+2           dmvnorm_arma(X, means, sigma)           50   3.298    1.185
+1       mvtnorm::dmvnorm(X, means, sigma)           50   8.219    2.954
 </pre>
 
 
