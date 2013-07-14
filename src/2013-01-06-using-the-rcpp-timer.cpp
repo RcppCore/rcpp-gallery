@@ -9,7 +9,8 @@
  *
  * Sine the 0.10.2 release, Rcpp contains an internal class `Timer`
  * which can be used for fine-grained benchmarking.  Romain motivated
- * `Timer` in a [post to the mailing * list](http://article.gmane.org/gmane.comp.lang.r.rcpp/4525) 
+ * `Timer` in a 
+ * [post to the mailing list](http://article.gmane.org/gmane.comp.lang.r.rcpp/4525) 
  * where `Timer` is used to measure the different components of the costs of
  * random number generation.
  * 

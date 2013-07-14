@@ -10,7 +10,8 @@ src: 2013-01-06-using-the-rcpp-timer.cpp
 
 Sine the 0.10.2 release, Rcpp contains an internal class `Timer`
 which can be used for fine-grained benchmarking.  Romain motivated
-`Timer` in a [post to the mailing * list](http://article.gmane.org/gmane.comp.lang.r.rcpp/4525) 
+`Timer` in a 
+[post to the mailing list](http://article.gmane.org/gmane.comp.lang.r.rcpp/4525) 
 where `Timer` is used to measure the different components of the costs of
 random number generation.
 
@@ -67,7 +68,7 @@ useTimer()
 
 <pre class="output">
     get/put g/p+rnorm()  empty loop 
-  1.634e+03   2.573e+03   2.620e-04 
+  1.967e+03   3.288e+03   6.400e-04 
 </pre>
 
 
