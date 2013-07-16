@@ -18,7 +18,7 @@
  * and returning its pnorm computed using the R `pnorm` function:
  */
  
- #include <Rcpp.h>
+#include <Rcpp.h>
 
 // [[Rcpp::export]]
 Rcpp::NumericVector mypnorm(Rcpp::NumericVector x) {
@@ -33,7 +33,7 @@ Rcpp::NumericVector mypnorm(Rcpp::NumericVector x) {
 }
 
 /**
- * We can now use the function to compute the probaility distribution: 
+ * We can now use the function to compute the probability distribution: 
  */
  
 /*** R
@@ -44,3 +44,8 @@ head(res)
 
 */
 
+/**
+ * Note that the C++ code, through its use via Rcpp attributes, will be augmented with 
+ * an automatic instantiation of a `RNGScope` object which ensures a proper state
+ * of the R random number generator. 
+ */
