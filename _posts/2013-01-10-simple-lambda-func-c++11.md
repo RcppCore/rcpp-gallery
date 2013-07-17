@@ -13,13 +13,16 @@ particularly interesting feature are <em>lambda functions</em> which resemble
 the anonymous functions R programmers have enjoyed all along.  This shows a
 simple example.
 
-First, we again make sure the compiler knows that we want C++11:
+First, we again make sure the compiler knows that we want C++11. We can either 
+set the flag directly: 
 
 
 {% highlight r %}
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 {% endhighlight %}
 
+
+or rely on Rcpp (version 0.10.3 or newer) to do it for us via the plugin.
 
 We will revisit an [earlier example on `stl::transform`](../stl-transform)
 but use a lamba function
@@ -30,6 +33,9 @@ but use a lamba function
 #include <Rcpp.h>
 
 using namespace Rcpp;
+
+// Enable C++11 via this plugin (Rcpp 0.10.3 or later)
+// [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]
 std::vector<double> transformEx(const std::vector<double>& x) {
