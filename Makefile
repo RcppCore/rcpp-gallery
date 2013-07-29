@@ -6,7 +6,7 @@ jmaj	:= $(shell jekyll --version 2>&1 | awk '/^Jekyll/ {print $$2}' | cut -d. -f
 
 all: knit
 ifeq ($(jmaj),0)
-	jekyll --no-server no-auto
+	jekyll --no-server --no-auto
 else
 	jekyll build
 endif
@@ -21,7 +21,7 @@ clean:
 
 preview: knit
 ifeq ($(jmaj),0)
-	jekyll --server --auto --no-pygments
+	jekyll --server --no-auto --no-pygments
 else
 	jekyll serve --watch
 endif
