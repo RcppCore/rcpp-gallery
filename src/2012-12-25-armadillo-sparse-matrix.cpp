@@ -16,13 +16,13 @@
  */
 
 /*** R
-  suppressMessages(library(Matrix))
-  i <- c(1,3:8) 
-  j <- c(2,9,6:10) 
-  x <- 7 * (1:7)
-  A <- sparseMatrix(i, j, x = x) 
-  print(A)
- */
+suppressMessages(library(Matrix))
+i <- c(1,3:8) 
+j <- c(2,9,6:10) 
+x <- 7 * (1:7)
+A <- sparseMatrix(i, j, x = x) 
+print(A)
+*/
 
 /**
  * The following C++ function access the corresponding slots of the
@@ -37,35 +37,29 @@ using namespace Rcpp ;
 
 // [[Rcpp::export]]
 void convertSparse(S4 mat) {         // slight improvement with two non-nested loops
+
     IntegerVector dims = mat.slot("Dim");
-    IntegerVector i = mat.slot("i");
-    IntegerVector p = mat.slot("p");
-    NumericVector x = mat.slot("x");
-    
+    arma::urowvec i = Rcpp::as<arma::urowvec>(mat.slot("i"));
+    arma::urowvec p = Rcpp::as<arma::urowvec>(mat.slot("p"));     
+    arma::vec x     = Rcpp::as<arma::vec>(mat.slot("x"));
+
     int nrow = dims[0], ncol = dims[1];
     arma::sp_mat res(nrow, ncol);
 
     // create space for values, and copy
-    arma::access::rw(res.values) = 
-        arma::memory::acquire_chunked<double>(x.size() + 1);
-    arma::arrayops::copy(arma::access::rwp(res.values), 
-                         x.begin(), x.size() + 1);
+    arma::access::rw(res.values) = arma::memory::acquire_chunked<double>(x.size() + 1);
+    arma::arrayops::copy(arma::access::rwp(res.values), x.begin(), x.size() + 1);
 
-    // create space for row_indices, and copy -- so far in a lame loop
-    arma::access::rw(res.row_indices) = 
-        arma::memory::acquire_chunked<arma::uword>(x.size() + 1);
-    for (int j=0; j<i.size(); j++) 
-        arma::access::rwp(res.row_indices)[j] = i[j];
+    // create space for row_indices, and copy
+    arma::access::rw(res.row_indices) = arma::memory::acquire_chunked<arma::uword>(i.size() + 1);
+    arma::arrayops::copy(arma::access::rwp(res.row_indices), i.begin(), i.size() + 1);
     
-    // create space for col_ptrs, and copy -- so far in a lame loop
-    arma::access::rw(res.col_ptrs) = 
-        arma::memory::acquire<arma::uword>(p.size() + 2);
-    for (int j=0; j<p.size(); j++) 
-        arma::access::rwp(res.col_ptrs)[j] = p[j];
+    // create space for col_ptrs, and copy 
+    arma::access::rw(res.col_ptrs) = arma::memory::acquire<arma::uword>(p.size() + 2);
+    arma::arrayops::copy(arma::access::rwp(res.col_ptrs), p.begin(), p.size() + 1);
 
     // important: set the sentinel as well
-    arma::access::rwp(res.col_ptrs)[p.size()+1] = 
-        std::numeric_limits<arma::uword>::max();
+    arma::access::rwp(res.col_ptrs)[p.size()+1] = std::numeric_limits<arma::uword>::max();
     
     // set the number of non-zero elements
     arma::access::rw(res.n_nonzero) = x.size();
@@ -79,12 +73,14 @@ void convertSparse(S4 mat) {         // slight improvement with two non-nested l
  */
 
 /*** R
-  convertSparse(A)
+convertSparse(A)
 */
 
 /**
  * Support for sparse matrix is currently still limited in Armadillo,
  * but expected to grow.  Likewise, RcppArmadillo does not yet have
- * `as<>()` and `wrap()` converters but we expect to add these
+ * converters such as `as<>()` (though the example above does 
+ * essentially everything that is needed) and `wrap()` converters.
+ * But we expect to add these
  * eventually --- at which point this example will be much simpler.
  */
