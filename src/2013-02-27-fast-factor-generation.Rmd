@@ -17,21 +17,21 @@ using namespace Rcpp;
 
 template <int RTYPE>
 IntegerVector fast_factor_template( const Vector<RTYPE>& x ) {
-  Vector<RTYPE> levs = sort_unique(x);
-  IntegerVector out = match(x, levs);
-  out.attr("levels") = as<CharacterVector>(levs);
-  out.attr("class") = "factor";
-  return out;
+    Vector<RTYPE> levs = sort_unique(x);
+    IntegerVector out = match(x, levs);
+    out.attr("levels") = as<CharacterVector>(levs);
+    out.attr("class") = "factor";
+    return out;
 }
 
 // [[Rcpp::export]]
 SEXP fast_factor( SEXP x ) {
-  switch( TYPEOF(x) ) {
+    switch( TYPEOF(x) ) {
     case INTSXP: return fast_factor_template<INTSXP>(x);
     case REALSXP: return fast_factor_template<REALSXP>(x);
     case STRSXP: return fast_factor_template<STRSXP>(x);
-  }
-  return R_NilValue;
+    }
+    return R_NilValue;
 }
 ```
 
@@ -55,8 +55,8 @@ And a quick test:
 
 ```{r}
 library(microbenchmark)
-all.equal( factor( 1:10 ), fast_factor( 1:10 ) )
-all.equal( factor( letters ), fast_factor( letters ) )
+stopifnot(all.equal( factor( 1:10 ), fast_factor( 1:10 )))
+stopifnot(all.equal( factor( letters ), fast_factor( letters )))
 lets <- sample( letters, 1E5, replace=TRUE )
 microbenchmark( factor(lets), fast_factor(lets) )
 ```
@@ -76,13 +76,14 @@ we can test a couple ways of performing a `tapply`-like function:
 ```{r tidy=FALSE}
 x <- rnorm(1E5)
 gp <- sample( 1:1000, 1E5, TRUE )
-all( tapply(x, gp, mean) == unlist( lapply( split(x, fast_factor(gp)), mean ) ) )
-all( tapply(x, gp, mean) == unlist( lapply( split(x, gp), mean ) ) )
-rbenchmark::benchmark( replications=20, order="relative",
-                tapply(x, gp, mean), 
-                unlist( lapply( split(x, fast_factor(gp)), mean) ),
-                unlist( lapply( split(x, gp), mean ) )
-                )[,1:4]
+stopifnot(all( tapply(x, gp, mean) == unlist( lapply( split(x, fast_factor(gp)), mean ))))
+stopifnot(all( tapply(x, gp, mean) == unlist( lapply( split(x, gp), mean ) ) ))
+library(rbenchmark)
+benchmark(replications=20, order="relative",
+	  tapply(x, gp, mean), 
+          unlist(lapply(split(x,fast_factor(gp)),mean)),
+          unlist(lapply(split(x,gp), mean))
+          )[,c(1,3:4)]
 ```
 
 To be fair, tapply actually returns a 1-dimensional array rather than a vector,

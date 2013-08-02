@@ -20,21 +20,21 @@ using namespace Rcpp;
 
 template <int RTYPE>
 IntegerVector fast_factor_template( const Vector<RTYPE>& x ) {
-  Vector<RTYPE> levs = sort_unique(x);
-  IntegerVector out = match(x, levs);
-  out.attr("levels") = as<CharacterVector>(levs);
-  out.attr("class") = "factor";
-  return out;
+    Vector<RTYPE> levs = sort_unique(x);
+    IntegerVector out = match(x, levs);
+    out.attr("levels") = as<CharacterVector>(levs);
+    out.attr("class") = "factor";
+    return out;
 }
 
 // [[Rcpp::export]]
 SEXP fast_factor( SEXP x ) {
-  switch( TYPEOF(x) ) {
+    switch( TYPEOF(x) ) {
     case INTSXP: return fast_factor_template<INTSXP>(x);
     case REALSXP: return fast_factor_template<REALSXP>(x);
     case STRSXP: return fast_factor_template<STRSXP>(x);
-  }
-  return R_NilValue;
+    }
+    return R_NilValue;
 }
 {% endhighlight %}
 
@@ -60,30 +60,8 @@ And a quick test:
 
 {% highlight r %}
 library(microbenchmark)
-all.equal( factor( 1:10 ), fast_factor( 1:10 ) )
-{% endhighlight %}
-
-
-
-<pre class="output">
-[1] TRUE
-</pre>
-
-
-
-{% highlight r %}
-all.equal( factor( letters ), fast_factor( letters ) )
-{% endhighlight %}
-
-
-
-<pre class="output">
-[1] TRUE
-</pre>
-
-
-
-{% highlight r %}
+stopifnot(all.equal( factor( 1:10 ), fast_factor( 1:10 )))
+stopifnot(all.equal( factor( letters ), fast_factor( letters )))
 lets <- sample( letters, 1E5, replace=TRUE )
 microbenchmark( factor(lets), fast_factor(lets) )
 {% endhighlight %}
@@ -92,9 +70,9 @@ microbenchmark( factor(lets), fast_factor(lets) )
 
 <pre class="output">
 Unit: milliseconds
-               expr   min    lq median    uq   max
-1      factor(lets) 5.315 5.766  5.930 6.069 32.93
-2 fast_factor(lets) 1.420 1.458  1.474 1.486 28.85
+              expr   min    lq median    uq   max neval
+      factor(lets) 5.065 5.788  5.976 6.375 36.57   100
+ fast_factor(lets) 1.367 1.421  1.453 1.520  2.83   100
 </pre>
 
 
@@ -114,48 +92,23 @@ we can test a couple ways of performing a `tapply`-like function:
 {% highlight r %}
 x <- rnorm(1E5)
 gp <- sample( 1:1000, 1E5, TRUE )
-all( tapply(x, gp, mean) == unlist( lapply( split(x, fast_factor(gp)), mean ) ) )
+stopifnot(all( tapply(x, gp, mean) == unlist( lapply( split(x, fast_factor(gp)), mean ))))
+stopifnot(all( tapply(x, gp, mean) == unlist( lapply( split(x, gp), mean ) ) ))
+library(rbenchmark)
+benchmark(replications=20, order="relative",
+	  tapply(x, gp, mean), 
+          unlist(lapply(split(x,fast_factor(gp)),mean)),
+          unlist(lapply(split(x,gp), mean))
+          )[,c(1,3:4)]
 {% endhighlight %}
 
 
 
 <pre class="output">
-[1] TRUE
-</pre>
-
-
-
-{% highlight r %}
-all( tapply(x, gp, mean) == unlist( lapply( split(x, gp), mean ) ) )
-{% endhighlight %}
-
-
-
-<pre class="output">
-[1] TRUE
-</pre>
-
-
-
-{% highlight r %}
-rbenchmark::benchmark( replications=20, order="relative",
-                tapply(x, gp, mean), 
-                unlist( lapply( split(x, fast_factor(gp)), mean) ),
-                unlist( lapply( split(x, gp), mean ) )
-                )[,1:4]
-{% endhighlight %}
-
-
-
-<pre class="output">
-                                             test replications elapsed
-2 unlist(lapply(split(x, fast_factor(gp)), mean))           20   0.200
-3              unlist(lapply(split(x, gp), mean))           20   0.731
-1                             tapply(x, gp, mean)           20   1.444
-  relative
-2    1.000
-3    3.655
-1    7.220
+                                             test elapsed relative
+2 unlist(lapply(split(x, fast_factor(gp)), mean))   0.292    1.000
+3              unlist(lapply(split(x, gp), mean))   1.042    3.568
+1                             tapply(x, gp, mean)   2.043    6.997
 </pre>
 
 
