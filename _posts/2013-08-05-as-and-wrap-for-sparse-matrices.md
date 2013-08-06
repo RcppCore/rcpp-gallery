@@ -1,8 +1,8 @@
 ---
-title: Custom as and wrap for sparse matrices
+title: Creating as and wrap for sparse matrices
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: rng sugar 
+tags: armadillo matrix sparse
 summary: This post shows an example of simple as and wrap methods
 layout: post
 src: 2013-08-05-as-and-wrap-for-sparse-matrices.cpp
