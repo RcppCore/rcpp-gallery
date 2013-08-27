@@ -6,9 +6,10 @@
  * @tags armadillo matrix sparse
  * @summary This post shows an example of simple as and wrap methods
  *
- * An [earlier article discussed sparse matrix conversion](http://gallery.rcpp.org/articles/armadillo-sparse-matrix)
+ * An earlier article discussed 
+ * [sparse matrix conversion](http://gallery.rcpp.org/articles/armadillo-sparse-matrix)
  * but stopped short of showing how to create custom `as<>()` and `wrap()` methods
- * or functions.  This post starts to close this gap.
+ * or functions.  This post started to close this gap.
  *
  * We will again look at sparse matrices from the 
  * [Matrix](http://cran.r-project.org/package=Matrix) package for R, as well as 
@@ -17,9 +18,15 @@
  * case of `double` element types. These uses the `sp_mat` typedef which will be
  * our basic type for sparse matrices at the C++ level.
  *
- * At the time of writing, this code had just been added to the SVN repo `RcppArmadillo`
- * as an extension header file `spmat.h`. Further integration is planned, but no concrete 
- * steps are planned just yet.
+ * _Note bene: At the time of the update of the post, very similar
+ * code (by Romain) has just been added to the SVN repo for
+ * `RcppArmadillo`; it should appear in the next regular CRAN
+ * release. Because we cannot redefine method with the same signature,
+ * we renamed the code presented here `as_<>()` and `wrap_()`. Of
+ * course, for conversion not already present in the package, names
+ * without underscores should be used instead. My thanks to Romain for
+ * improving over the initial versions I wrote in the first version of
+ * this post._
  *
  * First, we look at the `as` method.
  */
@@ -33,20 +40,26 @@ namespace Rcpp {
     // converts an SEXP object from R which was created as a sparse
     // matrix via the Matrix package) into an Armadillo sp_mat matrix
     //
-    // TODO: template'ize to allow for types other than double, though
-    //       realistically this is all we need
-    template <> arma::sp_mat as(SEXP sx) {
+    // NB: called as_() here as a similar method is already in the 
+    //     RcppArmadillo sources
+    //
+    template <typename T> arma::SpMat<T> as_(SEXP sx) {
+
+        // Rcpp representation of template type
+        const int RTYPE = Rcpp::traits::r_sexptype_traits<T>::rtype;
+
+        // instantiate S4 object with the sparse matrix passed in
         S4 mat(sx);  
         IntegerVector dims = mat.slot("Dim");
-        arma::urowvec i = Rcpp::as<arma::urowvec>(mat.slot("i"));
-        arma::urowvec p = Rcpp::as<arma::urowvec>(mat.slot("p"));     
-        arma::vec x     = Rcpp::as<arma::vec>(mat.slot("x"));
-        
-        int nrow = dims[0], ncol = dims[1];
-        arma::sp_mat res(nrow, ncol);
+        IntegerVector i = mat.slot("i");
+        IntegerVector p = mat.slot("p");     
+        Vector<RTYPE> x = mat.slot("x");
+
+        // create sp_mat object of appropriate size
+        arma::SpMat<T> res(dims[0], dims[1]);
 
         // create space for values, and copy
-        arma::access::rw(res.values) = arma::memory::acquire_chunked<double>(x.size() + 1);
+        arma::access::rw(res.values) = arma::memory::acquire_chunked<T>(x.size() + 1);
         arma::arrayops::copy(arma::access::rwp(res.values), x.begin(), x.size() + 1);
 
         // create space for row_indices, and copy 
@@ -73,35 +86,43 @@ namespace Rcpp {
  * Next, we look at the corresponding `wrap()` method.
  */
 
-
 namespace Rcpp {
 
     // convert an Armadillo sp_mat into a corresponding R sparse matrix
     // we copy to STL vectors as the Matrix package expects vectors whereas the
     // default wrap in Armadillo returns matrix with one row (or col) 
-    SEXP wrap(arma::sp_mat sm) {
+    //
+    // NB: called wrap_() here as a similar method is already in the 
+    //     RcppArmadillo sources
+    //
+    template <typename T> SEXP wrap_(const arma::SpMat<T>& sm) {
+        const int  RTYPE = Rcpp::traits::r_sexptype_traits<T>::rtype;
 
-        IntegerVector dim(2);
-        dim[0] = sm.n_rows; 
-        dim[1] = sm.n_cols;
+        IntegerVector dim = IntegerVector::create( sm.n_rows, sm.n_cols );
 
-        arma::vec  x(sm.n_nonzero);        // create space for values, and copy
-        arma::arrayops::copy(x.begin(), sm.values, sm.n_nonzero);
-        std::vector<double> vx = arma::conv_to< std::vector< double > >::from(x);
+        // copy the data into R objects
+        Vector<RTYPE> x(sm.values, sm.values + sm.n_nonzero ) ;
+        IntegerVector i(sm.row_indices, sm.row_indices + sm.n_nonzero);
+        IntegerVector p(sm.col_ptrs, sm.col_ptrs + sm.n_cols+1 ) ;
 
-        arma::urowvec i(sm.n_nonzero);	// create space for row_indices, and copy & cast
-        arma::arrayops::copy(i.begin(), sm.row_indices, sm.n_nonzero);
-        std::vector<int> vi = arma::conv_to< std::vector< int > >::from(i);
- 
-        arma::urowvec p(sm.n_cols+1);	// create space for col_ptrs, and copy 
-        arma::arrayops::copy(p.begin(), sm.col_ptrs, sm.n_cols+1);
-        // do not copy sentinel for returning R
-        std::vector<int> vp = arma::conv_to< std::vector< int > >::from(p);
-
-        S4 s("dgCMatrix");
-        s.slot("i")   = vi;
-        s.slot("p")   = vp;
-        s.slot("x")   = vx;
+        std::string klass;
+        switch (RTYPE) {
+        case REALSXP: 
+            klass = "dgCMatrix"; 
+            break;
+        // case INTSXP:   // class not exported in Matrix package
+        //  klass = "igCMatrix"; 
+        //  break; 
+        case LGLSXP: 
+            klass = "lgCMatrix"; 
+            break;
+        default:
+            throw std::invalid_argument("RTYPE not matched in conversion to sparse matrix");
+        }
+        S4 s(klass);
+        s.slot("i")   = i;
+        s.slot("p")   = p;
+        s.slot("x")   = x;
         s.slot("Dim") = dim;
         return s;
     }
@@ -110,13 +131,16 @@ namespace Rcpp {
 
 
 /**
- * We can now illustrate this with a simple example.
+ * We can now illustrate this with a simple example. _Note that the
+ * compiler will use the methods `as<>()` and `wrap()` from the package
+ * rather than the ones depicted here. However, the ones shown here compile as
+ * well and are functionally identical._
  */
 
 
 // [[Rcpp::export]]
 arma::sp_mat doubleSparseMatrix(arma::sp_mat m) {
-    Rcpp::Rcout << m << std::endl;  // use the i/o from Armadillo
+    Rcpp::Rcout << m << std::endl;  // use the i/o code from Armadillo
     arma::sp_mat n = 2*m;
     return n;
 }
