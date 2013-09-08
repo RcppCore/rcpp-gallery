@@ -15,15 +15,14 @@ We show dramatic increases in speed by using efficient algorithms,
 RcppArmadillo, and some extra gain by using OpenMP.
 The code is based on the latest version of RcppArmadillo (0.3.910.0).
 
-While the `dmvnorm` function from the `mvtnorm` package is quite popular,
+While the `dmvnorm()` function from the `mvtnorm` package is quite popular,
 and in an earlier version of this article we demonstrated that an 
 Rcpp implementation would lead to faster computation.
 
-Peter Rossi, author of `bayesm`, called our attention to the bayesm pure R 
-implementation which is much faster than dmvnorm. 
-The function `dMvn` is used internally by the mixture of normals model in 
+Peter Rossi, author of `bayesm`, called our attention to the `bayesm` pure R 
+implementation which is much faster than `dmvnorm()`. 
+The function `dMvn()` is used internally by the mixture of normals model in 
 `bayesm`. It is the matrix-equivalent version of `lndMvn`:
-
 
 
 ```{r}
@@ -42,7 +41,7 @@ of the main loop over the rows of `X`.
 The loop can easily be parallelized, and the code is easy to read and 
 manipulate. For instance, the inverse root can be put inside the main 
 loop, if varying covariance matrices are necessary.
-The use of `trimatu` allows to exploit the diagonality of the cholesky
+The use of `trimatu` allows to exploit the diagonality of the Cholesky
 root of the covariance matrix.
 
 
@@ -76,7 +75,7 @@ arma::vec dmvnrm_arma(arma::mat x,
 }
 ```
 
-Additionally, we can make use of the openMP library to use multiple 
+Additionally, we can make use of the OpenMP library to use multiple 
 cores. For the OpenMP implementation, we need to enable OpenMP support. 
 One way of doing so is by adding the required compiler and linker 
 flags as follows:
@@ -90,7 +89,7 @@ Rcpp version 0.10.5 and later will also provide a plugin to set these
 variables for us:
 
 ```{r, engine="Rcpp"}
-#// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::plugins(openmp)]]
 ``` 
 
 We also need to set the number of cores to be used before running the
@@ -215,6 +214,7 @@ all.equal(mvtnorm::dmvnorm(X,means,sigma,log=FALSE),
 The use of RcppArmadillo brings about a significant increase 
 in speed. The addition of OpenMP leads to only little 
 additional performance. 
+
 This example also illustrates that Rcpp does not completely
 substitute the need to look for faster algorithms. Basing the
 code of 'lndMvn' instead of 'dmvnorm' leads to a significantly
