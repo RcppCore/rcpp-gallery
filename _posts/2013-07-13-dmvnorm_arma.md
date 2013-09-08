@@ -9,7 +9,7 @@ src: 2013-07-13-dmvnorm_arma.Rmd
 ---
 
 The Multivariate Normal density function is used frequently
-in a number of problems. Especially for MCMC problems, fast 
+for a number of problems. Especially for MCMC problems, fast 
 evaluation is important. Multivariate Normal Likelihoods, 
 Priors and mixtures of Multivariate Normals require numerous 
 evaluations, thus speed of computation is vital. 
@@ -221,7 +221,7 @@ print(paste0("Using ",cores," cores for _mc versions")){% endhighlight %}
 
 
 <pre class="output">
-[1] &quot;Using 4 cores for _mc versions&quot;
+[1] &quot;Using 8 cores for _mc versions&quot;
 </pre>
 
 
@@ -249,11 +249,11 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma,log=F),
 
 <pre class="output">
                                         test replications elapsed relative
-4  dmvnrm_arma_mc(X, means, sigma, F, cores)          100   21.05    1.000
-3            dmvnrm_arma(X, means, sigma, F)          100   24.55    1.166
-2           dmvnorm_arma(X, means, sigma, F)          100   31.40    1.492
-5                      dMvn(X, means, sigma)          100   35.31    1.677
-1 mvtnorm::dmvnorm(X, means, sigma, log = F)          100   46.82    2.224
+4  dmvnrm_arma_mc(X, means, sigma, F, cores)          100   15.31    1.000
+3            dmvnrm_arma(X, means, sigma, F)          100   22.33    1.459
+2           dmvnorm_arma(X, means, sigma, F)          100   24.11    1.575
+5                      dMvn(X, means, sigma)          100   29.13    1.903
+1 mvtnorm::dmvnorm(X, means, sigma, log = F)          100   48.05    3.139
 </pre>
 
 

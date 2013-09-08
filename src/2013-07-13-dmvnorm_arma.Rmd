@@ -7,7 +7,7 @@ summary: Fast implementation of Multivariate Normal density using RcppArmadillo 
 ---
 
 The Multivariate Normal density function is used frequently
-in a number of problems. Especially for MCMC problems, fast 
+for a number of problems. Especially for MCMC problems, fast 
 evaluation is important. Multivariate Normal Likelihoods, 
 Priors and mixtures of Multivariate Normals require numerous 
 evaluations, thus speed of computation is vital. 
