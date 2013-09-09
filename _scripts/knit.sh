@@ -316,14 +316,8 @@ doxygenChunkToRmd <- function(chunk, frontMatter) {
 
 
 # adaption of knitr::render_jekyll
-renderJekyll <- function(extra = '') {
-  knitr::render_markdown(TRUE)
-  hook.r = function(x, options) {
-      stringr::str_c('\n\n{% highlight ', tolower(options$engine), 
-                     if (extra != '') ' ', extra, ' %}\n',
-                    x, 
-                    '{% endhighlight %}\n\n')
-  }
+renderJekyll <- function(...) {
+  knitr::render_jekyll(...)
   hook.t = function(x, options) {
     stringr::str_c('\n\n<pre class="output">\n', 
                    knitr:::escape_html(x), 
@@ -335,7 +329,7 @@ renderJekyll <- function(extra = '') {
     else 
       hook.t(x, options)
   } 
-  knitr::knit_hooks$set(source = hook.r, output = hook.o, warning = hook.t,
+  knitr::knit_hooks$set(output = hook.o, warning = hook.t,
                         error = hook.t, message = hook.t)
 }
 
