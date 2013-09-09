@@ -28,55 +28,26 @@ implementation of the first derivative.
 
 
 {% highlight r %}
-library('RcppArmadillo',quietly=TRUE){% endhighlight %}
+{
 
+library('RcppArmadillo',quietly=TRUE)
+library('rbenchmark',quietly=TRUE)
+library('mvtnorm',quietly=TRUE)
 
-
-{% highlight r %}
-library('rbenchmark',quietly=TRUE){% endhighlight %}
-
-
-
-{% highlight r %}
-library('mvtnorm',quietly=TRUE){% endhighlight %}
-
-
-
-{% highlight r %}
-{% endhighlight %}
-
-
-
-{% highlight r %}
 dmvnorm_deriv1 <- function(X, mu=rep(0,ncol(X)), sigma=diag(ncol(X))) {
     fn <- function(x) -1 * c((1/sqrt(det(2*pi*sigma))) * exp(-0.5*t(x-mu)%*%solve(sigma)%*%(x-mu))) * solve(sigma,(x-mu))
     out <- t(apply(X,1,fn))
     return(out)
-}{% endhighlight %}
+}
 
-
-
-{% highlight r %}
-{% endhighlight %}
-
-
-
-{% highlight r %}
-# mv normal density based on Peter Rossi's implementation in `bayesm`{% endhighlight %}
-
-
-
-{% highlight r %}
+# mv normal density based on Peter Rossi's implementation in `bayesm`
 dMvn <- function(X,mu,Sigma) {
     k <- ncol(X)
     rooti <- backsolve(chol(Sigma),diag(k))
     quads <- colSums((crossprod(rooti,(t(X)-mu)))^2)
     return(exp(-(k/2)*log(2*pi) + sum(log(diag(rooti))) - .5*quads))
-}{% endhighlight %}
+}
 
-
-
-{% highlight r %}
 dmvnorm_deriv2 <- function(X, mean, sigma) {
     if (is.vector(X)) X <- matrix(X, ncol = length(X))
     if (missing(mean)) mean <- rep(0, length = ncol(X))
@@ -87,6 +58,8 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
     for (i in 1:n)
         deriv[i,] <- -mvnorm[i] * solve(sigma,(X[i,]-mean))
     return(deriv)
+}
+
 }{% endhighlight %}
 
 
@@ -139,43 +112,27 @@ Finally, we can compare the different versions using simulated data.
 
 
 {% highlight r %}
-set.seed(123456789){% endhighlight %}
+{ 
 
+set.seed(123456789)
+s <- rWishart(1, 2, diag(2))[,,1]
+m <- rnorm(2)
+X <- rmvnorm(10000, m, s)
 
-
-{% highlight r %}
-s <- rWishart(1, 2, diag(2))[,,1]{% endhighlight %}
-
-
-
-{% highlight r %}
-m <- rnorm(2){% endhighlight %}
-
-
-
-{% highlight r %}
-X <- rmvnorm(10000, m, s){% endhighlight %}
-
-
-
-{% highlight r %}
-{% endhighlight %}
-
-
-
-{% highlight r %}
 benchmark(dmvnorm_deriv_arma(X,m,s),
           dmvnorm_deriv1(X,mu=m,sigma=s),
           dmvnorm_deriv2(X,mean=m,sigma=s),
-          order="relative", replications=50)[,1:4]{% endhighlight %}
+          order="relative", replications=50)[,1:4]
+
+}{% endhighlight %}
 
 
 
 <pre class="output">
                                     test replications elapsed relative
-1            dmvnorm_deriv_arma(X, m, s)           50   0.109      1.0
-3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.154    212.4
-2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  76.964    706.1
+1            dmvnorm_deriv_arma(X, m, s)           50   0.105      1.0
+3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.097    220.0
+2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  76.410    727.7
 </pre>
 
 

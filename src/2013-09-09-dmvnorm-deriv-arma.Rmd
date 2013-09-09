@@ -25,6 +25,8 @@ Rossi's implementation of the multivariate normal densities in his package
 implementation of the first derivative.
 
 ```{r}
+{
+
 library('RcppArmadillo',quietly=TRUE)
 library('rbenchmark',quietly=TRUE)
 library('mvtnorm',quietly=TRUE)
@@ -42,6 +44,7 @@ dMvn <- function(X,mu,Sigma) {
     quads <- colSums((crossprod(rooti,(t(X)-mu)))^2)
     return(exp(-(k/2)*log(2*pi) + sum(log(diag(rooti))) - .5*quads))
 }
+
 dmvnorm_deriv2 <- function(X, mean, sigma) {
     if (is.vector(X)) X <- matrix(X, ncol = length(X))
     if (missing(mean)) mean <- rep(0, length = ncol(X))
@@ -52,6 +55,8 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
     for (i in 1:n)
         deriv[i,] <- -mvnorm[i] * solve(sigma,(X[i,]-mean))
     return(deriv)
+}
+
 }
 ```
 
@@ -102,6 +107,8 @@ arma::mat dmvnorm_deriv_arma(arma::mat x,
 Finally, we can compare the different versions using simulated data.
 
 ```{r}
+{ 
+
 set.seed(123456789)
 s <- rWishart(1, 2, diag(2))[,,1]
 m <- rnorm(2)
@@ -111,6 +118,8 @@ benchmark(dmvnorm_deriv_arma(X,m,s),
           dmvnorm_deriv1(X,mu=m,sigma=s),
           dmvnorm_deriv2(X,mean=m,sigma=s),
           order="relative", replications=50)[,1:4]
+
+}
 ```
 
 The RcppArmadillo implementation is several hundred times faster! Such
