@@ -28,8 +28,6 @@ implementation of the first derivative.
 
 
 {% highlight r %}
-{
-
 library('RcppArmadillo',quietly=TRUE)
 library('rbenchmark',quietly=TRUE)
 library('mvtnorm',quietly=TRUE)
@@ -59,8 +57,7 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
         deriv[i,] <- -mvnorm[i] * solve(sigma,(X[i,]-mean))
     return(deriv)
 }
-
-}{% endhighlight %}
+{% endhighlight %}
 
 
 These implementations work but they are not very fast. `dmvnorm_deriv1` is a
@@ -105,15 +102,14 @@ arma::mat dmvnorm_deriv_arma(arma::mat x,
     }
 
     return(deriv);
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 Finally, we can compare the different versions using simulated data.
 
 
 {% highlight r %}
-{ 
-
 set.seed(123456789)
 s <- rWishart(1, 2, diag(2))[,,1]
 m <- rnorm(2)
@@ -123,16 +119,15 @@ benchmark(dmvnorm_deriv_arma(X,m,s),
           dmvnorm_deriv1(X,mu=m,sigma=s),
           dmvnorm_deriv2(X,mean=m,sigma=s),
           order="relative", replications=50)[,1:4]
-
-}{% endhighlight %}
+{% endhighlight %}
 
 
 
 <pre class="output">
                                     test replications elapsed relative
-1            dmvnorm_deriv_arma(X, m, s)           50   0.105      1.0
-3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.097    220.0
-2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  76.410    727.7
+1            dmvnorm_deriv_arma(X, m, s)           50   0.108      1.0
+3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.085    213.8
+2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  75.973    703.5
 </pre>
 
 
