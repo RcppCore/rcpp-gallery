@@ -28,12 +28,15 @@ implementation of the first derivative.
 
 
 {% highlight r %}
-library('RcppArmadillo',quietly=TRUE)
-library('rbenchmark',quietly=TRUE)
-library('mvtnorm',quietly=TRUE)
+library(RcppArmadillo,quietly=TRUE)
+library(rbenchmark,quietly=TRUE)
+library(mvtnorm,quietly=TRUE)
 
 dmvnorm_deriv1 <- function(X, mu=rep(0,ncol(X)), sigma=diag(ncol(X))) {
-    fn <- function(x) -1 * c((1/sqrt(det(2*pi*sigma))) * exp(-0.5*t(x-mu)%*%solve(sigma)%*%(x-mu))) * solve(sigma,(x-mu))
+    fn <- function(x) {
+        -1 * c((1/sqrt(det(2*pi*sigma))) * 
+             exp(-0.5*t(x-mu)%*%solve(sigma)%*%(x-mu))) * solve(sigma,(x-mu))
+    }
     out <- t(apply(X,1,fn))
     return(out)
 }
@@ -53,8 +56,9 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
     n <- nrow(X)
     mvnorm <- dMvn(X, mu = mean, Sigma = sigma)
     deriv <- array(NA,c(n,ncol(X)))
-    for (i in 1:n)
+    for (i in 1:n) {
         deriv[i,] <- -mvnorm[i] * solve(sigma,(X[i,]-mean))
+    }
     return(deriv)
 }
 {% endhighlight %}
@@ -97,8 +101,11 @@ arma::mat dmvnorm_deriv_arma(arma::mat x,
         arma::vec x_centered = arma::trans(x.row(i) - mean);
         arma::vec z = rooti * x_centered;
         // get derivative of multivariate normal
-        deriv.row(i) = -1 * exp(constants - 0.5 * arma::sum(z%z) + rootisum) * trans(solve(sigma, x_centered));
-        // The part `exp(constants - 0.5 * arma::sum(z%z) + rootisum)` returns the multivarate normal and the other terms translate it to the first derivate
+        deriv.row(i) = -1 * exp(constants - 
+	      0.5 * arma::sum(z%z) + rootisum) * trans(solve(sigma, x_centered));
+        // The part `exp(constants - 0.5 * arma::sum(z%z) + rootisum)`
+	// returns the multivarate normal and the other terms translate it 
+	// to the first derivative
     }
 
     return(deriv);
@@ -125,9 +132,9 @@ benchmark(dmvnorm_deriv_arma(X,m,s),
 
 <pre class="output">
                                     test replications elapsed relative
-1            dmvnorm_deriv_arma(X, m, s)           50   0.108      1.0
-3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.085    213.8
-2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  75.973    703.5
+1            dmvnorm_deriv_arma(X, m, s)           50   0.107      1.0
+3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.344    218.2
+2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  76.775    717.5
 </pre>
 
 
