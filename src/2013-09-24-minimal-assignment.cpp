@@ -583,7 +583,7 @@ min.cost
 
 /**
  * Finally let us make some benchmarking. We load the 
- * rbenchmark test and take now a more _realistic_ cost
+ * rbenchmark package and take now a more _realistic_ cost
  * matrix.
  */
 /*** R
