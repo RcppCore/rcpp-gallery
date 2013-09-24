@@ -2,7 +2,7 @@
  * @title Munkres' Assignment Algorithm with RcppArmadillo
  * @author Lars Simon Zehnder
  * @license GPL (>= 2)
- * @tags RcppArmadillo featured
+ * @tags armadillo featured
  * @summary Demonstrates the implementation of an algorithm 
  *      to solve the Minimal (or Maximal) Assignment Problem.
  *
@@ -51,6 +51,7 @@
  * subtract the minimal element of each row from each element 
  * in this row.  
  */
+
 #include<RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
