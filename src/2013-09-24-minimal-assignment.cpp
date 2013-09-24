@@ -44,9 +44,7 @@
  * In the following I walk through the different steps of
  * Munkres' algorithm and explain the main parts and their
  * functionality.
- */
-
-/**
+ *
  * Let's begin. The first step in Munkres' algorithm is to 
  * subtract the minimal element of each row from each element 
  * in this row.  
