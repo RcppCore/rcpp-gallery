@@ -2,9 +2,8 @@
  * @title Munkres' Assignment Algorithm with RcppArmadillo
  * @author Lars Simon Zehnder
  * @license GPL (>= 2)
- * @tags armadillo featured
- * @summary Demonstrates the implementation of an algorithm 
- *      to solve the Minimal (or Maximal) Assignment Problem.
+ * @tags armadillo
+ * @summary Demonstrates the Minimal (or Maximal) Assignment Problem algorithm.
  *
  */
 
@@ -597,7 +596,7 @@ benchmark(indM <- hungarian_cc(cost), columns=c('test','replications','elapsed',
  */
 
 /*** R
-cost <- matrix(rpois(1e+6, 312), ncol = 1000, nrow = 1000)
+cost <- matrix(rpois(250000, 312), ncol = 500, nrow = 500)
 system.time(indM <- hungarian_cc(cost))
 */
 
