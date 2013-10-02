@@ -19,7 +19,7 @@ At least for now we will limit outselves to the
 case of `double` element types. These uses the `sp_mat` typedef which will be
 our basic type for sparse matrices at the C++ level.
 
-_Note bene: At the time of the update of the post, very similar
+_Nota bene: At the time of the update of the post, very similar
 code (by Romain) has just been added to the SVN repo for
 `RcppArmadillo`; it should appear in the next regular CRAN
 release. Because we cannot redefine method with the same signature,
@@ -28,6 +28,9 @@ course, for conversion not already present in the package, names
 without underscores should be used instead. My thanks to Romain for
 improving over the initial versions I wrote in the first version of
 this post._
+
+_Nota bene 2: As of `RcppArmadillo` release 0.3.920.1 (based on `Armadillo` 3.920.1)
+there is also a new constructor taking vectors `rowind`, `colptr` and `values`._
 
 First, we look at the `as` method.
 
@@ -83,7 +86,8 @@ namespace Rcpp {
         return res;
     }
 
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 Next, we look at the corresponding `wrap()` method.
@@ -130,7 +134,8 @@ namespace Rcpp {
         return s;
     }
 
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 We can now illustrate this with a simple example. _Note that the
@@ -144,7 +149,8 @@ arma::sp_mat doubleSparseMatrix(arma::sp_mat m) {
     Rcpp::Rcout << m << std::endl;  // use the i/o code from Armadillo
     arma::sp_mat n = 2*m;
     return n;
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 First, we create a sparse matrix. We then the function we just showed to
@@ -154,32 +160,13 @@ code where it is accessed as `m`, and the return of the new matrix `n` which
 becomes `B` at the R level.
 
 {% highlight r %}
-suppressMessages(library(Matrix)){% endhighlight %}
-
-
-
-{% highlight r %}
-i <- c(1,3:8)              # row indices{% endhighlight %}
-
-
-
-{% highlight r %}
-j <- c(2,9,6:10)           # col indices{% endhighlight %}
-
-
-
-{% highlight r %}
-x <- 7 * (1:7)             # values{% endhighlight %}
-
-
-
-{% highlight r %}
-A <- sparseMatrix(i, j, x = x){% endhighlight %}
-
-
-
-{% highlight r %}
-A {% endhighlight %}
+suppressMessages(library(Matrix))
+i <- c(1,3:8)              # row indices
+j <- c(2,9,6:10)           # col indices
+x <- 7 * (1:7)             # values
+A <- sparseMatrix(i, j, x = x)
+A 
+{% endhighlight %}
 
 
 
@@ -199,7 +186,8 @@ A {% endhighlight %}
 
 
 {% highlight r %}
-B <- doubleSparseMatrix(A) # this will print A from C++{% endhighlight %}
+B <- doubleSparseMatrix(A) # this will print A from C++
+{% endhighlight %}
 
 
 
@@ -218,7 +206,8 @@ B <- doubleSparseMatrix(A) # this will print A from C++{% endhighlight %}
 
 
 {% highlight r %}
-B{% endhighlight %}
+B
+{% endhighlight %}
 
 
 
@@ -238,7 +227,8 @@ B{% endhighlight %}
 
 
 {% highlight r %}
-identical(2*A, B){% endhighlight %}
+identical(2*A, B)
+{% endhighlight %}
 
 
 

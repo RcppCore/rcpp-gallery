@@ -18,7 +18,7 @@
  * case of `double` element types. These uses the `sp_mat` typedef which will be
  * our basic type for sparse matrices at the C++ level.
  *
- * _Note bene: At the time of the update of the post, very similar
+ * _Nota bene: At the time of the update of the post, very similar
  * code (by Romain) has just been added to the SVN repo for
  * `RcppArmadillo`; it should appear in the next regular CRAN
  * release. Because we cannot redefine method with the same signature,
@@ -27,6 +27,9 @@
  * without underscores should be used instead. My thanks to Romain for
  * improving over the initial versions I wrote in the first version of
  * this post._
+ *
+ * _Nota bene 2: As of `RcppArmadillo` release 0.3.920.1 (based on `Armadillo` 3.920.1)
+ * there is also a new constructor taking vectors `rowind`, `colptr` and `values`._
  *
  * First, we look at the `as` method.
  */
