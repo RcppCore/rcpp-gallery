@@ -2,7 +2,7 @@
 title: Coercion of matrix to sparse matrix (dgCMatrix) and maintaining dimnames.
 author: Søren Højsgaard
 license: GPL (>= 2)
-tags: eigen matrix
+tags: eigen matrix sparse
 summary: We illustrate 1) a fast way of coercing a dense matrix to a sparse matrix and 2) how to copy the dimnames from the dense to the sparse matrix.
 layout: post
 src: 2013-01-20-sparse-matrix-coercion.Rmd
@@ -59,12 +59,6 @@ Loading required package: methods
 
 
 
-<pre class="output">
-Loading required package: lattice
-</pre>
-
-
-
 {% highlight r %}
 M1 <- as(m, "dgCMatrix")
 M1 
@@ -73,7 +67,7 @@ M1
 
 
 <pre class="output">
-6 x 6 sparse Matrix of class "dgCMatrix"
+6 x 6 sparse Matrix of class &quot;dgCMatrix&quot;
   a b c d e f
 a . . . . . 1
 b . . . 1 . 1
@@ -92,13 +86,13 @@ str(M1)
 
 
 <pre class="output">
-Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+Formal class 'dgCMatrix' [package &quot;Matrix&quot;] with 6 slots
   ..@ i       : int [1:6] 4 4 1 5 0 1
   ..@ p       : int [1:7] 0 1 2 2 4 4 6
   ..@ Dim     : int [1:2] 6 6
   ..@ Dimnames:List of 2
-  .. ..$ : chr [1:6] "a" "b" "c" "d" ...
-  .. ..$ : chr [1:6] "a" "b" "c" "d" ...
+  .. ..$ : chr [1:6] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...
+  .. ..$ : chr [1:6] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...
   ..@ x       : num [1:6] 1 1 1 1 1 1
   ..@ factors : list()
 </pre>
@@ -139,7 +133,7 @@ SEXP asdgCMatrix_( SEXP XX_ ){
 
 
 <pre class="output">
-6 x 6 sparse Matrix of class "dgCMatrix"
+6 x 6 sparse Matrix of class &quot;dgCMatrix&quot;
   a b c d e f
 a . . . . . 1
 b . . . 1 . 1
@@ -158,13 +152,13 @@ str(M2)
 
 
 <pre class="output">
-Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+Formal class 'dgCMatrix' [package &quot;Matrix&quot;] with 6 slots
   ..@ i       : int [1:6] 4 4 1 5 0 1
   ..@ p       : int [1:7] 0 1 2 2 4 4 6
   ..@ Dim     : int [1:2] 6 6
   ..@ Dimnames:List of 2
-  .. ..$ : chr [1:6] "a" "b" "c" "d" ...
-  .. ..$ : chr [1:6] "a" "b" "c" "d" ...
+  .. ..$ : chr [1:6] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...
+  .. ..$ : chr [1:6] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot; ...
   ..@ x       : num [1:6] 1 1 1 1 1 1
   ..@ factors : list()
 </pre>
@@ -197,8 +191,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)         1000   0.025     1.00     0.024    0.000
-2  as(m, "dgCMatrix")         1000   0.246     9.84     0.240    0.004
+1 asdgCMatrix_(m * 1)         1000   0.028     1.00     0.028    0.000
+2  as(m, &quot;dgCMatrix&quot;)         1000   0.287    10.25     0.284    0.004
 </pre>
 
 
@@ -218,8 +212,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)         1000   0.137    1.000     0.136    0.000
-2  as(m, "dgCMatrix")         1000   0.443    3.234     0.432    0.008
+1 asdgCMatrix_(m * 1)         1000   0.133    1.000     0.132    0.000
+2  as(m, &quot;dgCMatrix&quot;)         1000   0.359    2.699     0.356    0.004
 </pre>
 
 
@@ -238,8 +232,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)          100   1.193    1.000     1.180    0.008
-2  as(m, "dgCMatrix")          100   2.201    1.845     2.064    0.128
+1 asdgCMatrix_(m * 1)          100   1.193     1.00     1.184    0.004
+2  as(m, &quot;dgCMatrix&quot;)          100   2.303     1.93     2.092    0.204
 </pre>
 
 
@@ -258,8 +252,8 @@ rbenchmark::benchmark(asdgCMatrix_(m * 1.0), as(m, "dgCMatrix"),
 
 <pre class="output">
                  test replications elapsed relative user.self sys.self
-1 asdgCMatrix_(m * 1)          100   8.911    1.000     6.024    2.828
-2  as(m, "dgCMatrix")          100  21.557    2.419    16.930    4.500
+1 asdgCMatrix_(m * 1)          100   8.868    1.000      5.82    3.004
+2  as(m, &quot;dgCMatrix&quot;)          100  23.441    2.643     18.70    4.636
 </pre>
 
 

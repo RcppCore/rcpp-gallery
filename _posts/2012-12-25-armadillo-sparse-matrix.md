@@ -2,7 +2,7 @@
 title: Sparse matrix in Armadillo
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: armadillo matrix featured
+tags: armadillo matrix featured sparse
 summary: This example shows how to create a sparse matrix in Armadillo
 layout: post
 src: 2012-12-25-armadillo-sparse-matrix.cpp
