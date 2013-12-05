@@ -2,7 +2,7 @@
 title: Coercion of matrix to sparse matrix (dgCMatrix) and maintaining dimnames.
 author: Søren Højsgaard
 license: GPL (>= 2)
-tags: eigen matrix
+tags: eigen matrix sparse
 summary: We illustrate 1) a fast way of coercing a dense matrix to a sparse matrix and 2) how to copy the dimnames from the dense to the sparse matrix.
 ---
 
