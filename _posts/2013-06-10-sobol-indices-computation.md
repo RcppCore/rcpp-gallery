@@ -2,7 +2,7 @@
 title: Sobol Sensitivity Analysis
 author: Robin Girard
 license: GPL (>= 2)
-tags: sensitivity benchmark
+tags: benchmark modeling
 summary: Compares speed performances of Monte Carlo estimation of Sobol indices with Rcpp and sensitivity package
 layout: post
 src: 2013-06-10-sobol-indices-computation.Rmd
@@ -83,6 +83,17 @@ Now compare the results with a similar function to estimate Sobol indices from t
 
 {% highlight r %}
 suppressPackageStartupMessages(require(sensitivity))
+{% endhighlight %}
+
+
+
+<pre class="output">
+Warning: there is no package called 'sensitivity'
+</pre>
+
+
+
+{% highlight r %}
 sensitivity_sobol2002<-function(n){
   X1 <- data.frame(matrix(runif(8 * n), nrow = n))
   X2 <- data.frame(matrix(runif(8 * n), nrow = n))
@@ -100,9 +111,7 @@ rbenchmark::benchmark(sensitivity_sobol2002(n),
 
 
 <pre class="output">
-                      test elapsed relative user.self sys.self
-2       FirstOrderSobol(n)   3.263     1.00     3.255    0.006
-1 sensitivity_sobol2002(n)  45.516    13.95    37.308    8.176
+Error: could not find function &quot;sobol2002&quot;
 </pre>
 
 
@@ -115,6 +124,17 @@ n <- 10000
 X1 <- data.frame(matrix(runif(8 * n), nrow = n))
 X2 <- data.frame(matrix(runif(8 * n), nrow = n))
 x <- sobol2002(model = sobol.fun, X1, X2) ## indices from package sensitivity
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error: could not find function &quot;sobol2002&quot;
+</pre>
+
+
+
+{% highlight r %}
 res=FirstOrderSobol(n)# our indices
 {% endhighlight %}
 
@@ -128,9 +148,7 @@ cat("Total indices\n From Sensitivity package : ",x$S[,1],"\n",
 
 
 <pre class="output">
-Total indices
- From Sensitivity package :  0.668 0.1927 0.02959 0.003347 3.782e-05 0.0001375 0.0004649 -1.697e-05 
- From our function :  0.8075 0.08668 0.002824 0.003711 0.0002175 -7.8e-05 0.0001499 0.0001217 
+Error: object 'x' not found
 </pre>
 
 

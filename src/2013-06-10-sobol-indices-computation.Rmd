@@ -2,7 +2,7 @@
 title: Sobol Sensitivity Analysis
 author: Robin Girard
 license: GPL (>= 2)
-tags: sensitivity benchmark
+tags: benchmark modeling
 summary: Compares speed performances of Monte Carlo estimation of Sobol indices with Rcpp and sensitivity package
 ---
 
