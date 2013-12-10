@@ -81,5 +81,6 @@ microbenchmark(cxBaseSVD(X), cxDcSVD(X))
  * complex-valued divide-and-conquer algorithm. Only builds which use
  * an external Lapack library (as for example the Debian and Ubuntu
  * builds) can. Let's hope that R will add this functionality to its
- * next release R 3.1.0.
+ * next release R 3.1.0. <em>Update: And the underlying `zgesdd`
+ * routine has now been added to the upcoming R 3.1.0 release. Nice.</em>
  */

@@ -53,8 +53,8 @@ microbenchmark(baseSVD(X), dcSVD(X))
 <pre class="output">
 Unit: milliseconds
        expr   min    lq median    uq   max neval
- baseSVD(X) 422.5 424.9  426.0 427.2 443.4   100
-   dcSVD(X) 111.2 111.8  112.1 112.7 127.0   100
+ baseSVD(X) 421.2 422.6  424.2 426.2 442.1   100
+   dcSVD(X) 111.0 111.5  111.9 113.6 126.1   100
 </pre>
 
 
@@ -92,8 +92,8 @@ microbenchmark(cxBaseSVD(X), cxDcSVD(X))
 <pre class="output">
 Unit: milliseconds
          expr    min     lq median     uq    max neval
- cxBaseSVD(X) 1246.6 1253.0 1256.8 1260.7 1380.2   100
-   cxDcSVD(X)  259.2  259.8  260.9  267.8  394.4   100
+ cxBaseSVD(X) 1248.7 1253.7 1257.5 1262.3 1311.7   100
+   cxDcSVD(X)  259.2  259.8  260.5  263.2  327.9   100
 </pre>
 
 
@@ -104,4 +104,5 @@ configuration can not currently take advantage of the
 complex-valued divide-and-conquer algorithm. Only builds which use
 an external Lapack library (as for example the Debian and Ubuntu
 builds) can. Let's hope that R will add this functionality to its
-next release R 3.1.0.
+next release R 3.1.0. <em>Update: And the underlying `zgesdd`
+routine has now been added to the upcoming R 3.1.0 release. Nice.</em>
