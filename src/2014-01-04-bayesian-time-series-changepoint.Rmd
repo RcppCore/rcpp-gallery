@@ -1,0 +1,262 @@
+---
+title: Detecting a Time Series Changepoint
+author: Joshua French
+license: GPL (>= 2)
+tags: Bayesian, sample, RcppArmadillo
+summary: Detects how to detect a changepoint in a time series using Bayesian methodology.  
+  Comparize naive and vectorized R solutions to one implemented using Rcpp and 
+  RcppArmadillo's sample function.
+---
+========================================================
+
+In this example we will detect the changepoint in a time series of counts using Bayesian methodology.  The time to do this is greatly decreased using Rcpp and can be implemented analogously to the vectorized R version of the algorithm using convenient functions in Rcpp and RcppArmadillo.  We'll first show how one might do this in R (naively and then intelligently), and then how the speed of the analysis can be improved using Rcpp and RcppArmadillo.  The application is to a famous coal mining data set.  
+
+Our goal is to detect the time when the mean number of outcomes changes for a sequence of counts.  Since the data are counts, it is natural to assume a Poisson distribution for the responses.  Since we're trying to detect the year when the (mean) number of disasters changes, we'll assume that the distribution of counts for years 1 through $k$ is Poisson$(\lambda)$ and Poisson$(\phi)$ for years $k+1$ through 112.  Letting the counts for year $i$ be denoted $y_i$, we have $y_1, y_2,\ldots,y_k \stackrel{i.i.d.}{\sim}$ Poisson$(\lambda)$ and $y_{k+1}, y_{k+2},\ldots,y_{112} \stackrel{i.i.d.}{\sim}$ Poisson$(\phi)$, and we let $\mathbf{y} = (y_1, y_2, \ldots, y_n)$.  For prior distributions, we assume $\lambda \sim$ Gamma$(a,b)$, $\phi \sim$ Gamma$(c,d)$, and that $k$ has a discrete uniform distribution on the values $1, 2, \ldots, 112$.  
+
+We can approximate the posterior distributions for parameters $\lambda$, $\phi$, and $k$ using the Gibbs sampler.  The full conditional distributions of the parameters are:
+
+$$p(\lambda \mid \phi, k, \mathbf{y}) = \mathrm{Gamma}\biggl(a + \sum_{i = 1}^{k} y_i, k + b \biggr),$$
+
+$$p(\phi \mid \lambda, k, \mathbf{y}) = \mathrm{Gamma}\biggl(c + \sum_{i = k + 1}^{112} y_i, 112 - k + d \biggr),$$
+
+and
+
+$$p(k \mid \lambda, \phi, \mathbf{y}) = \frac{\exp \bigl\{ k(\phi - \lambda) + \log(\lambda/\phi) \sum_{i=1}^k y_i \bigr\} }{ \sum_{k=1}^{112} \exp \bigl\{ k(\phi - \lambda) + \log(\lambda/\phi) \sum_{i=1}^k y_i \bigr\} } = \exp \biggl\{ g(k,\lambda,\phi) - \ln\biggl(\sum_{k=1}^{112} g(k,\lambda,\phi)\biggr) \biggr\},$$
+
+where $g(k,\lambda,phi) = \exp \bigl\{ k(\phi - \lambda) + (\log(\lambda/\phi) \sum_{i=1}^k y_i \bigr\}$.
+
+After specifying some initial values for $\phi$ and $k$ (we'll use 1 and 40, respectively), as well as the parameters $a,b,c,d$ (we'll use $a = 4$, $b = 1$, $c = 1$, $d = 2$) we will sample a $\lambda$ value from its full conditional distribution, then use this value of $\lambda$ and the current value of $k$ to sample a new $\phi$ from its full conditional distribution, then use the value of $\lambda$ and the new value of $\phi$ to sample a new value of $k$ from its full conditional distribution, and then we iterate through this procedure the desired number of times.  The posterior distributions of the parameters are approximated by their respective samples from the Gibbs sampler algorithm.
+
+We will now apply this procedure to a coal mining data set.
+
+Coal mining is a notoriously dangerous occupation.  Consider the tally of coal mine disasters over a 112-year period (1851 to 1962) in the United Kingdom.  The data have relatively high disaster counts in the early era, and relatively low counts in the later era. When did technology improvements and safety practices have an actual effect on the rate of serious coal mining disasters in the United Kingdom? 
+
+Let us first read the data into R:
+
+```{r}
+yr <- 1851:1962
+counts <- c(4,5,4,1,0,4,3,4,0,6,3,3,4,0,2,6,3,3,5,4,5,3,1,4,4,1,5,5,3,4,2,5,2,2,3,4,2,1,3,2,2, 1,1,1,1,3,0,0,1,0,1,1,0,0,3,1,0,3,2,2,0,1,1,1,0,1,0,1,0,0,0,2,1,0,0,0,1,1,0,2,3,3,1, 1,2,1,1,1,1,2,4,2,0,0,0,1,4,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1)
+```
+
+For simplicity, we'll refer to 1851 as year 1, 1852 as year 2, ..., 1962 as year 112.  Since the data are counts, it is natural to assume a Poisson distribution for the responses.  
+
+We'll first implement an algorithm naively in R.  We can sample values from the full conditional distributions of $\lambda$ and $\phi$ using the $\mathtt{rgamma}$ function built into R.  We can sample from the discrete set of values $1, 2, \ldots, k$ using the  $\mathtt{sample}$ function with the appropriate sampling probability for each value.  Since the probability mass function (pmf) for the full conditional distribution of $k$ is a bit complicated, we'll code it up as its own function, taking the observed data $\mathbf{y}$ and the parameters $\lambda$ and $\phi$.  Additionally, note that in the pmf we will need to calculate the natural logarithm of a sum of exponential values--this can sometimes create problems with numerical underflow or overflow.  Consequently, we will also createa  function $\mathtt{logsumexp}$ to do this efficiently.  The initial implementation is given below.
+
+```{r}
+# Functions for Gibbs sampler.  Take the number of simulations desired,
+# the vector of observed data, a starting value for phi, and a starting
+# value for k.
+
+# Function takes:
+# nsim: number of cycles to run
+# y: vector of observed values
+# a, b: parameters for prior distribution of lambda
+# c, d: parameters for prior distribution of phi
+# kposs: possible values of k
+# phi, k: starting values of chain for phi and k
+
+gibbsloop <- function(nsim, y, a, b, c, d, kposs, phi, k)
+{
+  # matrix to store simulated values from each cycle
+	out <- matrix(NA, nrow = nsim, ncol = 3)
+
+	# number of observations
+	n <- length(y)
+
+	for(i in 1:nsim)
+	{
+		# Generate value from full conditional of phi based on
+		# current values of other parameters
+		lambda <- rgamma(1, a + sum(y[1:k]), b + k)
+		
+		# Generate value from full conditional of phi based on
+		# current values of other parameters
+		phi <- rgamma(1, c + sum(y[min((k+1),112):n]), d + n - k)
+
+		# generate value of k
+		# determine probability masses for full conditional of k
+		# based on current parameters values
+		pmf <- kprobloop(kposs, y, lambda, phi)
+		k <- sample(x = kposs, size = 1, prob = pmf)
+		
+		out[i, ] <- c(lambda, phi, k)
+	}
+	out
+}
+
+# Given a vector of values x, the logsumexp function calculates
+# log(sum(exp(x))), but in a "smart" way that helps avoid
+# numerical underflow or overflow problems.
+
+logsumexp <- function(x)
+{
+	log(sum(exp(x - max(x)))) + max(x)
+}
+
+# Determine pmf for full conditional of k based on current values of other
+# variables. Takes possible values of k, observed data y, lambda, and phi.
+# It does this naively using a loop.
+
+kprobloop <- function(kposs, y, lambda, phi)
+{	
+	# create vector to store argument of exponential function of 
+	# unnormalized pmf, then calculate them
+	x <- numeric(length(kposs))
+	for(i in kposs)
+	{
+		x[i] <- i*(phi - lambda) + sum(y[1:i]) * log(lambda/phi)
+	}
+	#return full conditional pmf of k
+	return(exp(x - logsumexp(x)))
+}
+```
+
+Now, we run our algorithm for 10,000 cycles using the initial values and parameter vales described above.  We set the random number seed to be 1 for reproducible results.
+
+```{r}
+nsim = 10000
+set.seed(1)
+(time1 <- system.time(chain1 <- gibbsloop(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)))
+```
+
+Though this doesn't take too much time, we realize that we can dramatically speedup our code by vectorizing when possible and not performing computations more often than we have to.  Specifically, we are calculating $\sum_{i=1}^{k} y_i$ and $\sum_{i=k+1}^{112} y_i$ repeatedly in the loops.  By calculating this once and then using the stored results, we can dramatically improve the speed of our code.  We now reimplement the function to compute the pmfs for the full conditional distribution of $k$ and the Gibbs sampler with this in mind.  The arguments are the same as before.  
+
+```{r}
+gibbsvec <- function(nsim, y, a, b, c, d, kposs, phi, k)
+{
+  # matrix to store simulated values from each cycle
+	out <- matrix(NA, nrow = nsim, ncol = 3)
+
+	# determine number of observations
+	n <- length(y)
+
+	# determine sum of y and cumulative sum of y.  
+	# Then cusum[k] == sum(y[1:k])
+	# and sum(y[(k+1):112]) == sumy - cusum[k]
+	sumy <- sum(y)
+	cusum <- cumsum(y)
+
+	for(i in 1:nsim)
+	{
+		# Generate value from full conditional of phi based on
+		# current values of other parameters
+		lambda <- rgamma(1, a + cusum[k], b + k)
+		
+		# Generate value from full conditional of phi based on
+		# current values of other parameters
+		phi <- rgamma(1, c + sumy - cusum[k], d + n - k)
+		
+		# generate value of k
+		pmf <- kprobvec(kposs, cusum, lambda, phi)
+		k <- sample(x = kposs, size = 1, prob = pmf)
+		
+		out[i, ] <- c(lambda, phi, k)
+	}
+	out
+}
+
+kprobvec <- function(kposs, cusum, lambda, phi)
+{
+	# calculate exponential argument of numerator of unnormalized pmf
+	x <- kposs * (phi - lambda) + cusum * log(lambda/phi)
+	# return pmf of full conditional for k
+	return(exp(x - logsumexp(x)))
+}
+```
+
+Now we time the modified function and see a dramatic improvement.  The vectorized function is about many times faster than the naive version.
+
+```{r}
+set.seed(1)
+time2 <- system.time(chain2 <- gibbsvec(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40))
+time1/time2
+```
+
+Lastly, we reimplement the vectorized version of the algorithm using Rcpp and RcppArmadillo.  Note that the parameterization of $\mathtt{rgamma}$ used by Rcpp is slightly different.
+
+```{r, engine='Rcpp'}
+// [[Rcpp::depends(RcppArmadillo)]]
+#include <RcppArmadilloExtensions/sample.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double logsumexp(NumericVector x)
+{
+  return(log(sum(exp(x - max(x)))) + max(x));
+}
+
+// [[Rcpp::export]]
+NumericVector kprobcpp(NumericVector kposs, NumericVector cusum, double lambda, double phi)
+{
+	NumericVector x = kposs * (phi - lambda) + cusum * log(lambda/phi);
+	return(exp(x - logsumexp(x)));
+}
+
+// [[Rcpp::export]]
+NumericMatrix gibbscpp(int nsim, NumericVector y, double a, double b, double c,
+	double d, NumericVector kposs, NumericVector phi, NumericVector k)
+{
+	RNGScope scope ;
+
+	NumericVector lambda;
+	NumericVector pmf;
+	NumericMatrix out(nsim, 3);
+
+	// determine sum of y and cumulative sum of y.  
+	double sumy = sum(y);
+	NumericVector cusum = cumsum(y);
+
+	for(int i = 0; i < nsim; i++)
+	{
+		lambda = rgamma(1, a + cusum[k[0] - 1], 1/(b + k[0]));
+		phi = rgamma(1, c + sumy - cusum[k[0] - 1], 1/(d + 112 - k[0]));
+
+		pmf = kprobcpp(kposs, cusum, lambda[0], phi[0]);
+		k = RcppArmadillo::sample(kposs, 1, false, pmf) ;
+
+		// store values of this cycle
+		out(i, 0) = lambda[0];
+		out(i, 1) = phi[0];
+		out(i, 2) = k[0];
+	}
+
+	// return results
+	return out;
+}
+```
+
+Now we run the C++ version of the Gibbs sampler:  
+
+```{r}
+set.seed(1)
+time3 <- system.time(chain3 <- gibbscpp(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40))
+time1/time3
+time2/time3
+```
+
+We run a more formal benchmark to see the relative speed of the implementations.
+
+```{r}
+library(rbenchmark)
+benchmark(gibbsloop(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
+  gibbsvec(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
+  gibbscpp(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
+	order="test",replications=10)[,1:4]
+```
+
+The C++ version of the Gibbs sampler is a vast improvement over the looped R version and also quite a bit faster than the R vectorized R version.  
+
+Lastly, we check that we are actually producing the same results for the three implementations.
+
+```{r}
+all.equal(chain1, chain2, chain3)
+```
+To complete this application, we analyze the posterior distribution of $k$. The median value is 40, meaning the estimated changepoint is 1890.  We provide a lineplot of the data with years 1851-1890 colored orange and the remaining years colored blue.
+
+```{r}
+changeyear = median(chain1[,3])
+yr[changeyear]
+plot(yr, counts, xlab = "year", ylab = "number of mining accidents", type = "n")
+lines(yr[1:changeyear], counts[1:changeyear], col = "orange")
+lines(yr[-(1:(changeyear-1))], counts[-(1:(changeyear-1))], col = "blue")
+```
