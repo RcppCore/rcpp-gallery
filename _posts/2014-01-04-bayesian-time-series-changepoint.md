@@ -6,6 +6,8 @@ tags: modeling armadillo
 summary: Detects how to detect a change point in a time series using Bayesian methodology.  
   Compares naive and vectorized R solutions to one implemented using Rcpp and 
   RcppArmadillo's sample function.
+layout: post
+src: 2014-01-04-bayesian-time-series-changepoint.Rmd
 ---
 
 In this example we will detect the change point in a time series of counts
@@ -27,7 +29,8 @@ underflow or overflow.  Consequently, we will also create a  function
 
 The initial naive R implementation of the sampler is given below. 
 
-```{r}
+
+{% highlight r %}
 # Function for Gibbs sampler.  Takes the number of simulations desired,
 # the vector of observed data, the values of the hyperparameters, the 
 # possible values of k, a starting value for phi, and a starting
@@ -95,14 +98,16 @@ kprobloop <- function(kposs, y, lambda, phi)
 	#return full conditional pmf of k
 	return(exp(x - logsumexp(x)))
 }
-```
+{% endhighlight %}
+
 
 Looking through the first implemention, we realize that we can 
 speed up our code by vectorizing when possible and not performing computations
 more often than we have to.  Specifically, we are calculating `sum(y[1:i])` and `sum(y[min((k+1),n):n])` repeatedly in the loops.  We can dramatically improve the speed of our implementation by calculating the sum of `y` and the cumulative sum of `y` and then using the stored results appropriately.  We now reimplement the pmf and Gibbs sampler functions with this in
 mind.  
 
-```{r}
+
+{% highlight r %}
 gibbsvec <- function(nsim, y, a, b, c, d, kposs, phi, k)
 {
   # matrix to store simulated values from each cycle
@@ -147,11 +152,13 @@ kprobvec <- function(kposs, cusum, lambda, phi)
 	# return pmf of full conditional for k
 	return(exp(x - logsumexp(x)))
 }
-```
+{% endhighlight %}
+
 
 We should be able to improve the speed of our sampler by implementing it in C++.  We can reimplement the vectorized version of the sampler fairly easily using Rcpp and RcppArmadillo.  Note that the parameterization of `rgamma` used by Rcpp is slightly different from base R.
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadilloExtensions/sample.h>
 using namespace Rcpp;
@@ -200,7 +207,8 @@ NumericMatrix gibbscpp(int nsim, NumericVector y, double a, double b, double c,
 	// return results
 	return out;
 }
-```
+{% endhighlight %}
+
 
 We will now compare and apply the implementations to a coal mining data set.
 
@@ -213,13 +221,15 @@ disasters in the United Kingdom?
 
 Let us first read the data into R:
 
-```{r}
+
+{% highlight r %}
 yr <- 1851:1962
 counts <- c(4,5,4,1,0,4,3,4,0,6,3,3,4,0,2,6,3,3,5,4,5,3,1,4,4,1,5,5,3,4,2,
             5,2,2,3,4,2,1,3,2,2,1,1,1,1,3,0,0,1,0,1,1,0,0,3,1,0,3,2,2,0,1,
             1,1,0,1,0,1,0,0,0,2,1,0,0,0,1,1,0,2,3,3,1,1,2,1,1,1,1,2,4,2,0,
             0,0,1,4,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1)
-```
+{% endhighlight %}
+
 
 For simplicity, we'll refer to 1851 as year 1, 1852 as year 2, ..., 1962 as
 year 112.  We will set the initial values for `phi` and `k` to be 1 and 40,
@@ -228,7 +238,8 @@ respectively.  We will set the hyperparameters `a`, `b`, `c`, and `d` to be 4, 1
 We will run the samplers for 10,000 cycles each.  We set the random number seed for each sampler to be 1 for
 reproducible results.  We then check that the results for the three samplers are identical.
 
-```{r}
+
+{% highlight r %}
 nsim = 10000
 set.seed(1)
 chain1 <- gibbsloop(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
@@ -237,17 +248,39 @@ chain2 <- gibbsvec(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 
 set.seed(1)
 chain3 <- gibbscpp(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
 all.equal(chain1, chain2, chain3)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] TRUE
+</pre>
+
 
 We now compare compare the relative speed of the three implementations using the `benchmark` function.
 
-```{r}
+
+{% highlight r %}
 library(rbenchmark)
 benchmark(gibbsloop(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
           gibbsvec(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
           gibbscpp(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
 	  order="relative",replications=10)[,1:4]
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+                                                                                            test
+3  gibbscpp(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
+2  gibbsvec(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
+1 gibbsloop(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
+  replications elapsed relative
+3           10   2.392    1.000
+2           10   7.044    2.945
+1           10 116.531   48.717
+</pre>
+
 
 The C++ version of the Gibbs sampler is a vast improvement over the looped R
 version and also quite a bit faster than the vectorized R version.   
@@ -259,11 +292,35 @@ the data before and after estimated change point, we can create a lineplot of th
 time series with years 1851-1890 colored orange and the remaining years
 colored blue.
 
-```{r}
+
+{% highlight r %}
 (changeyear = median(chain1[,3]))
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 40
+</pre>
+
+
+
+{% highlight r %}
 (yr[changeyear])
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 1890
+</pre>
+
+
+
+{% highlight r %}
 ## plot not shown as Rcpp Gallery cannot display charts
 #plot(yr, counts, xlab = "year", ylab = "number of mining accidents", type = "n")
 #lines(yr[1:changeyear], counts[1:changeyear], col = "orange")
 #lines(yr[-(1:(changeyear-1))], counts[-(1:(changeyear-1))], col = "blue")
-```
+{% endhighlight %}
+
