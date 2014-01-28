@@ -22,10 +22,13 @@ shows.
 #include <Rcpp.h>
 
 // The next line is all it takes to find the bigmemory
-// headers -- thanks to the magic of Rcpp attributes
-
-// [[Rcpp::depends(bigmemory)]]
+// headers -- thanks to the magic of Rcpp attributes, 
+// and as bigmemory now accesses Boost headers from the BH package,
+// we need to make sure we do so as well in this Rcpp::depends comment.
+//
+// [[Rcpp::depends(BH, bigmemory)]]
 #include <bigmemory/MatrixAccessor.hpp>
+
 #include <numeric>
 
 // [[Rcpp::export]]
