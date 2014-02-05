@@ -34,7 +34,8 @@ dMvn <- function(X,mu,Sigma) {
     rooti <- backsolve(chol(Sigma),diag(k))
     quads <- colSums((crossprod(rooti,(t(X)-mu)))^2)
     return(exp(-(k/2)*log(2*pi) + sum(log(diag(rooti))) - .5*quads))
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 
@@ -65,7 +66,7 @@ arma::vec dmvnrm_arma(arma::mat x,
     arma::vec out(n);
     arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
     double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(xdim/2) * log2pi;
+    double constants = -(static_cast<double>(xdim)/2.0) * log2pi;
     
     for (int i=0; i < n; i++) {
         arma::vec z = rooti * arma::trans( x.row(i) - mean) ;    
@@ -76,7 +77,8 @@ arma::vec dmvnrm_arma(arma::mat x,
         out = exp(out);
     }
     return(out);
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 Additionally, we can make use of the OpenMP library to use multiple 
@@ -86,12 +88,9 @@ flags as follows:
 
 
 {% highlight r %}
-Sys.setenv("PKG_CXXFLAGS"="-fopenmp"){% endhighlight %}
-
-
-
-{% highlight r %}
-Sys.setenv("PKG_LIBS"="-fopenmp"){% endhighlight %}
+Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
+Sys.setenv("PKG_LIBS"="-fopenmp")
+{% endhighlight %}
 
 
 Rcpp version 0.10.5 and later will also provide a plugin to set these
@@ -99,7 +98,8 @@ variables for us:
 
 
 {% highlight cpp %}
-// [[Rcpp::plugins(openmp)]]{% endhighlight %}
+// [[Rcpp::plugins(openmp)]]
+{% endhighlight %}
 
 
 We also need to set the number of cores to be used before running the
@@ -108,7 +108,8 @@ package.
 
 
 {% highlight r %}
-cores <- parallel::detectCores(){% endhighlight %}
+cores <- parallel::detectCores()
+{% endhighlight %}
 
 
 Only two additional lines are needed to enable multicore processing. 
@@ -148,7 +149,8 @@ arma::vec dmvnrm_arma_mc(arma::mat x,
         out=exp(out);
     }
     return(out);
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 
@@ -184,7 +186,8 @@ arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log
     } else { 
         return(exp(logretval));
     }
-}{% endhighlight %}
+}
+{% endhighlight %}
 
 
 
@@ -192,22 +195,11 @@ arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log
 Now we simulate some data for benchmarking:
 
 {% highlight r %}
-set.seed(123){% endhighlight %}
-
-
-
-{% highlight r %}
-sigma <- bayesm::rwishart(10,diag(8))$IW{% endhighlight %}
-
-
-
-{% highlight r %}
-means <- rnorm(8){% endhighlight %}
-
-
-
-{% highlight r %}
-X     <- mvtnorm::rmvnorm(900000, means, sigma){% endhighlight %}
+set.seed(123)
+sigma <- bayesm::rwishart(10,diag(8))$IW
+means <- rnorm(8)
+X     <- mvtnorm::rmvnorm(900000, means, sigma)
+{% endhighlight %}
 
 
 
@@ -216,7 +208,8 @@ And run the benchmark:
 
 
 {% highlight r %}
-print(paste0("Using ",cores," cores for _mc versions")){% endhighlight %}
+print(paste0("Using ",cores," cores for _mc versions"))
+{% endhighlight %}
 
 
 
@@ -227,7 +220,8 @@ print(paste0("Using ",cores," cores for _mc versions")){% endhighlight %}
 
 
 {% highlight r %}
-require(rbenchmark){% endhighlight %}
+require(rbenchmark)
+{% endhighlight %}
 
 
 
@@ -243,17 +237,18 @@ benchmark(mvtnorm::dmvnorm(X,means,sigma,log=F),
           dmvnrm_arma(X,means,sigma,F) , 
           dmvnrm_arma_mc(X,means,sigma,F,cores), 
           dMvn(X,means,sigma),
-          order="relative", replications=100)[,1:4]{% endhighlight %}
+          order="relative", replications=100)[,1:4]
+{% endhighlight %}
 
 
 
 <pre class="output">
                                         test replications elapsed relative
-4  dmvnrm_arma_mc(X, means, sigma, F, cores)          100   15.31    1.000
-3            dmvnrm_arma(X, means, sigma, F)          100   22.33    1.459
-2           dmvnorm_arma(X, means, sigma, F)          100   24.11    1.575
-5                      dMvn(X, means, sigma)          100   29.13    1.903
-1 mvtnorm::dmvnorm(X, means, sigma, log = F)          100   48.05    3.139
+4  dmvnrm_arma_mc(X, means, sigma, F, cores)          100   9.636    1.000
+3            dmvnrm_arma(X, means, sigma, F)          100  18.848    1.956
+2           dmvnorm_arma(X, means, sigma, F)          100  23.459    2.435
+5                      dMvn(X, means, sigma)          100  29.501    3.062
+1 mvtnorm::dmvnorm(X, means, sigma, log = F)          100  44.556    4.624
 </pre>
 
 
@@ -266,7 +261,8 @@ Lastly, we show that the functions yield the same results:
 all.equal(mvtnorm::dmvnorm(X,means,sigma,log=FALSE),
           dmvnorm_arma(X,means,sigma,FALSE)[,1],
 	  dmvnrm_arma(X,means,sigma,FALSE)[,1],
-	  dMvn(X,means,sigma)){% endhighlight %}
+	  dMvn(X,means,sigma))
+{% endhighlight %}
 
 
 
