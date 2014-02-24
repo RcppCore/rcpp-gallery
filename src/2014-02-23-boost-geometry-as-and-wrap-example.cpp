@@ -1,3 +1,4 @@
+// -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
  * @title Convex Hull of Polygon using Boost.Geometry
  * @author Sameer D'Costa 
@@ -7,10 +8,13 @@
  *
  *  Rcpp can be used to convert basic R data types to and from 
  *  [Boost.Geometry](http://www.boost.org/doc/libs/1_55_0b1/libs/geometry/doc/html/index.html) models. 
+ *
  *  In this example we take a matrix of 2d-points and convert it into a Boost.Geometry polygon. 
  *  We then compute the convex hull of this polygon using a Boost.Geometry function 
  *  `boost::geometry::convex_hull`. The convex hull is then converted back to an R matrix. 
- *  The conversions are done using the `as()` and `wrap()` convenience functions. 
+ *
+ *  The conversions to and from R and Boost.Geometry types are are done using two custom 
+ *  `as()` and `wrap()` convenience converter functions. 
  *
  */
 
@@ -27,44 +31,48 @@ typedef boost::tuple<double, double> point;
 typedef boost::geometry::model::polygon<point, true, true> polygon; 
 
 namespace Rcpp {
-  template <> polygon as(SEXP pointsMatrixSEXP) {
-    // the coordinates are the rows of the (n x 2) matrix
-    NumericMatrix pointsMatrix(pointsMatrixSEXP);
-    polygon poly;
-    for (int i = 0; i < pointsMatrix.nrow(); ++i) {
-      double x = pointsMatrix(i,0);
-      double y = pointsMatrix(i,1);
-      point p(x,y);
-      poly.outer().push_back(p); 
-    }
-    return (poly);
-  } 
 
-  template <> SEXP wrap(const polygon& poly) {
-    const std::vector<point>& points = poly.outer();
-    NumericMatrix rmat(points.size(), 2);
-    for(int i = 0; i < points.size(); ++i) {
-      const point& p = points[i];
-      rmat(i,0) = p.get<0>();
-      rmat(i,1) = p.get<1>();
+    // `as` converter from R to Boost.Geometry's polygon type
+    template <> polygon as(SEXP pointsMatrixSEXP) {
+        // the coordinates are the rows of the (n x 2) matrix
+        NumericMatrix pointsMatrix(pointsMatrixSEXP);
+        polygon poly;
+        for (int i = 0; i < pointsMatrix.nrow(); ++i) {
+            double x = pointsMatrix(i,0);
+            double y = pointsMatrix(i,1);
+            point p(x,y);
+            poly.outer().push_back(p); 
+        }
+        return (poly);
+    } 
+    
+    // `wrap` converter from Boost.Geometry's polygon to an R(cpp) matrix
+    // The Rcpp NumericMatrix can be converted to/from a SEXP
+    template <> SEXP wrap(const polygon& poly) {
+        const std::vector<point>& points = poly.outer();
+        NumericMatrix rmat(points.size(), 2);
+        for(int i = 0; i < points.size(); ++i) {
+            const point& p = points[i];
+            rmat(i,0) = p.get<0>();
+            rmat(i,1) = p.get<1>();
+        }
+        return Rcpp::wrap(rmat);
     }
-    return Rcpp::wrap(rmat);
-  }
 }
 
 
 // [[Rcpp::export]]
 NumericMatrix convexHullRcpp(SEXP pointsMatrixSEXP){
 
-  // Conversion of pointsMatrix here to boost::geometry polygon
-  polygon poly = as<polygon>(pointsMatrixSEXP);
+    // Conversion of pointsMatrix here to boost::geometry polygon
+    polygon poly = as<polygon>(pointsMatrixSEXP);
 
-  polygon hull;
-  // Compute the convex hull
-  boost::geometry::convex_hull(poly, hull);
+    polygon hull;
+    // Compute the convex hull
+    boost::geometry::convex_hull(poly, hull);
 
-  // Convert hull into something that Rcpp can hand back to R.//
-  return wrap(hull);
+    // Convert hull into a NumericMatrixsomething that Rcpp can hand back to R
+    return wrap(hull);
 }
 
 /** 
