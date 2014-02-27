@@ -10,12 +10,15 @@ src: 2014-02-23-boost-geometry-as-and-wrap-example.cpp
 Rcpp can be used to convert basic R data types to and from 
 [Boost.Geometry](http://www.boost.org/doc/libs/1_55_0b1/libs/geometry/doc/html/index.html) models. 
 
-In this example we take a matrix of 2d-points and convert it into a Boost.Geometry polygon. 
-We then compute the convex hull of this polygon using a Boost.Geometry function 
-`boost::geometry::convex_hull`. The convex hull is then converted back to an R matrix. 
+In this example, we take a matrix of 2d-points and convert it into a Boost.Geometry polygon. 
+We then compute the convex hull of this polygon using the Boost.Geometry function 
+`boost::geometry::convex_hull()`. The convex hull is then converted back to an R matrix. 
 
 The conversions to and from R and Boost.Geometry types are are done using two custom 
-`as()` and `wrap()` convenience converter functions. 
+`as()` and `wrap()` convenience converter functions which are implemented below, followed by
+a function using them in order to take data from R, call a 
+[Boost.Geometry](http://www.boost.org/doc/libs/1_55_0b1/libs/geometry/doc/html/index.html)
+function, and return the result to R.
 
 
 
@@ -35,7 +38,7 @@ typedef boost::geometry::model::polygon<point, true, true> polygon;
 
 namespace Rcpp {
 
-    // `as` converter from R to Boost.Geometry's polygon type
+    // as<>() converter from R to Boost.Geometry's polygon type
     template <> polygon as(SEXP pointsMatrixSEXP) {
         // the coordinates are the rows of the (n x 2) matrix
         NumericMatrix pointsMatrix(pointsMatrixSEXP);
@@ -49,7 +52,7 @@ namespace Rcpp {
         return (poly);
     } 
     
-    // `wrap` converter from Boost.Geometry's polygon to an R(cpp) matrix
+    // wrap() converter from Boost.Geometry's polygon to an R(cpp) matrix
     // The Rcpp NumericMatrix can be converted to/from a SEXP
     template <> SEXP wrap(const polygon& poly) {
         const std::vector<point>& points = poly.outer();
@@ -80,8 +83,8 @@ NumericMatrix convexHullRcpp(SEXP pointsMatrixSEXP){
 {% endhighlight %}
 
 
-Now we use R to replicate the `convex_hull` [example in the Boost.Geometry
-documentation](http://www.boost.org/doc/libs/1_55_0/libs/geometry/doc/html/geometry/reference/algorithms/convex_hull.html).
+Now we can use R to replicate the `convex_hull` example 
+[in the Boost.Geometry documentation](http://www.boost.org/doc/libs/1_55_0/libs/geometry/doc/html/geometry/reference/algorithms/convex_hull.html).
 
 {% highlight r %}
 points <- c(2.0, 1.3, 2.4, 1.7, 2.8, 1.8, 3.4, 1.2, 3.7, 1.6, 3.4, 2.0, 4.1, 3.0, 5.3, 2.6, 5.4, 1.2, 4.9, 0.8, 2.9, 0.7, 2.0, 1.3)
