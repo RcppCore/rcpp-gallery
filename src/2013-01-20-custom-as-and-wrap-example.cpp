@@ -77,3 +77,15 @@ Rcpp::Date getFirstDayOfWeekAfter(int weekday, SEXP date) {
 getFirstDayOfWeekAfter(1, as.Date("2020-01-01"))
 */
 
+
+/**
+ * We can also write a more concise form, knowing that `compileAttributes()` will insert 
+ * the call to `as<>()` as needed. 
+ *
+ */
+
+// [[Rcpp::export]]
+Rcpp::Date getFirstDayOfWeekAfter2(int weekday, boost::gregorian::date dt) {
+    boost::gregorian::first_day_of_the_week_after fdaf(weekday);
+    return Rcpp::wrap(fdaf.get_date(dt));
+}
