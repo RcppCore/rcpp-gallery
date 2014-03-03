@@ -100,3 +100,6 @@ Rcpp::Date getFirstDayOfWeekAfter2(int weekday, boost::gregorian::date dt) {
 }
 {% endhighlight %}
 
+
+We still need a call to `wrap()` as the return-type of the function is `Rcpp::Date()` 
+whereas we defined our `wrap()` converter with a return-type of `SEXP`.
