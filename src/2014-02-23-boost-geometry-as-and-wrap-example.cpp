@@ -54,7 +54,7 @@ namespace Rcpp {
     template <> SEXP wrap(const polygon& poly) {
         const std::vector<point>& points = poly.outer();
         NumericMatrix rmat(points.size(), 2);
-        for(int i = 0; i < points.size(); ++i) {
+        for (unsigned int i = 0; i < points.size(); ++i) {
             const point& p = points[i];
             rmat(i,0) = p.get<0>();
             rmat(i,1) = p.get<1>();
@@ -89,3 +89,26 @@ points.matrix <- matrix(points, ncol=2, byrow=TRUE)
 points.matrix
 convexHullRcpp(points.matrix)
 */
+
+/**
+ * In fact, because of the interplay because providing `as<>()` and
+ * `wrap()` for the compiler, and how `compileAttributes()` works, we
+ * can write the function more cleanly with the desired new types in
+ * the interface.
+ */
+
+// [[Rcpp::export]]
+polygon convexHullRcpp2(polygon pointsMatrixBG){
+    polygon hull;
+    boost::geometry::convex_hull(pointsMatrixBG, hull);
+    return hull;
+}
+
+/** 
+ * We can run this second function as well:
+ */
+
+/*** R
+convexHullRcpp2(points.matrix)
+*/
+
