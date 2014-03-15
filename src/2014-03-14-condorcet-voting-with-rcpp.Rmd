@@ -1,0 +1,276 @@
+---
+title: Condorcet Voting with Rcpp
+author: Avraham Adler
+license: GPL (>= 2)
+tags: basics modeling benchmark
+summary: This post demonstrates the speed increase in loop-heavy Condorcet voting calculations by using Rcpp together with R
+---
+
+There is a lot of literature and debate on how to rank candidates under
+[preferential voting](https://en.wikipedia.org/wiki/Ranked_voting_systems)
+systems. Two of the methods used to determine winners are those based on some
+form of [Borda count](https://en.wikipedia.org/wiki/Borda_count) and those
+based on some form of [Condorcet
+method](https://en.wikipedia.org/wiki/Condorcet_winner). Many students of
+politics and voting systems prefer Condorcet methods to Borda ones for its
+stronger theoretical qualities. However, while Borda counts, especially in
+their most recognizable form—average rank, is easy to calculate, Condorecet
+winners are more difficult, as it requires pairwise comparisons between all
+candidates. Moreover, the possibility of having a [Condorcet
+cycle](https://en.wikipedia.org/wiki/Condorcet_method#Circular_ambiguities)
+grows as the number of candidates grows. 
+
+One of the more common methods of solving a Condorcet paradox is the [Schulze
+method](https://en.wikipedia.org/wiki/Schulze_method). This not only has some
+strong theoretical qualities, but it also has a relatively [simple
+implementation](https://en.wikipedia.org/wiki/Schulze_method#Implementation). However,
+it is slow. Pairwise ranking, in its straightforward form, is of O(n²) and
+the Schulze method is O(n³) where n is the number of candidates.
+
+In this post, Rcpp is used to significantly speed up the vote ranking process. 
+
+```{r, echo=FALSE, results='hide', message=FALSE}
+Names <- c("Albert", "Bruce", "Charles", "David", "Edward")
+Votes <- matrix(c(1, 2, 3, 4, 5,  2, 4, 1, 5, 3,  1, 5, 3, 2, 4,  3, 4, 1, 5,
+                  2,  2, 5, 1, 4, 3,  1, 4, 2, 5, 3,  3, 1, 4, 2, 5,  4, 2,
+                  5, 1, 3), nrow = 5)  
+Ballot <- data.frame(Names, Votes)
+names(Ballot) <- c("Candidates", "Vote A", "Vote B", "Vote C", "Vote D",
+                   "Vote E", "Vote F", "Vote G", "Vote H") 
+```
+Here is a sample ballot with eight voters ranking five candiates:
+```{r, echo=FALSE}
+Ballot
+```
+
+Here is some simple code to calculate the average rank of the candidates:
+```{r}
+AvgRank <- function(BallotMatrix){
+    Ballots <- as.matrix(BallotMatrix[, -1], mode = "numeric")
+    Num_Candidates <- dim(Ballots)[1]
+    Names <- BallotMatrix[, 1]
+    Ballots[is.na(Ballots)] <- Num_Candidates + 1 #Treat blanks as one worse than min
+    MeanRanks <- rowMeans(Ballots)
+    Rankings <- data.frame(Names, MeanRanks)
+    Rankings <- Rankings[order(rank(Rankings[, 2], ties.method = "random")), ] #Ties handled through random draw
+    Rankings <- data.frame(Rankings, seq_along(Rankings[, 1]))
+    names(Rankings) <- c("Names", "Average Rank", "Position")
+    return(Rankings)  
+}
+```
+The above ballot would result in the following Borda-based ranking:
+```{r, echo=FALSE}
+AvgRank(Ballot)
+```
+
+Here is some simplified code to calculate Condorcet and Schulze winners. The ballots have been created to ensure that there is always a unique Schulze winner. In reality, there often is not, and some further form of tiebreaking routine will be necessary:
+```{r}
+#This function extracts the matrix of votes from the ballot
+VoteExtract <- function(BallotMatrix){
+    Votes <- as.matrix(BallotMatrix[, -1], mode = "numeric")
+    Num_Candidates <- dim(Votes)[1]
+    Votes[is.na(Votes)] <- Num_Candidates + 1 #Treat blanks as one worse than min
+    return(Votes)
+}
+
+#This function performs the pairwise comparison between candidates and results in a square matrix representing the number of wins the candidate in row i has beaten the candidate in column j.
+PairCount <- function(Votes) {
+    Num_Candidates <- dim(Votes)[1]
+    Pairwise <- matrix(nrow = Num_Candidates, ncol = Num_Candidates)
+    for (CurCand in 1:Num_Candidates) {
+        CandRank <- as.vector(as.matrix(Votes[CurCand, ]))
+        Pref_Cur_Cand <- t(Votes) - CandRank
+        for (Pairs in 1:Num_Candidates) {
+            Pairwise[CurCand, Pairs] <- sum(Pref_Cur_Cand[, Pairs] > 0)
+        }
+    }
+    return(Pairwise)
+}
+
+#This function calculates the beatpaths and members of the Schwarz set. A unique member is the Schulze Condorcet winner.
+Schulze <- function(PairsMatrix){
+    size <- dim(PairsMatrix)[1]
+    p <- matrix(nrow = size, ncol = size)
+    for (i in 1:size) {
+        for (j in 1:size){
+            if (i != j) {
+                if (PairsMatrix[i, j] > PairsMatrix[j, i]) {
+                    p[i, j] <- PairsMatrix[i, j]
+                } else {
+                    p[i, j] <- 0
+                }
+            }
+        }
+    }
+    for (i in 1:size) {
+        for (j in 1:size) {
+            if (i != j) {
+                for (k in 1:size) {
+                    if (i != k && j != k) {
+                        p[j, k] <- max(p[j, k], min(p[j, i], p[i, k]))
+                    }
+                }
+            }
+        }
+    }
+    diag(p) <- 0
+    return(p)
+}
+
+#This function performs the ranking, starting with the full ballot, finding a pure Condorcet or Schulze winner, removing him or her from the ballot, and repeating the process until all candidates are ranked.
+CondorcetRank <- function(BallotMatrix)  {
+    Num_Candidates <- dim(BallotMatrix)[1]
+    Rankings <- matrix(nrow = Num_Candidates, ncol = 3)
+    CurrentBallot <- BallotMatrix
+    CurrentRank <- 1
+    while (CurrentRank <= Num_Candidates) {
+        CurrentNames <- as.vector(CurrentBallot[, 1])
+        CurrentSize <- length(CurrentNames)
+        CurrentVotes <- VoteExtract(CurrentBallot)
+        Pairwise <- matrix(nrow = CurrentSize, ncol = CurrentSize)
+        Pairwise <- PairCount(CurrentVotes)
+        Winner <- vector(length = CurrentSize)
+    
+        # Check for Condorcet Winner    
+    
+        for (i in 1:CurrentSize) {
+            Winner[i] <- sum(Pairwise[i, ] > Pairwise[, i]) == (CurrentSize - 1)
+        }
+        if (sum(Winner == TRUE) == 1) { #Condorcet Winner Exists
+            CurrentWinner <- which(Winner == TRUE)
+            Rankings[CurrentRank, ] <- c(CurrentNames[CurrentWinner], CurrentRank, "Condorcet")
+        } else {
+      
+            # Condorcet Winner does not exist, calculate Schulze beatpaths
+      
+            Pairwise <- Schulze(Pairwise)
+            for (i in 1:CurrentSize) {
+                 Winner[i] <- sum(Pairwise[i, ] > Pairwise[, i]) == (CurrentSize - 1)
+            }
+            if (sum(Winner == TRUE) == 1) { #Schwartz set has unique member
+                CurrentWinner <- which(Winner == TRUE) 
+                Rankings[CurrentRank, ] <- c(CurrentNames[CurrentWinner], CurrentRank, "Schulze")
+            }
+        }
+        CurrentBallot <- CurrentBallot[-CurrentWinner, ]
+        CurrentRank = CurrentRank + 1
+    }
+    Rankings <- data.frame(Rankings)
+    names(Rankings) <- c("Name", "Rank", "Method")
+    return(Rankings)
+}
+```
+
+Using the sample ballot, the pairwise matrix is:
+```{r, echo=FALSE}
+PairCount(VoteExtract(Ballot))
+```
+the beatpath matrix for the top ranked candidate (using all ballots) is:
+```{r, echo=FALSE}
+Schulze(PairCount(VoteExtract(Ballot)))
+```
+and the full Condorcet ranking is:
+```{r, echo=FALSE}
+CondorcetRank(Ballot)
+```
+
+When profiling this code using the actual ballot of 30+ people with multiple Condorcet paradoxes, 81% of the time was spent in the Schulze algorithm, another 12% was spent in the PairCount algorithm, and the remaining 7% was spent on everything else (the actual ranking had multiple steps to handle cases when there was no Schulze winner). To speed up the procedure, I ported the Schulze and PairCount functions to C++:
+```{r engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerMatrix PairCount_C(IntegerMatrix Votes) {
+    int Num_Candidates = Votes.nrow();
+    int Num_Ballots = Votes.ncol();
+    IntegerMatrix Pairwise(Num_Candidates, Num_Candidates);
+    for (int CurCand = 0; CurCand < Num_Candidates; CurCand++) {
+        IntegerVector CandRank = Votes(CurCand, _);
+        IntegerMatrix Pref_Cur_Cand(Num_Candidates, Num_Ballots);
+        for (int i = 0; i < Num_Candidates; i++) {
+            for (int j = 0; j < Num_Ballots; j++) {
+                Pref_Cur_Cand(i, j) = Votes(i, j) - CandRank(j);
+            }
+        }
+        for (int i = 0; i < Num_Candidates; i++) {
+            int G0 = 0;
+            for (int j = 0; j < Num_Ballots; j++) {
+                if (Pref_Cur_Cand(i, j) > 0) G0 += 1;
+            }
+        Pairwise(CurCand, i) = G0;
+        }
+    }
+    return(Pairwise);
+}
+
+// [[Rcpp::export]]
+IntegerMatrix Schulze_C(IntegerMatrix Pairs) {
+    int nrow = Pairs.nrow();
+    IntegerMatrix Schulze(nrow, nrow);
+    for (int i = 0; i < nrow; i++) {
+        for (int j = 0; j < nrow; j++) {
+            if (i != j) {
+                if (Pairs(i, j) > Pairs(j, i)) {
+                    Schulze(i, j) = Pairs(i, j);
+                } else {
+                    Schulze(i, j) = 0;
+                }
+            }
+        }
+    }
+    for (int i = 0; i < nrow; i++) {
+        for (int j = 0; j < nrow; j++) {
+            if (i != j) {
+                for (int k = 0; k < nrow; k++) {
+                    if ((i != k) && (j != k)) {
+                        Schulze(j, k) = (std::max)(Schulze(j, k), (std::min)(Schulze(j, i), Schulze(i, k)));
+                    }
+                }
+            } else {
+                if ((i = j)) {
+                    Schulze(i, j) = 0;
+                }
+            }
+        }
+    }
+    return(Schulze);
+}
+```
+It is also interesting to compare these results with those obtained from byte-compiling the functions:
+```{r}
+library(compiler)
+PairCount_cmp <- cmpfun(PairCount)
+PairCount_cmp3 <- cmpfun(PairCount, options=list(optimize = 3))
+Schulze_cmp <- cmpfun(Schulze)
+Schulze_cmp3 <- cmpfun(Schulze, options=list(optimize = 3))
+```
+First, we need to check that the functions return the same values:
+```{r}
+all.equal(PairCount(VoteExtract(Ballot)), 
+          PairCount_cmp(VoteExtract(Ballot)),
+          PairCount_cmp3(VoteExtract(Ballot)), 
+          PairCount_C(VoteExtract(Ballot))) 
+all.equal(Schulze(PairCount(VoteExtract(Ballot))),
+          Schulze_cmp(PairCount(VoteExtract(Ballot))),
+          Schulze_cmp3(PairCount(VoteExtract(Ballot))),
+          Schulze_C(PairCount_C(VoteExtract(Ballot)))) 
+```
+Now let's compare the speed:
+```{r}
+library(microbenchmark)
+V <- VoteExtract(Ballot)
+P <- PairCount(V)
+microbenchmark(PairCount(V), PairCount_cmp(V), PairCount_cmp3(V), PairCount_C(V), Schulze(P), Schulze_cmp(P), Schulze_cmp3(P), Schulze_C(P), times = 100L)
+```
+While byte-compiling the PairCount function gives an impressive speedup of
+ariund 40%, porting it to C++ makes it over 25 times faster (an over 2400%
+speedup). Results with the Schulze algorithm is even more
+striking. Byte-compilation gives an increase in speed of between 3 to 3.5
+times without any change to the R code, but porting it to C++ is **around 100
+times** as fast (and was over 120 times as fast on a different machine)!
+Moreover, the PairCount algorithm reads more logically in C++, as the way R
+handles vectors and matrices, when subtracting the current rank, the
+resulting matrix ended up transposed with the candidates across the columns. 
+
+So with easy-to-read code that results in speed gains of multiple orders of
+magnitude, what's not to like?! 
