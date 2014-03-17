@@ -30,18 +30,18 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector positives(NumericVector x) {
-  return x[x > 0];
+    return x[x > 0];
 }
 
 // [[Rcpp::export]]
 List first_three(List x) {
-  IntegerVector idx = IntegerVector::create(0, 1, 2);
-  return x[idx];
+    IntegerVector idx = IntegerVector::create(0, 1, 2);
+    return x[idx];
 }
 
 // [[Rcpp::export]]
 List with_names(List x, CharacterVector y) {
-  return x[y];
+    return x[y];
 }
 ```
 
@@ -63,21 +63,21 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector in_range(NumericVector x, double low, double high) {
-  return x[x > low & x < high];
+    return x[x > low & x < high];
 }
 
 // [[Rcpp::export]]
 NumericVector no_na(NumericVector x) {
-  return x[ !is_na(x) ];
+    return x[ !is_na(x) ];
 }
 
 bool is_character(SEXP x) {
-  return TYPEOF(x) == STRSXP;
+    return TYPEOF(x) == STRSXP;
 }
 
 // [[Rcpp::export]]
 List charvecs(List x) {
-  return x[ sapply(x, is_character) ];
+    return x[ sapply(x, is_character) ];
 }
 ```
 
@@ -95,13 +95,13 @@ And, these can be quite fast:
 ```{r}
 library(microbenchmark)
 R_in_range <- function(x, low, high) {
-  return(x[x > low & x < high])
+    return(x[x > low & x < high])
 }
 x <- rnorm(1E5)
 identical( R_in_range(x, -1, 1), in_range(x, -1, 1) )
 microbenchmark( times=5, 
-  R_in_range(x, -1, 1),
-  in_range(x, -1, 1)
+    R_in_range(x, -1, 1),
+    in_range(x, -1, 1)
 )
 
 R_no_na <- function(x) {
@@ -110,8 +110,8 @@ R_no_na <- function(x) {
 x[sample(1E5, 1E4)] <- NA
 identical(no_na(x), R_no_na(x))
 microbenchmark( times=5,
-  R_no_na(x),
-  no_na(x)
+    R_no_na(x),
+    no_na(x)
 )
 ```
 

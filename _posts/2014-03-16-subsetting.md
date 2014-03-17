@@ -33,18 +33,18 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector positives(NumericVector x) {
-  return x[x > 0];
+    return x[x > 0];
 }
 
 // [[Rcpp::export]]
 List first_three(List x) {
-  IntegerVector idx = IntegerVector::create(0, 1, 2);
-  return x[idx];
+    IntegerVector idx = IntegerVector::create(0, 1, 2);
+    return x[idx];
 }
 
 // [[Rcpp::export]]
 List with_names(List x, CharacterVector y) {
-  return x[y];
+    return x[y];
 }
 {% endhighlight %}
 
@@ -112,21 +112,21 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector in_range(NumericVector x, double low, double high) {
-  return x[x > low & x < high];
+    return x[x > low & x < high];
 }
 
 // [[Rcpp::export]]
 NumericVector no_na(NumericVector x) {
-  return x[ !is_na(x) ];
+    return x[ !is_na(x) ];
 }
 
 bool is_character(SEXP x) {
-  return TYPEOF(x) == STRSXP;
+    return TYPEOF(x) == STRSXP;
 }
 
 // [[Rcpp::export]]
 List charvecs(List x) {
-  return x[ sapply(x, is_character) ];
+    return x[ sapply(x, is_character) ];
 }
 {% endhighlight %}
 
@@ -180,7 +180,7 @@ And, these can be quite fast:
 {% highlight r %}
 library(microbenchmark)
 R_in_range <- function(x, low, high) {
-  return(x[x > low & x < high])
+    return(x[x > low & x < high])
 }
 x <- rnorm(1E5)
 identical( R_in_range(x, -1, 1), in_range(x, -1, 1) )
@@ -196,8 +196,8 @@ identical( R_in_range(x, -1, 1), in_range(x, -1, 1) )
 
 {% highlight r %}
 microbenchmark( times=5, 
-  R_in_range(x, -1, 1),
-  in_range(x, -1, 1)
+    R_in_range(x, -1, 1),
+    in_range(x, -1, 1)
 )
 {% endhighlight %}
 
@@ -206,8 +206,8 @@ microbenchmark( times=5,
 <pre class="output">
 Unit: milliseconds
                  expr   min    lq median    uq   max neval
- R_in_range(x, -1, 1) 4.927 5.163  5.549 5.743 6.274     5
-   in_range(x, -1, 1) 2.628 2.694  3.442 3.632 4.775     5
+ R_in_range(x, -1, 1) 8.168 8.459  9.014 9.035 9.232     5
+   in_range(x, -1, 1) 5.144 5.427  5.485 5.571 6.022     5
 </pre>
 
 
@@ -231,18 +231,18 @@ identical(no_na(x), R_no_na(x))
 
 {% highlight r %}
 microbenchmark( times=5,
-  R_no_na(x),
-  no_na(x)
+    R_no_na(x),
+    no_na(x)
 )
 {% endhighlight %}
 
 
 
 <pre class="output">
-Unit: microseconds
-       expr    min     lq median   uq  max neval
- R_no_na(x) 2313.9 2402.5 2457.8 2677 2952     5
-   no_na(x)  822.9  828.8  876.8 1555 1562     5
+Unit: milliseconds
+       expr   min    lq median    uq   max neval
+ R_no_na(x) 3.974 4.137  4.173 4.298 4.681     5
+   no_na(x) 1.885 1.893  1.901 2.034 2.807     5
 </pre>
 
 
