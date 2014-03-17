@@ -14,7 +14,7 @@ mimic R's `[` operator for most cases.
 
 We diverge from R's subsetting semantics in a few important ways:
 
-1. For integer and numeric vectors, 0-based indexing is peformed, rather than
+1. For integer and numeric vectors, 0-based indexing is performed, rather than
 1-based indexing, for subsets.
 
 2. We throw an error if an index is out of bounds, rather than returning an
@@ -206,8 +206,8 @@ microbenchmark( times=5,
 <pre class="output">
 Unit: milliseconds
                  expr   min    lq median    uq   max neval
- R_in_range(x, -1, 1) 8.168 8.459  9.014 9.035 9.232     5
-   in_range(x, -1, 1) 5.144 5.427  5.485 5.571 6.022     5
+ R_in_range(x, -1, 1) 8.168 8.556   9.02 9.073 9.223     5
+   in_range(x, -1, 1) 5.210 5.424   5.48 5.507 6.233     5
 </pre>
 
 
@@ -215,7 +215,7 @@ Unit: milliseconds
 {% highlight r %}
 
 R_no_na <- function(x) {
-  return( x[!is.na(x)] )
+    return( x[!is.na(x)] )
 }
 x[sample(1E5, 1E4)] <- NA
 identical(no_na(x), R_no_na(x))
@@ -240,9 +240,9 @@ microbenchmark( times=5,
 
 <pre class="output">
 Unit: milliseconds
-       expr   min    lq median    uq   max neval
- R_no_na(x) 3.974 4.137  4.173 4.298 4.681     5
-   no_na(x) 1.885 1.893  1.901 2.034 2.807     5
+       expr   min    lq median   uq   max neval
+ R_no_na(x) 3.958 3.960  4.019 4.02 4.458     5
+   no_na(x) 1.891 1.936  1.961 2.02 2.755     5
 </pre>
 
 

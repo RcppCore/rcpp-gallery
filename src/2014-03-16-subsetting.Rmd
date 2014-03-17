@@ -12,7 +12,7 @@ mimic R's `[` operator for most cases.
 
 We diverge from R's subsetting semantics in a few important ways:
 
-1. For integer and numeric vectors, 0-based indexing is peformed, rather than
+1. For integer and numeric vectors, 0-based indexing is performed, rather than
 1-based indexing, for subsets.
 
 2. We throw an error if an index is out of bounds, rather than returning an
@@ -105,7 +105,7 @@ microbenchmark( times=5,
 )
 
 R_no_na <- function(x) {
-  return( x[!is.na(x)] )
+    return( x[!is.na(x)] )
 }
 x[sample(1E5, 1E4)] <- NA
 identical(no_na(x), R_no_na(x))
