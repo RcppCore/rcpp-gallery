@@ -10,12 +10,30 @@ src: 2014-03-21-simple-array-class.Rmd
 
 [Currie, Durban and Eilers](http://www.macs.hw.ac.uk/~iain/research/RSSB.2006.pdf) write:
 
->Data with an array structure are common in statistics, and the design or regression matrix for analysis of such data can often be written as a Kronecker product. Factorial designs, contingency tables and smoothing of data on multidimensional grids are three such general classes of data and models. In such a setting, we develop an arithmetic of arrays which allows us to define the expectation of the data array as a sequence of nested matrix operations on a coefficient array. We show how this arithmetic leads to low storage, high speed computation in the scoring algorithm of the generalized linear model. 
+> Data with an array structure are common in statistics, and the design or
+> regression matrix for analysis of such data can often be written as a
+> Kronecker product. Factorial designs, contingency tables and smoothing of
+> data on multidimensional grids are three such general classes of data and
+> models. In such a setting, we develop an arithmetic of arrays which allows
+> us to define the expectation of the data array as a sequence of nested
+> matrix operations on a coefficient array. We show how this arithmetic leads
+> to low storage, high speed computation in the scoring algorithm of the
+> generalized linear model.
 
-For example, they show that if a design matrix `X` has the Kronecker structure `X = kronecker(Xd, ..., X2, X1)` with `X<i>` a partial model matrix with `n<i>` rows and `c<i>` columns, linear functions `X%*%theta` of `X` and a coefficient vector `theta` can be efficiently computed based only on the partial model matrices where the entries in the vector `X%*%theta` (with `nd*...*n2*n1` entries) are the same as the entries in the array with dimension `c(n1, n2, ..., nd)` returned by `RH(Xd, ... , RH(X2, RH(X1, Theta))...)`. 
+For example, they show that if a design matrix `X` has the Kronecker
+structure `X = kronecker(Xd, ..., X2, X1)` with `X<i>` a partial model matrix
+with `n<i>` rows and `c<i>` columns, linear functions `X%*%theta` of `X` and
+a coefficient vector `theta` can be efficiently computed based only on the
+partial model matrices where the entries in the vector `X%*%theta` (with
+`nd*...*n2*n1` entries) are the same as the entries in the array with
+dimension `c(n1, n2, ..., nd)` returned by `RH(Xd, ... , RH(X2, RH(X1,
+Theta))...)`.  
 `Theta` is an array with dimensions `c(c1, c2, ..., cd)` containing `theta` and `RH(X, A)` -- the "rotated H-transform" -- is an operation generalizing transposed pre-multiplication `t(X %*% A)` of a matrix `A` by a matrix `X` to the case of higher dimensional array-valued `A`. 
 
-The code below implements a simple array class for numeric arrays and the rotated H-transform in `RcppArmadillo` and compares the performance to both the naive straight forward matrix multiplication based on the full model matrix and an `R`-implementation of `RH()`:
+The code below implements a simple array class for numeric arrays and the
+rotated H-transform in `RcppArmadillo` and compares the performance to both
+the naive straight forward matrix multiplication based on the full model
+matrix and an `R`-implementation of `RH()`: 
 
 
 {% highlight cpp %}
@@ -262,9 +280,9 @@ benchmark(
 
 <pre class="output">
                                          test elapsed relative
-1 array(X %*% theta_vec, dim = c(n1, n2, n3))  27.098  197.796
+1 array(X %*% theta_vec, dim = c(n1, n2, n3))  27.159  198.241
 3   Reduce(RH, list(X3, X2, X1), Theta, TRUE)   0.137    1.000
-2 Reduce(RH_r, list(X3, X2, X1), Theta, TRUE)   0.327    2.387
+2 Reduce(RH_r, list(X3, X2, X1), Theta, TRUE)   0.325    2.372
 </pre>
 
 
