@@ -23,7 +23,7 @@ using namespace Rcpp;
  
 // [[Rcpp::export]]
 std::vector<std::string> xtsAttributes(NumericMatrix X) {
-    std::vector<std::string> nm = RObject(X).attributeNames();
+    std::vector<std::string> nm = X.attributeNames();
     return nm;
 }
 
@@ -33,11 +33,11 @@ std::vector<std::string> xtsAttributes(NumericMatrix X) {
  */
 
 /*** R
-  suppressMessages(library(xts))
-  set.seed(42)
-  n <- 20
-  Z <- xts(100+cumsum(rnorm(n)), order.by=ISOdatetime(2013,1,12,20,21,22) + 60*(1:n))
-  xtsAttributes(Z)
+    suppressMessages(library(xts))
+    set.seed(42)
+    n <- 20
+    Z <- xts(100+cumsum(rnorm(n)), order.by=ISOdatetime(2013,1,12,20,21,22) + 60*(1:n))
+    xtsAttributes(Z)
 */
 
 /**
@@ -45,8 +45,8 @@ std::vector<std::string> xtsAttributes(NumericMatrix X) {
  */
 
 /*** R
-  names(attributes(Z))
-  all.equal(xtsAttributes(Z), names(attributes(Z)))
+    names(attributes(Z))
+    all.equal(xtsAttributes(Z), names(attributes(Z)))
 */
 
 
@@ -60,12 +60,12 @@ std::vector<std::string> xtsAttributes(NumericMatrix X) {
 
 // [[Rcpp::export]]
 DatetimeVector xtsIndex(NumericMatrix X) {
-    DatetimeVector v(NumericVector(RObject(X).attr("index")));
+    DatetimeVector v(NumericVector(X.attr("index")));
     return v;
 }
 
 /*** R
-  xtsIndex(Z)
+    xtsIndex(Z)
 */
 
 /**
@@ -73,3 +73,7 @@ DatetimeVector xtsIndex(NumericMatrix X) {
  * or adjustments to time zones are left as an exercise.
  */
 
+/**
+ * Edited on 2014-03-28 to reflect updated / simpliefied attributes functions.
+ *
+ */
