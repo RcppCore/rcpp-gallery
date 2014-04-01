@@ -1,0 +1,5 @@
+# Call Python from R through Rcpp
+
+## Introduction
+
+This is a brief introduction of calling python from R through Rcpp. The official python documentation explains how to embed python into C/C++ application <https://docs.python.org/2/extending/embedding.html>. Moreover, the Boost.Python library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.  
