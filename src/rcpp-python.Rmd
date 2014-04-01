@@ -2,4 +2,52 @@
 
 ## Introduction
 
-This is a brief introduction of calling python from R through Rcpp. The official python documentation explains how to embed python into C/C++ application <https://docs.python.org/2/extending/embedding.html>. Moreover, the Boost.Python library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.  
+This is a brief introduction of calling python from R through Rcpp. [The official documentation of python](https://docs.python.org/2/extending/embedding.html) explains how to embed python into C/C++ application. Moreover, the Boost.Python library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.
+
+Although there is a package [*rPython*](http://cran.r-project.org/web/packages/rPython/index.html) which provides an interface of python in R, it is still fun to write the embedded python. Moreover, the efficiency of this approach might be higher.
+
+In this article, I'll show you how to call python from R on Ubuntu.
+
+## Hello World
+
+The hardest thing is to establish the environment. To build an embeded python, we need to install the following package:
+
+```
+sudo apt-get install python2.7-dev
+```
+
+Then, pass the following flags to the compiler.
+
+```{r set_flags}
+py_cflags <- system("python2.7-config --cflags", intern=TRUE)
+Sys.setenv("PKG_CFLAGS"=sprintf("%s %s", Sys.getenv("PKG_CFLAGS"), py_cflags))
+Sys.setenv("PKG_CXXFLAGS"=sprintf("%s %s", Sys.getenv("PKG_CXXFLAGS"), py_cflags))
+py_ldflags <- system("python2.7-config --ldflags", intern=TRUE)
+Sys.setenv("PKG_LIBS"=sprintf("%s %s", Sys.getenv("PKG_CFLAGS"), py_ldflags))
+```
+
+Then, the following hello world program should work!
+
+```{r hello_python, engine='Rcpp', dependson='set_flags'}
+#include <Rcpp.h>
+#include <Python.h>
+
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+void hello_python() {
+  Py_SetProgramName("");  /* optional but recommended */
+  Py_Initialize();
+  PyRun_SimpleString("from time import time,ctime\n"
+                     "print 'Today is',ctime(time())\n");
+  Py_Finalize();
+}
+```
+
+Let's call the hello world program in R:
+
+```{r hello_python2, dependson='hello_python', results='hold'}
+hello_python()
+```
+
+
