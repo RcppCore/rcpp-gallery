@@ -4,12 +4,12 @@ author: Wush Wu
 license: GPL (>= 2)
 tags: python integration
 summary: Integrate python into R with Rcpp and Boost.Python
+layout: post
+src: 2014-04-06-rcpp-python.Rmd
 ---
 
-```{r setup, include=FALSE}
-library(knitr)
-opts_chunk$set(cache=FALSE)
-```
+
+
 
 ## Introduction
 
@@ -32,17 +32,20 @@ sudo apt-get install python2.7-dev
 
 Then, pass the following flags to the compiler.
 
-```{r set_flags}
+
+{% highlight r %}
 py_cflags <- system("python2.7-config --cflags", intern=TRUE)
 Sys.setenv("PKG_CFLAGS"=sprintf("%s %s", Sys.getenv("PKG_CFLAGS"), py_cflags))
 Sys.setenv("PKG_CXXFLAGS"=sprintf("%s %s", Sys.getenv("PKG_CXXFLAGS"), py_cflags))
 py_ldflags <- system("python2.7-config --ldflags", intern=TRUE)
 Sys.setenv("PKG_LIBS"=sprintf("%s %s %s", Sys.getenv("PKG_CFLAGS"), "-lboost_python-py27", py_ldflags))
-```
+{% endhighlight %}
+
 
 Then, the following hello world program should work!
 
-```{r hello_python, engine='Rcpp', dependson='set_flags'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 #include <Python.h>
 
@@ -64,52 +67,29 @@ void hello_python() {
   PyRun_SimpleString("from time import time,ctime\n"
                      "print 'Today is',ctime(time())\n");
 }
-```
+{% endhighlight %}
 
-```{r redirect, include=FALSE, engine='Rcpp', dependson='hello_python'}
-//The following code redirect the python stdout to R console so that these examples show the result correctly in the generated html files.
-#include <Rcpp.h>
-#include <Python.h>
 
-static PyObject* redirection_stdoutredirect(PyObject* self, PyObject *args) {
-  const char* string;
-  if (!PyArg_ParseTuple(args, "s", &string))
-    return NULL;
-  Rcpp::Rcout << string;
-  Py_INCREF(Py_None);
-  return Py_None;
-}
 
-PyMethodDef RedirectionMethods[] = {
-  {"stdoutredirect", redirection_stdoutredirect, METH_VARARGS, 
-    "stdout redirection helper"},
-  {NULL, NULL, 0, NULL}
-};
 
-//[[Rcpp::export]]
-void Rredirect() {
-  Py_InitModule("redirection", RedirectionMethods);
-  PyRun_SimpleString("import sys");
-  PyRun_SimpleString("import redirection");
-  PyRun_SimpleString("class StdoutCatcher:\n\tdef write(self, stuff):\n\t\tredirection.stdoutredirect(stuff)\n\nsys.stdout = StdoutCatcher()\nsys.stderr = StdoutCatcher()");
-}
-```
 
-```{r initialize, include=FALSE, dependson="redirect"}
-initialize_python()
-Rredirect()
-```
+
+
 
 Let's call the hello world program in R:
 
-```{r hello_python_show, dependson='initialize', results='hold', eval=FALSE}
+
+{% highlight r %}
 initialize_python()
 hello_python()
-```
+{% endhighlight %}
 
-```{r hello_python_run, dependson='initialize', results='hold', echo=FALSE}
-hello_python()
-```
+
+
+<pre class="output">
+Today is Sun Apr  6 01:00:50 2014
+</pre>
+
 
 It shows that the hello_python function successfully initialize the engine of python and run the python script through `PyRun_SimpleString`.
 
@@ -117,7 +97,8 @@ It shows that the hello_python function successfully initialize the engine of py
 
 With boost.python and Rcpp, we can easily transfer the data between R and python. The following C codes transfer the R `IntegerVector` to python `List`:
 
-```{r integer_vector_transformation_cpp, engine='Rcpp', dependson='initialize'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 #include <boost/python/raw_function.hpp>
 
@@ -137,11 +118,20 @@ SEXP IntVec_to_py_list(IntegerVector src) {
   }
   return pretval;
 }
-```
+{% endhighlight %}
 
-```{r integer_vector_transformation_R, dependson="integer_vector_transformation_cpp"}
+
+
+{% highlight r %}
 IntVec_to_py_list(1:10)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;pointer: 0x3ccc060&gt;
+</pre>
+
 
 The pointer is the transformed python object. 
 
@@ -149,7 +139,8 @@ The pointer is the transformed python object.
 
 We could define a function in python and pass it to the function. For convenience, we create two Rcpp functions to submit python script to the python engine and call the function with the C++ object:
 
-```{r pycall, engine='Rcpp', dependson='initialize'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 #include <Python.h>
 #include <boost/python/raw_function.hpp>
@@ -175,9 +166,11 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
   py::list argv(*PyList(fun_argument));
   pyfun(argv);
 }
-```
+{% endhighlight %}
 
-```{r use_list, dependson='py'}
+
+
+{% highlight r %}
 pycall("
 def print_list(src):
   for i in src:
@@ -185,13 +178,30 @@ def print_list(src):
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_list", a)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre>
+
 
 ## Error Handling
 
 The error of python engine is easily handled easily by the C++ try/catch as follow:
 
-```{r py_exception, engine='Rcpp', dependson='pycall'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 #include <Python.h>
 #include <boost/python/raw_function.hpp>
@@ -215,9 +225,11 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
     PyErr_Print();
   }
 }
-```
+{% endhighlight %}
 
-```{r py_exception_demo, dependson='py_exception'}
+
+
+{% highlight r %}
 pycall("
 def print_list(src):
   for i in src:
@@ -225,7 +237,14 @@ def print_list(src):
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_lists", a) # a typo of the function name
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+KeyError: 'print_lists'
+</pre>
+
 
 ## Summary
 
