@@ -246,7 +246,5 @@ The core steps are initializing the engine (Hello World), transforming the
 data (Type Conversion), exposing the functions (Call Python Function), and
 handling the error properly (Error Handling).
 
-This post relied on two C++ libraries which ease the work greatly: Rcpp for R, and Boost.Python for
-Python.  A similar approach might be used to integrate R with other
-scripting language such as Javascript using nodejs and the  
-[V8Converter](https://code.google.com/p/v8-juice/).
+This post relied on two C++ libraries which ease the work greatly: Rcpp for
+R, and Boost.Python for Python.  

@@ -22,7 +22,7 @@ language. Similarlly, [Rcpp](http://www.rcpp.org) provides interoperability betw
 R. Therefore, it is not hard to call Python from R through Rcpp and Boost.Python.
 
 Although there is a package
-[*rPython*](http://cran.r-project.org/package=rPython) which provides an
+[rPython](http://cran.r-project.org/package=rPython) which provides an
 interface to Python from R through Java, it is interesting to try to connect
 R and Python via C++.
 
@@ -95,7 +95,7 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 08:48:29 2014
+Today is Sun Apr  6 08:53:54 2014
 </pre>
 
 
@@ -140,7 +140,7 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x29f81a0&gt;
+&lt;pointer: 0x171d860&gt;
 </pre>
 
 
@@ -274,11 +274,13 @@ KeyError: 'print_lists'
 
 ## Summary
 
-These examples show how to integrate Python and R with Rcpp and
-Boost.Python. Similar approaches could be used to integrate R with other
-scripting language such as javascript(nodejs). The core steps are
-initializing the engine (Hello World), transforming the data (Type
-Conversion), exposing the functions (Call Python Function), and handling the
-error properly (Error Handling). Some C++ libraries ease the work greatly such
-as Rcpp for R, Boost.Python for Python and
-[V8Converter](https://code.google.com/p/v8-juice/) for javascript.
+These examples show how to integrate Python and R with Rcpp and Boost.Python.
+The core steps are initializing the engine (Hello World), transforming the
+data (Type Conversion), exposing the functions (Call Python Function), and
+handling the error properly (Error Handling).
+
+This post relied on two C++ libraries which ease the work greatly: Rcpp for
+R, and Boost.Python for Python.  
+%A similar approach might be used to
+%integrate R with other scripting language such as Javascript using nodejs and
+%[V8Converter](https://code.google.com/p/v8-juice/).
