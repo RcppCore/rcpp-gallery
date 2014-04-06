@@ -13,4 +13,7 @@ exclude:
 
 pygments: true
 
+markdown: kramdown
+
+
 
