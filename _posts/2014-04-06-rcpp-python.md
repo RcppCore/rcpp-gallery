@@ -13,7 +13,7 @@ src: 2014-04-06-rcpp-python.Rmd
 
 ## Introduction
 
-This is a brief introduction of calling Python from R through Rcpp. The
+This post provides a brief introduction to calling Python from R through Rcpp. The
 official [Python documentation](https://docs.python.org/2/extending/embedding.html) explains how to
 embed python into C/C++ applications. Moreover, the
 [Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library
@@ -24,20 +24,21 @@ R. Therefore, it is not hard to call Python from R through Rcpp and Boost.Python
 Although there is a package
 [*rPython*](http://cran.r-project.org/package=rPython) which provides an
 interface to Python from R through Java, it is interesting to try to connect
-them through C++.
+R and Python via C++.
 
-In this article, I'll show you how to call Python 2.7 from R on Ubuntu. 
+In this article, we show how to call Python 2.7 from R on Ubuntu. 
 
 
 ## Hello World
 
-The most difficult thing is to establish a development environment. To build via embeded Python, we need to install the following packages:
+The most difficult thing is to establish a development environment. On Ubuntu,
+we need to install the following packages to build via embeded Python:
 
 ```
 sudo apt-get install python2.7 python2.7-dev libboost-python-dev
 ```
 
-Then, we should pass the following flags to the compiler:
+Then, we pass the following flags to the compiler:
 
 
 {% highlight r %}
@@ -94,7 +95,7 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 08:42:13 2014
+Today is Sun Apr  6 08:48:29 2014
 </pre>
 
 
@@ -103,7 +104,9 @@ engine and runs the Python script through `PyRun_SimpleString`.
 
 ## Type Conversion
 
-With Boost.Python and Rcpp, we can easily transfer the data between R and Python. The following C codes transfer the R `IntegerVector` to Python `List`:
+With Boost.Python and Rcpp, we can easily transfer the data between R and
+Python. The following C codes transfer the R `IntegerVector` to Python
+`List`:
 
 
 {% highlight cpp %}
@@ -137,11 +140,11 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x2cdf8e0&gt;
+&lt;pointer: 0x29f81a0&gt;
 </pre>
 
 
-The pointer refers to the memory of the transformed Python object 
+The pointer refers to the memory of the transformed Python object.
 
 ## Call Python Function
 
@@ -206,7 +209,8 @@ pyfun("print_list", a)
 
 ## Error Handling
 
-The error of Python engine could be handled easily by the C++ try/catch as follow:
+Errors in the Python engine can be handled easily by the C++ `try/catch`
+idiom as the following example shows:
 
 
 {% highlight cpp %}
