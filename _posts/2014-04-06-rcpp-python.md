@@ -15,22 +15,20 @@ src: 2014-04-06-rcpp-python.Rmd
 
 This is a brief introduction of calling python from R through Rcpp. [The official documentation of python](https://docs.python.org/2/extending/embedding.html) explains how to embed python into C/C++ application. Moreover, the [Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.
 
-Although there is a package [*rPython*](http://cran.r-project.org/web/packages/rPython/index.html) which provides an interface of python in R, it is still fun to write the embedded python. Moreover, the efficiency of this approach might be higher.
+Although there is a package [*rPython*](http://cran.r-project.org/web/packages/rPython/index.html) which provides an interface of python in R through Java, it is interesting to try to connect them through C++.
 
 In this article, I'll show you how to call python 2.7 from R on Ubuntu. Please install the following packages:
 
-- python2.7
-- libboost-python-dev
 
 ## Hello World
 
-The hardest thing is to establish the environment. To build an embeded python, we need to install the following package:
+The most difficult thing is to establish a development environment. To build an embeded python, we need to install the following package:
 
 ```
-sudo apt-get install python2.7-dev
+sudo apt-get install python2.7 python2.7-dev libboost-python-dev
 ```
 
-Then, pass the following flags to the compiler.
+Then, we should pass the following flags to the compiler:
 
 
 {% highlight r %}
@@ -42,7 +40,7 @@ Sys.setenv("PKG_LIBS"=sprintf("%s %s %s", Sys.getenv("PKG_CFLAGS"), "-lboost_pyt
 {% endhighlight %}
 
 
-Then, the following hello world program should work!
+The following hello world should work!
 
 
 {% highlight cpp %}
@@ -76,7 +74,7 @@ void hello_python() {
 
 
 
-Let's call the hello world program in R:
+Let's call them in R:
 
 
 {% highlight r %}
@@ -87,7 +85,7 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 01:00:50 2014
+Today is Sun Apr  6 08:11:14 2014
 </pre>
 
 
@@ -95,7 +93,7 @@ It shows that the hello_python function successfully initialize the engine of py
 
 ## Type Conversion
 
-With boost.python and Rcpp, we can easily transfer the data between R and python. The following C codes transfer the R `IntegerVector` to python `List`:
+With Boost.Python and Rcpp, we can easily transfer the data between R and python. The following C codes transfer the R `IntegerVector` to python `List`:
 
 
 {% highlight cpp %}
@@ -129,15 +127,15 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x3ccc060&gt;
+&lt;pointer: 0x27d8780&gt;
 </pre>
 
 
-The pointer is the transformed python object. 
+The pointer refers to the memory of the transformed python object 
 
 ## Call Python Function
 
-We could define a function in python and pass it to the function. For convenience, we create two Rcpp functions to submit python script to the python engine and call the function with the C++ object:
+The following example shows how to define a function in python and expose it in R.
 
 
 {% highlight cpp %}
@@ -198,7 +196,7 @@ pyfun("print_list", a)
 
 ## Error Handling
 
-The error of python engine is easily handled easily by the C++ try/catch as follow:
+The error of python engine could be handled easily by the C++ try/catch as follow:
 
 
 {% highlight cpp %}
