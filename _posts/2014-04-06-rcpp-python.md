@@ -95,7 +95,7 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 08:53:54 2014
+Today is Sun Apr  6 09:03:02 2014
 </pre>
 
 
@@ -140,7 +140,7 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x171d860&gt;
+&lt;pointer: 0x19d1f80&gt;
 </pre>
 
 
@@ -275,12 +275,9 @@ KeyError: 'print_lists'
 ## Summary
 
 These examples show how to integrate Python and R with Rcpp and Boost.Python.
-The core steps are initializing the engine (Hello World), transforming the
-data (Type Conversion), exposing the functions (Call Python Function), and
-handling the error properly (Error Handling).
+It relied on two C++ libraries which ease the integration work greatly: Rcpp
+for R, and Boost.Python for Python.  The core steps discussed above are
+initializing the engine (Hello World), transforming the data (Type
+Conversion), exposing functions (Call Python Function), and handling
+errors properly (Error Handling).
 
-This post relied on two C++ libraries which ease the work greatly: Rcpp for
-R, and Boost.Python for Python.  
-%A similar approach might be used to
-%integrate R with other scripting language such as Javascript using nodejs and
-%[V8Converter](https://code.google.com/p/v8-juice/).
