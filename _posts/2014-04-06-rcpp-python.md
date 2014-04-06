@@ -94,7 +94,7 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 08:39:48 2014
+Today is Sun Apr  6 08:42:13 2014
 </pre>
 
 
@@ -121,8 +121,8 @@ SEXP IntVec_to_py_list(IntegerVector src) {
     PyList pretval(new py::list());
     int glue;
     for(int i = 0;i < src.size();i++) {
-      glue = src[i];
-      pretval->append(glue);
+        glue = src[i];
+        pretval->append(glue);
     }
     return pretval;
 }
@@ -137,7 +137,7 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x35f0bf0&gt;
+&lt;pointer: 0x2cdf8e0&gt;
 </pre>
 
 
@@ -161,18 +161,18 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 void pycall(std::string py_script) {
-  PyRun_SimpleString(py_script.c_str());
+    PyRun_SimpleString(py_script.c_str());
 }
 
 //[[Rcpp::export]]
 void pyfun(std::string fun_name, SEXP fun_argument) {
-  // create the module of python which is similar to the R_GlobalEnv
-  py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
-  // look up and retrieve the function of the given name in the module
-  py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
-  // call the function with the API of boost::python
-  py::list argv(*PyList(fun_argument));
-  pyfun(argv);
+    // create the module of python which is similar to the R_GlobalEnv
+    py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
+    // look up and retrieve the function of the given name in the module
+    py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
+    // call the function with the API of boost::python
+    py::list argv(*PyList(fun_argument));
+    pyfun(argv);
 }
 {% endhighlight %}
 
@@ -181,8 +181,8 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
 {% highlight r %}
 pycall("
 def print_list(src):
-  for i in src:
-    print i
+    for i in src:
+        print i
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_list", a)
@@ -220,18 +220,18 @@ typedef Rcpp::XPtr<py::list> PyList;
 
 //[[Rcpp::export]]
 void pyfun(std::string fun_name, SEXP fun_argument) {
-  try {
-    // create the module of python which is similar to the R_GlobalEnv
-    py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
-    // look up and retrieve the function of the given name in the module
-    py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
-    // call the function with the API of boost::python
-    py::list argv(*PyList(fun_argument));
-    pyfun(argv);
-  }
-  catch (py::error_already_set) {
-    PyErr_Print();
-  }
+    try {
+        // create the module of python which is similar to the R_GlobalEnv
+        py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
+        // look up and retrieve the function of the given name in the module
+        py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
+        // call the function with the API of boost::python
+        py::list argv(*PyList(fun_argument));
+        pyfun(argv);
+    }
+    catch (py::error_already_set) {
+        PyErr_Print();
+    }
 }
 {% endhighlight %}
 
@@ -240,8 +240,8 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
 {% highlight r %}
 pycall("
 def print_list(src):
-  for i in src:
-    print i
+    for i in src:
+        print i
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_lists", a) # a typo of the function name

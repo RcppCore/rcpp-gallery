@@ -13,7 +13,7 @@ opts_chunk$set(cache=FALSE)
 
 ## Introduction
 
-This is a brief introduction of calling Python from R through Rcpp. The
+This post provides a brief introduction to calling Python from R through Rcpp. The
 official [Python documentation](https://docs.python.org/2/extending/embedding.html) explains how to
 embed python into C/C++ applications. Moreover, the
 [Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library
@@ -24,20 +24,21 @@ R. Therefore, it is not hard to call Python from R through Rcpp and Boost.Python
 Although there is a package
 [*rPython*](http://cran.r-project.org/package=rPython) which provides an
 interface to Python from R through Java, it is interesting to try to connect
-them through C++.
+R and Python via C++.
 
-In this article, I'll show you how to call Python 2.7 from R on Ubuntu. 
+In this article, we show how to call Python 2.7 from R on Ubuntu. 
 
 
 ## Hello World
 
-The most difficult thing is to establish a development environment. To build via embeded Python, we need to install the following packages:
+The most difficult thing is to establish a development environment. On Ubuntu,
+we need to install the following packages to build via embeded Python:
 
 ```
 sudo apt-get install python2.7 python2.7-dev libboost-python-dev
 ```
 
-Then, we should pass the following flags to the compiler:
+Then, we pass the following flags to the compiler:
 
 ```{r set_flags}
 py_cflags <- system("python2.7-config --cflags", intern=TRUE)
@@ -123,7 +124,9 @@ engine and runs the Python script through `PyRun_SimpleString`.
 
 ## Type Conversion
 
-With Boost.Python and Rcpp, we can easily transfer the data between R and Python. The following C codes transfer the R `IntegerVector` to Python `List`:
+With Boost.Python and Rcpp, we can easily transfer the data between R and
+Python. The following C codes transfer the R `IntegerVector` to Python
+`List`:
 
 ```{r integer_vector_transformation_cpp, engine='Rcpp', dependson='initialize'}
 #include <Rcpp.h>
@@ -140,8 +143,8 @@ SEXP IntVec_to_py_list(IntegerVector src) {
     PyList pretval(new py::list());
     int glue;
     for(int i = 0;i < src.size();i++) {
-      glue = src[i];
-      pretval->append(glue);
+        glue = src[i];
+        pretval->append(glue);
     }
     return pretval;
 }
@@ -151,7 +154,7 @@ SEXP IntVec_to_py_list(IntegerVector src) {
 IntVec_to_py_list(1:10)
 ```
 
-The pointer refers to the memory of the transformed Python object 
+The pointer refers to the memory of the transformed Python object.
 
 ## Call Python Function
 
@@ -170,26 +173,26 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 void pycall(std::string py_script) {
-  PyRun_SimpleString(py_script.c_str());
+    PyRun_SimpleString(py_script.c_str());
 }
 
 //[[Rcpp::export]]
 void pyfun(std::string fun_name, SEXP fun_argument) {
-  // create the module of python which is similar to the R_GlobalEnv
-  py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
-  // look up and retrieve the function of the given name in the module
-  py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
-  // call the function with the API of boost::python
-  py::list argv(*PyList(fun_argument));
-  pyfun(argv);
+    // create the module of python which is similar to the R_GlobalEnv
+    py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
+    // look up and retrieve the function of the given name in the module
+    py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
+    // call the function with the API of boost::python
+    py::list argv(*PyList(fun_argument));
+    pyfun(argv);
 }
 ```
 
 ```{r use_list, dependson='py'}
 pycall("
 def print_list(src):
-  for i in src:
-    print i
+    for i in src:
+        print i
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_list", a)
@@ -210,26 +213,26 @@ typedef Rcpp::XPtr<py::list> PyList;
 
 //[[Rcpp::export]]
 void pyfun(std::string fun_name, SEXP fun_argument) {
-  try {
-    // create the module of python which is similar to the R_GlobalEnv
-    py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
-    // look up and retrieve the function of the given name in the module
-    py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
-    // call the function with the API of boost::python
-    py::list argv(*PyList(fun_argument));
-    pyfun(argv);
-  }
-  catch (py::error_already_set) {
-    PyErr_Print();
-  }
+    try {
+        // create the module of python which is similar to the R_GlobalEnv
+        py::object module((py::handle<>(py::borrowed(PyImport_AddModule("__main__")))));
+        // look up and retrieve the function of the given name in the module
+        py::object pyfun = module.attr("__dict__")[fun_name.c_str()];
+        // call the function with the API of boost::python
+        py::list argv(*PyList(fun_argument));
+        pyfun(argv);
+    }
+    catch (py::error_already_set) {
+        PyErr_Print();
+    }
 }
 ```
 
 ```{r py_exception_demo, dependson='py_exception'}
 pycall("
 def print_list(src):
-  for i in src:
-    print i
+    for i in src:
+        print i
 ")
 a <- IntVec_to_py_list(1:10)
 pyfun("print_lists", a) # a typo of the function name
