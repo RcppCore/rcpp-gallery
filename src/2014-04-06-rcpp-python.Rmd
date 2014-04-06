@@ -242,9 +242,9 @@ pyfun("print_lists", a) # a typo of the function name
 ## Summary
 
 These examples show how to integrate Python and R with Rcpp and Boost.Python.
-The core steps are initializing the engine (Hello World), transforming the
-data (Type Conversion), exposing the functions (Call Python Function), and
-handling the error properly (Error Handling).
+It relied on two C++ libraries which ease the integration work greatly: Rcpp
+for R, and Boost.Python for Python.  The core steps discussed above are
+initializing the engine (Hello World), transforming the data (Type
+Conversion), exposing functions (Call Python Function), and handling
+errors properly (Error Handling).
 
-This post relied on two C++ libraries which ease the work greatly: Rcpp for
-R, and Boost.Python for Python.  
