@@ -2,8 +2,8 @@
 title: Call Python from R through Rcpp
 author: Wush Wu
 license: GPL (>= 2)
-tags: python integration
-summary: Integrate python into R with Rcpp and Boost.Python
+tags: featured boost 
+summary: Integrate Python into R via Rcpp and Boost.Python
 layout: post
 src: 2014-04-06-rcpp-python.Rmd
 ---
@@ -13,16 +13,25 @@ src: 2014-04-06-rcpp-python.Rmd
 
 ## Introduction
 
-This is a brief introduction of calling python from R through Rcpp. [The official documentation of python](https://docs.python.org/2/extending/embedding.html) explains how to embed python into C/C++ application. Moreover, the [Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.
+This is a brief introduction of calling Python from R through Rcpp. The
+official [Python documentation](https://docs.python.org/2/extending/embedding.html) explains how to
+embed python into C/C++ applications. Moreover, the
+[Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library
+provides seamless interoperability between C++ and the Python programming
+language. Similarlly, [Rcpp](http://www.rcpp.org) provides interoperability between C++ and
+R. Therefore, it is not hard to call Python from R through Rcpp and Boost.Python.
 
-Although there is a package [*rPython*](http://cran.r-project.org/web/packages/rPython/index.html) which provides an interface of python in R through Java, it is interesting to try to connect them through C++.
+Although there is a package
+[*rPython*](http://cran.r-project.org/package=rPython) which provides an
+interface to Python from R through Java, it is interesting to try to connect
+them through C++.
 
-In this article, I'll show you how to call python 2.7 from R on Ubuntu. Please install the following packages:
+In this article, I'll show you how to call Python 2.7 from R on Ubuntu. 
 
 
 ## Hello World
 
-The most difficult thing is to establish a development environment. To build an embeded python, we need to install the following package:
+The most difficult thing is to establish a development environment. To build via embeded Python, we need to install the following packages:
 
 ```
 sudo apt-get install python2.7 python2.7-dev libboost-python-dev
@@ -40,7 +49,7 @@ Sys.setenv("PKG_LIBS"=sprintf("%s %s %s", Sys.getenv("PKG_CFLAGS"), "-lboost_pyt
 {% endhighlight %}
 
 
-The following hello world should work!
+The following `hello world` should then work:
 
 
 {% highlight cpp %}
@@ -51,19 +60,19 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 void initialize_python() {
-  Py_SetProgramName("");  /* optional but recommended */
-  Py_Initialize();
+    Py_SetProgramName("");  /* optional but recommended */
+    Py_Initialize();
 }
 
 //[[Rcpp::export]]
 void finalize_python() {
-  Py_Finalize();
+    Py_Finalize();
 }
 
 //[[Rcpp::export]]
 void hello_python() {
-  PyRun_SimpleString("from time import time,ctime\n"
-                     "print 'Today is',ctime(time())\n");
+    PyRun_SimpleString("from time import time,ctime\n"
+                       "print 'Today is',ctime(time())\n");
 }
 {% endhighlight %}
 
@@ -85,15 +94,16 @@ hello_python()
 
 
 <pre class="output">
-Today is Sun Apr  6 08:11:14 2014
+Today is Sun Apr  6 08:39:48 2014
 </pre>
 
 
-It shows that the hello_python function successfully initialize the engine of python and run the python script through `PyRun_SimpleString`.
+It shows that the `hello_python` function successfully initializes the Python
+engine and runs the Python script through `PyRun_SimpleString`.
 
 ## Type Conversion
 
-With Boost.Python and Rcpp, we can easily transfer the data between R and python. The following C codes transfer the R `IntegerVector` to python `List`:
+With Boost.Python and Rcpp, we can easily transfer the data between R and Python. The following C codes transfer the R `IntegerVector` to Python `List`:
 
 
 {% highlight cpp %}
@@ -108,13 +118,13 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 SEXP IntVec_to_py_list(IntegerVector src) {
-  PyList pretval(new py::list());
-  int glue;
-  for(int i = 0;i < src.size();i++) {
-    glue = src[i];
-    pretval->append(glue);
-  }
-  return pretval;
+    PyList pretval(new py::list());
+    int glue;
+    for(int i = 0;i < src.size();i++) {
+      glue = src[i];
+      pretval->append(glue);
+    }
+    return pretval;
 }
 {% endhighlight %}
 
@@ -127,15 +137,15 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x27d8780&gt;
+&lt;pointer: 0x35f0bf0&gt;
 </pre>
 
 
-The pointer refers to the memory of the transformed python object 
+The pointer refers to the memory of the transformed Python object 
 
 ## Call Python Function
 
-The following example shows how to define a function in python and expose it in R.
+The following example shows how to define a function in Python and expose it in R.
 
 
 {% highlight cpp %}
@@ -196,7 +206,7 @@ pyfun("print_list", a)
 
 ## Error Handling
 
-The error of python engine could be handled easily by the C++ try/catch as follow:
+The error of Python engine could be handled easily by the C++ try/catch as follow:
 
 
 {% highlight cpp %}
@@ -241,9 +251,30 @@ pyfun("print_lists", a) # a typo of the function name
 
 <pre class="output">
 KeyError: 'print_lists'
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File &quot;/usr/lib/python2.7/dist-packages/apport_python_hook.py&quot;, line 64, in apport_excepthook
+    from apport.fileutils import likely_packaged, get_recent_crashes
+  File &quot;/usr/lib/python2.7/dist-packages/apport/__init__.py&quot;, line 5, in &lt;module&gt;
+    from apport.report import Report
+  File &quot;/usr/lib/python2.7/dist-packages/apport/report.py&quot;, line 16, in &lt;module&gt;
+    from xml.parsers.expat import ExpatError
+  File &quot;/usr/lib/python2.7/xml/parsers/expat.py&quot;, line 4, in &lt;module&gt;
+    from pyexpat import *
+ImportError: /usr/lib/python2.7/lib-dynload/pyexpat.x86_64-linux-gnu.so: undefined symbol: _Py_ZeroStruct
+
+Original exception was:
+KeyError: 'print_lists'
 </pre>
 
 
 ## Summary
 
-These examples show how to integrate python and R with Rcpp and Boost.Python. The similar idea could be used to integrate R with other scripting language such as javascript(nodejs). The core steps are initializing the engine (Hello World), transforming the data(Type Conversion), exposing the functions(Call Python Function), and handling the error properly(Error Handling). Some C++ libraries ease the work greatly such as Rcpp for R, Boost.Python for python and [V8Converter](https://code.google.com/p/v8-juice/) for javascript.
+These examples show how to integrate Python and R with Rcpp and
+Boost.Python. Similar approaches could be used to integrate R with other
+scripting language such as javascript(nodejs). The core steps are
+initializing the engine (Hello World), transforming the data (Type
+Conversion), exposing the functions (Call Python Function), and handling the
+error properly (Error Handling). Some C++ libraries ease the work greatly such
+as Rcpp for R, Boost.Python for Python and
+[V8Converter](https://code.google.com/p/v8-juice/) for javascript.

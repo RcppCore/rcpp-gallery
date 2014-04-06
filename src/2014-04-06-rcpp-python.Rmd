@@ -2,8 +2,8 @@
 title: Call Python from R through Rcpp
 author: Wush Wu
 license: GPL (>= 2)
-tags: python integration
-summary: Integrate python into R with Rcpp and Boost.Python
+tags: featured boost 
+summary: Integrate Python into R via Rcpp and Boost.Python
 ---
 
 ```{r setup, include=FALSE}
@@ -13,16 +13,25 @@ opts_chunk$set(cache=FALSE)
 
 ## Introduction
 
-This is a brief introduction of calling python from R through Rcpp. [The official documentation of python](https://docs.python.org/2/extending/embedding.html) explains how to embed python into C/C++ application. Moreover, the [Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library provides seamless interoperability between C++ and the Python programming language. Similarlly, Rcpp provides interoperability between C++ and R. Therefore, it is not hard to call python from R through Rcpp and Boost.Python.
+This is a brief introduction of calling Python from R through Rcpp. The
+official [Python documentation](https://docs.python.org/2/extending/embedding.html) explains how to
+embed python into C/C++ applications. Moreover, the
+[Boost.Python](http://www.boost.org/doc/libs/1_55_0/libs/python/doc/) library
+provides seamless interoperability between C++ and the Python programming
+language. Similarlly, [Rcpp](http://www.rcpp.org) provides interoperability between C++ and
+R. Therefore, it is not hard to call Python from R through Rcpp and Boost.Python.
 
-Although there is a package [*rPython*](http://cran.r-project.org/web/packages/rPython/index.html) which provides an interface of python in R through Java, it is interesting to try to connect them through C++.
+Although there is a package
+[*rPython*](http://cran.r-project.org/package=rPython) which provides an
+interface to Python from R through Java, it is interesting to try to connect
+them through C++.
 
-In this article, I'll show you how to call python 2.7 from R on Ubuntu. Please install the following packages:
+In this article, I'll show you how to call Python 2.7 from R on Ubuntu. 
 
 
 ## Hello World
 
-The most difficult thing is to establish a development environment. To build an embeded python, we need to install the following package:
+The most difficult thing is to establish a development environment. To build via embeded Python, we need to install the following packages:
 
 ```
 sudo apt-get install python2.7 python2.7-dev libboost-python-dev
@@ -38,7 +47,7 @@ py_ldflags <- system("python2.7-config --ldflags", intern=TRUE)
 Sys.setenv("PKG_LIBS"=sprintf("%s %s %s", Sys.getenv("PKG_CFLAGS"), "-lboost_python-py27", py_ldflags))
 ```
 
-The following hello world should work!
+The following `hello world` should then work:
 
 ```{r hello_python, engine='Rcpp', dependson='set_flags'}
 #include <Rcpp.h>
@@ -48,48 +57,48 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 void initialize_python() {
-  Py_SetProgramName("");  /* optional but recommended */
-  Py_Initialize();
+    Py_SetProgramName("");  /* optional but recommended */
+    Py_Initialize();
 }
 
 //[[Rcpp::export]]
 void finalize_python() {
-  Py_Finalize();
+    Py_Finalize();
 }
 
 //[[Rcpp::export]]
 void hello_python() {
-  PyRun_SimpleString("from time import time,ctime\n"
-                     "print 'Today is',ctime(time())\n");
+    PyRun_SimpleString("from time import time,ctime\n"
+                       "print 'Today is',ctime(time())\n");
 }
 ```
 
 ```{r redirect, include=FALSE, engine='Rcpp', dependson='hello_python'}
-//The following code redirect the python stdout to R console so that these examples show the result correctly in the generated html files.
+// The following code redirect the Python stdout to R console so that these examples show the result correctly in the generated html files.
 #include <Rcpp.h>
 #include <Python.h>
 
 static PyObject* redirection_stdoutredirect(PyObject* self, PyObject *args) {
-  const char* string;
-  if (!PyArg_ParseTuple(args, "s", &string))
-    return NULL;
-  Rcpp::Rcout << string;
-  Py_INCREF(Py_None);
-  return Py_None;
+    const char* string;
+    if (!PyArg_ParseTuple(args, "s", &string))
+       return NULL;
+    Rcpp::Rcout << string;
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 PyMethodDef RedirectionMethods[] = {
-  {"stdoutredirect", redirection_stdoutredirect, METH_VARARGS, 
-    "stdout redirection helper"},
-  {NULL, NULL, 0, NULL}
+    {"stdoutredirect", redirection_stdoutredirect, METH_VARARGS, 
+     "stdout redirection helper"},
+    {NULL, NULL, 0, NULL}
 };
 
 //[[Rcpp::export]]
 void Rredirect() {
-  Py_InitModule("redirection", RedirectionMethods);
-  PyRun_SimpleString("import sys");
-  PyRun_SimpleString("import redirection");
-  PyRun_SimpleString("class StdoutCatcher:\n\tdef write(self, stuff):\n\t\tredirection.stdoutredirect(stuff)\n\nsys.stdout = StdoutCatcher()\nsys.stderr = StdoutCatcher()");
+    Py_InitModule("redirection", RedirectionMethods);
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("import redirection");
+    PyRun_SimpleString("class StdoutCatcher:\n\tdef write(self, stuff):\n\t\tredirection.stdoutredirect(stuff)\n\nsys.stdout = StdoutCatcher()\nsys.stderr = StdoutCatcher()");
 }
 ```
 
@@ -109,11 +118,12 @@ hello_python()
 hello_python()
 ```
 
-It shows that the hello_python function successfully initialize the engine of python and run the python script through `PyRun_SimpleString`.
+It shows that the `hello_python` function successfully initializes the Python
+engine and runs the Python script through `PyRun_SimpleString`.
 
 ## Type Conversion
 
-With Boost.Python and Rcpp, we can easily transfer the data between R and python. The following C codes transfer the R `IntegerVector` to python `List`:
+With Boost.Python and Rcpp, we can easily transfer the data between R and Python. The following C codes transfer the R `IntegerVector` to Python `List`:
 
 ```{r integer_vector_transformation_cpp, engine='Rcpp', dependson='initialize'}
 #include <Rcpp.h>
@@ -127,13 +137,13 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 SEXP IntVec_to_py_list(IntegerVector src) {
-  PyList pretval(new py::list());
-  int glue;
-  for(int i = 0;i < src.size();i++) {
-    glue = src[i];
-    pretval->append(glue);
-  }
-  return pretval;
+    PyList pretval(new py::list());
+    int glue;
+    for(int i = 0;i < src.size();i++) {
+      glue = src[i];
+      pretval->append(glue);
+    }
+    return pretval;
 }
 ```
 
@@ -141,11 +151,11 @@ SEXP IntVec_to_py_list(IntegerVector src) {
 IntVec_to_py_list(1:10)
 ```
 
-The pointer refers to the memory of the transformed python object 
+The pointer refers to the memory of the transformed Python object 
 
 ## Call Python Function
 
-The following example shows how to define a function in python and expose it in R.
+The following example shows how to define a function in Python and expose it in R.
 
 ```{r pycall, engine='Rcpp', dependson='initialize'}
 #include <Rcpp.h>
@@ -187,7 +197,7 @@ pyfun("print_list", a)
 
 ## Error Handling
 
-The error of python engine could be handled easily by the C++ try/catch as follow:
+The error of Python engine could be handled easily by the C++ try/catch as follow:
 
 ```{r py_exception, engine='Rcpp', dependson='pycall'}
 #include <Rcpp.h>
@@ -227,4 +237,11 @@ pyfun("print_lists", a) # a typo of the function name
 
 ## Summary
 
-These examples show how to integrate python and R with Rcpp and Boost.Python. The similar idea could be used to integrate R with other scripting language such as javascript(nodejs). The core steps are initializing the engine (Hello World), transforming the data(Type Conversion), exposing the functions(Call Python Function), and handling the error properly(Error Handling). Some C++ libraries ease the work greatly such as Rcpp for R, Boost.Python for python and [V8Converter](https://code.google.com/p/v8-juice/) for javascript.
+These examples show how to integrate Python and R with Rcpp and
+Boost.Python. Similar approaches could be used to integrate R with other
+scripting language such as javascript(nodejs). The core steps are
+initializing the engine (Hello World), transforming the data (Type
+Conversion), exposing the functions (Call Python Function), and handling the
+error properly (Error Handling). Some C++ libraries ease the work greatly such
+as Rcpp for R, Boost.Python for Python and
+[V8Converter](https://code.google.com/p/v8-juice/) for javascript.
