@@ -10,7 +10,6 @@ src: 2012-12-10-working-with-missing-values.cpp
 ---
 
 
-
 If you're working with missing values, you need to know two things: - What
 happens when you put missing values in scalars (e.g. `double1`) - How to get
 and set missing values in vectors (e.g. `NumericVector`)
@@ -35,7 +34,6 @@ List scalarMissings() {
 }
 {% endhighlight %}
 
-
 Which as expected yields missing values in R:
 
 {% highlight r %}
@@ -51,7 +49,6 @@ List of 4
  $ : logi TRUE
  $ : num NA
 </pre>
-
 
 So:
  
@@ -77,14 +74,12 @@ specific to the type of vector:
 {% highlight cpp %}
 // [[Rcpp::export]]
 List missingSampler() {
-  return(List::create(
-    NumericVector::create(NA_REAL), 
-    IntegerVector::create(NA_INTEGER),
-    LogicalVector::create(NA_LOGICAL), 
-    CharacterVector::create(NA_STRING)));
+  return(List::create(NumericVector::create(NA_REAL), 
+                      IntegerVector::create(NA_INTEGER),
+                      LogicalVector::create(NA_LOGICAL), 
+                      CharacterVector::create(NA_STRING)));
 }
 {% endhighlight %}
-
 
 Now let's confirm that these values do in fact appear missing in R:
 
@@ -102,7 +97,6 @@ List of 4
  $ : chr NA
 </pre>
 
-
 To check if a value in a vector is missing, use the class method `is_na`:
 
 {% highlight cpp %}
@@ -118,7 +112,6 @@ LogicalVector isNA(NumericVector x) {
 }
 {% endhighlight %}
 
-
 Here we test with some missing and non-missing values:
 
 {% highlight r %}
@@ -130,7 +123,6 @@ isNA(c(NA, 5.4, 3.2, NA))
 <pre class="output">
 [1]  TRUE FALSE FALSE  TRUE
 </pre>
-
 
 Equivalent behavior to the `isNA` function can be obtained by calling the
 `is_na` sugar function, which takes a vector and returns a logical vector.
