@@ -3,12 +3,25 @@ title: Speed Chain Ladder Analysis with Rcpp
 author: Chibisi Chima-Okereke
 license: GPL (>= 2)
 tags: modeling armadillo
-summary: Demonstrates a speed-up of Chain Ladder analysis by calling C++ routines from R
-  It uses both Rcpp and RcppArmadillo.
+summary: Speed-up of Chain Ladder analysis by calling C++ routines from R
 layout: post
 src: 2014-06-24-speed-chain-ladder-analysis.cpp
 ---
 
+
+The Chain Ladder method is an actuarial technique used for
+projecting incurred insurance claims to their ultimate loss
+values. The data exists as claims triangles where the claims for
+each accounting year increments down the rows and the claims for
+each development period increments along the columns.  This claims
+triangle can be represented in a triangular upper matrix (along the
+anti-diagonal) and the Chain Ladder technique works by filling in
+the lower part of the matrix using ratios of claims in previous
+accounting years and development periods.
+
+In this example, we show how an implementation in R is sped up by
+calling an equivaluent implementation in C++ from R using the Rcpp
+interface.
 
 We start with the C++ code for carrying out the Chain Ladder calculation.
 
@@ -143,7 +156,7 @@ GetChainSquareR <- function(mClaimTri) {
 }
 {% endhighlight %}
 
-We can now run a timing test comparing chain ladder running in R natively 
+We now run a timed test comparing chain ladder running in R natively 
 and being called from C++ functions using the Rcpp interface 
 
 {% highlight r %}
@@ -156,7 +169,7 @@ microbenchmark(GetChainSquareR(x), GetChainSquareCpp(x), times = 10000L)
 
 <pre class="output">
 Unit: microseconds
-                 expr    min     lq median     uq      max neval
-   GetChainSquareR(x) 219.68 231.31 236.63 246.86 23711.83 10000
- GetChainSquareCpp(x)  21.02  22.88  26.42  28.07    78.66 10000
+                 expr    min     lq median     uq   max neval
+   GetChainSquareR(x) 220.92 231.88 236.99 248.20 23313 10000
+ GetChainSquareCpp(x)  20.95  22.91  26.63  28.21  2332 10000
 </pre>

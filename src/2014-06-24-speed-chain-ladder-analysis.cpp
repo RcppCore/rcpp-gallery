@@ -4,11 +4,24 @@
  * @author Chibisi Chima-Okereke
  * @license GPL (>= 2)
  * @tags modeling armadillo
- * @summary Demonstrates a speed-up of Chain Ladder analysis by calling C++ routines from R
- *          It uses both Rcpp and RcppArmadillo.
+ * @summary Speed-up of Chain Ladder analysis by calling C++ routines from R
  */
 
 /**
+ * The Chain Ladder method is an actuarial technique used for
+ * projecting incurred insurance claims to their ultimate loss
+ * values. The data exists as claims triangles where the claims for
+ * each accounting year increments down the rows and the claims for
+ * each development period increments along the columns.  This claims
+ * triangle can be represented in a triangular upper matrix (along the
+ * anti-diagonal) and the Chain Ladder technique works by filling in
+ * the lower part of the matrix using ratios of claims in previous
+ * accounting years and development periods.
+ * 
+ * In this example, we show how an implementation in R is sped up by
+ * calling an equivaluent implementation in C++ from R using the Rcpp
+ * interface.
+ * 
  * We start with the C++ code for carrying out the Chain Ladder calculation.
  *
  */
@@ -147,7 +160,7 @@ GetChainSquareR <- function(mClaimTri) {
 */
 
 /*** 
- * We can now run a timing test comparing chain ladder running in R natively 
+ * We now run a timed test comparing chain ladder running in R natively 
  * and being called from C++ functions using the Rcpp interface 
  */ 
 
