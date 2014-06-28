@@ -44,7 +44,7 @@ std::vector<std::vector<int> > split_indices(IntegerVector x, int n = 0) {
 }
 ```
 
-* We create a `std::vector` of integers called `out`. This will grow
+* We create a `std::vector` of integers called `ids`. It will grow
 efficiently as we add new values, and Rcpp will automatically convert to a
 list of integer vectors when returned to R. 
 

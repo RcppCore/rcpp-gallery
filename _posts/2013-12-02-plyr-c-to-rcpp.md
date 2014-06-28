@@ -47,8 +47,7 @@ std::vector<std::vector<int> > split_indices(IntegerVector x, int n = 0) {
 }
 {% endhighlight %}
 
-
-* We create a `std::vector` of integers called `out`. This will grow
+* We create a `std::vector` of integers called `ids`. It will grow
 efficiently as we add new values, and Rcpp will automatically convert to a
 list of integer vectors when returned to R. 
 
@@ -103,7 +102,6 @@ SEXP split_indices(SEXP group, SEXP n) {
     return vec;
 }
 {% endhighlight %}
-
 
 This function is almost three times as long, and has a bug in it.  It is
 substantially more complicated because it:
