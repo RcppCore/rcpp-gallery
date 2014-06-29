@@ -169,7 +169,7 @@ microbenchmark(GetChainSquareR(x), GetChainSquareCpp(x), times = 10000L)
 
 <pre class="output">
 Unit: microseconds
-                 expr    min     lq median     uq   max neval
-   GetChainSquareR(x) 220.92 231.88 236.99 248.20 23313 10000
- GetChainSquareCpp(x)  20.95  22.91  26.63  28.21  2332 10000
+                 expr     min      lq  median     uq     max neval
+   GetChainSquareR(x) 235.106 245.836 252.348 258.65 31378.5 10000
+ GetChainSquareCpp(x)   5.984   6.946   9.573  11.99   852.8 10000
 </pre>
