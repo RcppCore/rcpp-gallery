@@ -2,7 +2,7 @@
  * @title Summing a Vector in Parallel with Rcpp and TBB
  * @author JJ Allaire
  * @license GPL (>= 2)
- * @tags TBB parallel featured
+ * @tags tbb parallel featured
  * @summary Demonstrates computing the sum of a vector in parallel using 
  *   Intel TBB (Threading Building Blocks). 
  *

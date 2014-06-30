@@ -2,7 +2,7 @@
 title: Transforming a Matrix in Parallel using Rcpp and TBB
 author: JJ Allaire
 license: GPL (>= 2)
-tags: matrix TBB parallel featured
+tags: matrix tbb parallel featured
 summary: Demonstrates transforming a matrix in parallel using 
   Intel TBB (Threading Building Blocks). 
 layout: post
@@ -119,8 +119,8 @@ res[,1:4]
 
 <pre class="output">
                    test replications elapsed relative
-2 parallelMatrixSqrt(m)          100   0.293     1.00
-1         matrixSqrt(m)          100   0.800     2.73
+2 parallelMatrixSqrt(m)          100   0.801    1.000
+1         matrixSqrt(m)          100   1.775    2.216
 </pre>
 
 If you interested in learning more about using Intel TBB with Rcpp see 
