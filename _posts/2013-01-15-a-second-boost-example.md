@@ -15,15 +15,22 @@ library to convert text to numbers -- see the
 [Motivation](http://www.boost.org/doc/libs/1_51_0/doc/html/boost_lexical_cast.html#boost_lexical_cast.motivation)
 for more.
 
-As before, I should note that I write this post on a machine with [Boost](http://www.boost.org) headers 
-in a standard system location. <em>So stuff just works.</em> If you have to install Boost from source, 
-and into a non-standard location, you may need to add a <code>-I</code> flag, not unlike how added 
-the C++11 flag in [this post](../first-steps-with-C++11) .
+As before, I should note that I initially wrote this post on a machine with [Boost](http://www.boost.org)  
+in a standard system location. <em>So stuff just works.</em> Others may have had to install Boost from source, 
+and into a non-standard location, which may have required an <code>-I</code> flag, 
+not unlike how we initially added 
+the C++11 flag in [this post](../first-steps-with-C++11) before the corresponding plugin was added. 
 
+This is now automated thanks to the
+[BH package](http://dirk.eddelbuettel.com/code/bh.html) which, if installed, provides Boost headers 
+for use by R in compilations just like this one.
 
 
 
 {% highlight cpp %}
+// We can now use the BH package
+// [[Rcpp::depends(BH)]]
+
 #include <Rcpp.h>
 #include <boost/lexical_cast.hpp>  	// one file, automatically found for me
 
@@ -49,7 +56,6 @@ std::vector<double> lexicalCast(std::vector<std::string> v) {
 }
 {% endhighlight %}
 
-
 This simple program uses the [exceptions idiom we
 discussed](../intro-to-exceptions) to branch: when a value cannot
 be converted, a `NA` value is inserted.  
@@ -67,4 +73,3 @@ lexicalCast(v)
 <pre class="output">
 [1]    1.23    0.40 1000.00      NA   42.00      NA
 </pre>
-
