@@ -19,7 +19,7 @@ Side note: C++11 has introduced a similar for-each looping construct of the form
  
     for (T &elem : X) { /*do stuff*/ } 
     
-However, CRAN does not (at the time of this posting) allow C++11 in uploads and 
+However, CRAN does not (at the time this post was initially written) allow C++11 in uploads and 
 hence this Boost solution might be preferred if you want to use a for-each 
 construct in a package.
  
@@ -36,6 +36,9 @@ We'll use a simple example where we square each element in a vector.
 #include <boost/foreach.hpp>
 using namespace Rcpp;
  
+// We can now use the BH package
+// [[Rcpp::depends(BH)]]
+
 // the C-style upper-case macro name is a bit ugly; let's change it
 // note: this could cause compiler errors if it conflicts with other includes
 #define foreach BOOST_FOREACH
@@ -52,7 +55,6 @@ NumericVector square( NumericVector x ) {
   return x;
 }
 {% endhighlight %}
-
  
 
 {% highlight r %}
@@ -94,7 +96,6 @@ square(x)
 <pre class="output">
 [1]   1   4  NA  16 NaN Inf Inf
 </pre>
-
  
 And a quick benchmark:
  
@@ -112,9 +113,9 @@ microbenchmark(
 
 <pre class="output">
 Unit: microseconds
-       expr    min     lq median     uq  max
-1 square(x)  71.04  71.64  71.89  74.14 1518
-2       x^2 346.36 350.70 359.18 433.33 1842
+      expr   min     lq median    uq  max neval
+ square(x)  70.0  70.78     71  72.0 1498   100
+       x^2 151.5 152.11    153 561.9 2022   100
 </pre>
 
 
@@ -128,7 +129,6 @@ all.equal( square(x), x^2 )
 <pre class="output">
 [1] TRUE
 </pre>
-
  
 If you are defining your own classes / containers and want them to be compatible 
 with one of these for-each constructs, you will need to define some methods for

@@ -17,7 +17,7 @@ Side note: C++11 has introduced a similar for-each looping construct of the form
  
     for (T &elem : X) { /*do stuff*/ } 
     
-However, CRAN does not (at the time of this posting) allow C++11 in uploads and 
+However, CRAN does not (at the time this post was initially written) allow C++11 in uploads and 
 hence this Boost solution might be preferred if you want to use a for-each 
 construct in a package.
  
@@ -33,6 +33,9 @@ We'll use a simple example where we square each element in a vector.
 #include <boost/foreach.hpp>
 using namespace Rcpp;
  
+// We can now use the BH package
+// [[Rcpp::depends(BH)]]
+
 // the C-style upper-case macro name is a bit ugly; let's change it
 // note: this could cause compiler errors if it conflicts with other includes
 #define foreach BOOST_FOREACH
