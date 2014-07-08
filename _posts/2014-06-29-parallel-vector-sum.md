@@ -1,17 +1,17 @@
 ---
-title: Summing a Vector in Parallel with Rcpp and TBB
+title: Summing a Vector in Parallel with RcppParallel
 author: JJ Allaire
 license: GPL (>= 2)
-tags: tbb parallel featured
+tags: parallel featured
 summary: Demonstrates computing the sum of a vector in parallel using 
-  Intel TBB (Threading Building Blocks). 
+  the RcppParallel package. 
 layout: post
 src: 2014-06-29-parallel-vector-sum.cpp
 ---
-The **TBB** package includes an interface to the [Intel 
-TBB](https://www.threadingbuildingblocks.org/) library for parallel 
-programming with C++. This article describes using TBB to compute the
-sum of a vector in parallel.
+The RcppParallel package includes high level functions for doing parallel 
+programming with Rcpp. For example, the `parallelReduce` function can be used
+aggreggate values from a set of inputs in parallel. This article describes
+using RcppParallel to sum an R vector in parallel.
 
 
 First a serial version of computing the sum of a vector. For this we use
@@ -27,11 +27,11 @@ double vectorSum(NumericVector x) {
 }
 {% endhighlight %}
 
-Now we adapt our code to run in parallel using Intel TBB. We'll use the 
-`tbb::parallel_reduce` function to do this. As with the previous article 
-describing `tbb::parallel_for`, we implement a "Body" functor with our logic 
-and TBB takes care of scheduling work on threads and calling our functor when
-required. For parallel_reduce the functor has three jobs:
+Now we adapt our code to run in parallel using RcppParallel. We'll use the 
+`parallelReduce` function to do this. As with the previous article describing
+`parallelFor`, we implement a "Worker" functor with our logic and 
+RcppParallel takes care of scheduling work on threads and calling our functor
+when required. For parallelReduce the functor has three jobs:
 
 1. Implement a standard and "splitting" constructor. The standard constructor
 takes a pointer to the array that will be traversed and sets it's sum 
@@ -40,61 +40,66 @@ split onto other threads---it takes a reference to the instance it is being
 split from and simply copies the pointer to the input array and sets it's 
 internal sum to 0.
 
-2. Implement `operator()` to perform the summing. Here we just call
+2. Implement `operator()` to perform the summing. Here we just call 
 `std::accumulate` as we did in the serial version, but limit the accumulation
-to the items specified by the `range` argument (note that other threads will
-have been given the task of processing other items in the input array). We
-save the accumulated value in our `sum` member variable.
+to the items specified by the `begin` and `end` arguments (note that other 
+threads will have been given the task of processing other items in the input 
+array). We save the accumulated value in our `value` member variable.
 
 3. Finally, we implement a `join` method which composes the operations of two
-Body instances that were previously split. Here we simply add the accumulated
-sum of the instance we are being joined with to our own.
+Sum instances that were previously split. Here we simply add the
+accumulated sum of the instance we are being joined with to our own.
 
-Here's the definition of the `SumBody` functor:
+Here's the definition of the `SumB` functor:
 
 
 {% highlight cpp %}
-// [[Rcpp::depends(TBB)]]
-#include <tbb/tbb.h>
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
 
-struct SumBody {
-   
+struct Sum : public RcppParallel::Worker
+{   
    // source vector
-   double * const input;
+   double * input;
    
-   // sum that I have accumulated
-   double sum;
+   // value that I have accumulated
+   double value;
    
-   // standard and splitting constructor  
-   SumBody(double * const input) : input(input), sum(0) {}
-   SumBody(SumBody& body, tbb::split) : input(body.input), sum(0) {}
+   // constructors
+   Sum(double* input) : input(input), value(0) {}
+   Sum(Sum& sum, RcppParallel::Split) : input(sum.input), value(0) {}
    
    // accumulate just the element of the range I've been asked to
-   void operator()(const tbb::blocked_range<size_t>& r) {
-      sum += std::accumulate(input + r.begin(), input + r.end(), 0.0);
+   void operator()(std::size_t begin, std::size_t end) {
+      value += std::accumulate(input + begin, input + end, 0.0);
    }
-   
-   // join my sum with another one
-   void join(SumBody& rhs) { sum += rhs.sum; }
+     
+   // join my value with that of another Sum
+   void join(const Sum& rhs) { 
+      value += rhs.value; 
+   }
 };
 {% endhighlight %}
 
+Note that `Sum` derives from the `RcppParallel::Worker` class, 
+this is required for function objects passed to `parallelReduce`.
+
 Now that we've defined the functor, implementing the parallel sum 
-function is straightforward. Just initialize an instance of `SumBody`
-with a pointer to the input data and call `tbb::parallel_reduce`:
+function is straightforward. Just initialize an instance of `Sum`
+with a pointer to the input data and call `parallelReduce`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
 double parallelVectorSum(NumericVector x) {
    
    // declare the SumBody instance that takes a pointer to the vector data
-   SumBody sumBody(x.begin());
+   Sum sum(x.begin());
    
    // call parallel_reduce to start the work
-   tbb::parallel_reduce(tbb::blocked_range<size_t>(0, x.length()), sumBody);
+   RcppParallel::parallelReduce(0, x.length(), sum);
    
    // return the computed sum
-   return sumBody.sum;
+   return sum.value;
 }
 {% endhighlight %}
 
@@ -120,9 +125,9 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.453    1.000
-1         vectorSum(v)          100   1.228    2.711
+2 parallelVectorSum(v)          100   0.230    1.000
+1         vectorSum(v)          100   0.857    3.726
 </pre>
 
-If you interested in learning more about using Intel TBB with Rcpp see 
-[https://github.com/jjallaire/TBB](https://github.com/jjallaire/TBB).
+If you interested in learning more about using RcppParallel see 
+[https://github.com/jjallaire/RcppParallel](https://github.com/jjallaire/RcppParallel).

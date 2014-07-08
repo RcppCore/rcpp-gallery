@@ -1,17 +1,17 @@
 ---
-title: Transforming a Matrix in Parallel using Rcpp and TBB
+title: Transforming a Matrix in Parallel using RcppParallel
 author: JJ Allaire
 license: GPL (>= 2)
-tags: matrix tbb parallel featured
+tags: matrix parallel featured
 summary: Demonstrates transforming a matrix in parallel using 
-  Intel TBB (Threading Building Blocks). 
+  the RcppParallel package.
 layout: post
 src: 2014-06-29-parallel-matrix-transform.cpp
 ---
-The **TBB** package includes an interface to the [Intel 
-TBB](https://www.threadingbuildingblocks.org/) library for parallel 
-programming with C++. This article describes using TBB to transform an R
-matrix in parallel.
+The RcppParallel package includes high level functions for doing parallel 
+programming with Rcpp. For example, the `parallelFor` function can be used to
+convert the work of a standard serial "for" loop into a parallel one. This
+article describes using RcppParallel to transform an R matrix in parallel.
 
 
 First a serial version of the matrix transformation. We take the square root 
@@ -39,61 +39,64 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
 }
 {% endhighlight %}
 
-Now we adapt our code to run in parallel using Intel TBB. We'll use the 
-`tbb::parallel_for` function to do this. The TBB library takes care of 
-dividing up work between threads, our job is to implement a "Body"
-functor that is called by the TBB scheduler. 
+Now we adapt our code to run in parallel. We'll use the `parallelFor` 
+function to do this. RcppParallel takes care of dividing up work between 
+threads, our job is to implement a "Worker" functor that is called by the 
+RcppParallel scheduler.
 
-The `SqrtBody` functor below includes pointers to the input matrix as 
-well as the output matrix. Within it's `operator()` method it 
-performs a `std::transform` with the `sqrt` function on the array
-elements specified by the `range` argument:
+The `SquareRoot` functor below includes pointers to the input matrix as well
+as the output matrix. Within it's `operator()` method it performs a 
+`std::transform` with the `sqrt` function on the array elements specified by 
+the `range` argument:
 
 {% highlight cpp %}
-// [[Rcpp::depends(TBB)]]
-#include <tbb/tbb.h>
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
 
-struct SqrtBody
+struct SquareRoot : public RcppParallel::Worker
 {
    // source matrix
-   double * const input;
+   double* input;
    
    // destination matrix
    double* output;
    
    // initialize with source and destination
-   SqrtBody(double * const input, double* output) 
+   SquareRoot() : input(NULL), output(NULL) {}
+   SquareRoot(double* input, double* output) 
       : input(input), output(output) {}
    
    // take the square root of the range of elements requested
-   void operator()(const tbb::blocked_range<size_t>& range) const {
-      std::transform(input + range.begin(),
-                     input + range.end(),
-                     output + range.begin(),
-                     ::sqrt);
+   void operator()(std::size_t begin, std::size_t end) {
+      std::transform(input + begin, input + end, output + begin, ::sqrt);
    }
 };
 {% endhighlight %}
 
+Note that `SquareRoot` derives from the `RcppParallel::Worker` class, 
+this is required for function objects passed to `parallelFor`.
+
 Here's the parallel version of our matrix transformation function that
-makes uses of the `SqrtBody` functor. The main difference is that 
-rather than calling `std::transform` directly, the `tbb::parallel_for`
+makes uses of the `SquareRoot` functor. The main difference is that 
+rather than calling `std::transform` directly, the `parallelFor`
 function is called with the range to operate on (based on the length
-of the input matrix) and an instance of `SqrtBody`:
+of the input matrix) and an instance of `SquareRoot`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
-NumericMatrix parallelMatrixSqrt(NumericMatrix orig) {
-
-   // allocate the matrix we will return
-   NumericMatrix mat(orig.nrow(), orig.ncol());
-   
-   // transform it in parallel
-   tbb::parallel_for(tbb::blocked_range<size_t>(0, orig.length()),
-                     SqrtBody(orig.begin(), mat.begin()));
-   
-   // return the new matrix
-   return mat;
+NumericMatrix parallelMatrixSqrt(NumericMatrix x) {
+  
+  // allocate the output matrix
+  NumericMatrix output(x.nrow(), x.ncol());
+  
+  // SquareRoot instance that takes a pointer to the input & output data
+  SquareRoot squareRoot(x.begin(), output.begin());
+  
+  // call parallelFor to do the work
+  RcppParallel::parallelFor(0, x.length(), squareRoot);
+  
+  // return the output matrix
+  return output;
 }
 {% endhighlight %}
 
@@ -119,9 +122,9 @@ res[,1:4]
 
 <pre class="output">
                    test replications elapsed relative
-2 parallelMatrixSqrt(m)          100   0.801    1.000
-1         matrixSqrt(m)          100   1.775    2.216
+2 parallelMatrixSqrt(m)          100   0.411    1.000
+1         matrixSqrt(m)          100   0.857    2.085
 </pre>
 
-If you interested in learning more about using Intel TBB with Rcpp see 
-[https://github.com/jjallaire/TBB](https://github.com/jjallaire/TBB).
+If you interested in learning more about using RcppParallel see 
+[https://github.com/jjallaire/RcppParallel](https://github.com/jjallaire/RcppParallel).
