@@ -50,7 +50,7 @@ array). We save the accumulated value in our `value` member variable.
 Sum instances that were previously split. Here we simply add the
 accumulated sum of the instance we are being joined with to our own.
 
-Here's the definition of the `SumB` functor:
+Here's the definition of the `Sum` functor:
 
 
 {% highlight cpp %}
@@ -125,8 +125,8 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.230    1.000
-1         vectorSum(v)          100   0.857    3.726
+2 parallelVectorSum(v)          100   0.229    1.000
+1         vectorSum(v)          100   0.879    3.838
 </pre>
 
 If you interested in learning more about using RcppParallel see 

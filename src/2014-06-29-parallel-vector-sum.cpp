@@ -49,7 +49,7 @@ double vectorSum(NumericVector x) {
  * Sum instances that were previously split. Here we simply add the
  * accumulated sum of the instance we are being joined with to our own.
  *
- * Here's the definition of the `SumB` functor:
+ * Here's the definition of the `Sum` functor:
  * 
  */
 
