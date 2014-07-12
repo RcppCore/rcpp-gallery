@@ -23,6 +23,14 @@ shows.
 // and as bigmemory now accesses Boost headers from the BH package,
 // we need to make sure we do so as well in this Rcpp::depends comment.
 //
+// Boost headers can generate some warning with the default compilation
+// options for R.  To suppress these, we can enable C++11 mode which gets
+// us 'long long' types.
+//
+// If your compiler is to old, just disable / remove the following line
+// [[Rcpp::plugins(cpp11)]]
+
+//
 // [[Rcpp::depends(BH, bigmemory)]]
 #include <bigmemory/MatrixAccessor.hpp>
 
@@ -36,7 +44,7 @@ Rcpp::NumericVector BigColSums(Rcpp::XPtr<BigMatrix> pBigMat) {
   
     // Create the vector we'll store the column sums in.
     Rcpp::NumericVector colSums(pBigMat->ncol());
-    for (size_t i=0; i < pBigMat->ncol(); ++i)
+    for (unsigned int i=0; i < pBigMat->ncol(); ++i)
         colSums[i] = std::accumulate(ma[i], ma[i]+pBigMat->nrow(), 0.0);
     return colSums;
 }
