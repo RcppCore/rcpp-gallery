@@ -19,18 +19,24 @@ This example demonstrates how to write functions in `Rcpp` that operate on
 `big.matrix` objects. Here we implement the equivalent of `colSums`:
 
 {% highlight cpp %}
+// Since bigmemory now accesses Boost headers from the BH package,
+// we need to make sure we do so as well in this Rcpp::depends comment 
+// when including both the Rcpp and bigmemory header files.
+
+// [[Rcpp::depends(BH)]]
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// The next line is all it takes to find the bigmemory
-// headers -- thanks to the magic of Rcpp attributes,
-// and as bigmemory now accesses Boost headers from the BH package,
-// we need to make sure we do so as well in this Rcpp::depends comment.
-//
+// This next line is all it takes to find the bigmemory 
+// headers -- thanks to the magic of Rcpp attributes.
 // [[Rcpp::depends(BH, bigmemory)]]
 #include <bigmemory/MatrixAccessor.hpp>
 
 #include <numeric>
+
+// You will also need to add the following to your DESCRIPTION file if
+// you're developing a package so that it will compile without warnings:
+// SystemRequirements: C++11
 
 // Logic for BigColSums.
 template <typename T>
