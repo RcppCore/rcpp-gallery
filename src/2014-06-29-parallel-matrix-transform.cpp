@@ -6,10 +6,11 @@
  * @summary Demonstrates transforming a matrix in parallel using 
  *   the RcppParallel package.
  *
- * The RcppParallel package includes high level functions for doing parallel 
- * programming with Rcpp. For example, the `parallelFor` function can be used to
- * convert the work of a standard serial "for" loop into a parallel one. This
- * article describes using RcppParallel to transform an R matrix in parallel.
+ * The [RcppParallel](https://github.com/RcppCore/RcppParallel) package includes
+ * high level functions for doing parallel programming with Rcpp. For example,
+ * the `parallelFor` function can be used to convert the work of a standard
+ * serial "for" loop into a parallel one. This article describes using
+ * RcppParallel to transform an R matrix in parallel.
  */
 
 /**
@@ -51,29 +52,38 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
+using namespace RcppParallel;
 
-struct SquareRoot : public RcppParallel::Worker
+struct SquareRoot : public Worker
 {
-   // source matrix
-   double* input;
+    // source matrix
+   RMatrix<double> input;
    
    // destination matrix
-   double* output;
+   RMatrix<double> output;
    
    // initialize with source and destination
-   SquareRoot() : input(NULL), output(NULL) {}
-   SquareRoot(double* input, double* output) 
+   SquareRoot(NumericMatrix input, NumericMatrix output) 
       : input(input), output(output) {}
    
    // take the square root of the range of elements requested
    void operator()(std::size_t begin, std::size_t end) {
-      std::transform(input + begin, input + end, output + begin, ::sqrt);
+      std::transform(input.begin() + begin, 
+                     input.begin() + end, 
+                     output.begin() + begin, 
+                     ::sqrt);
    }
 };
 
 /**
- * Note that `SquareRoot` derives from the `RcppParallel::Worker` class, 
- * this is required for function objects passed to `parallelFor`.
+ * Note that `SquareRoot` derives from the `RcppParallel::Worker` class, this is
+ * required for function objects passed to `parallelFor`.
+ * 
+ * Note also that we use the `RMatrix<double>` type for accessing the matrix. 
+ * This is because this code will execute on a background thread where it's not 
+ * safe to call R or Rcpp APIs. The `RMatrix` class is included in the 
+ * RcppParallel package and provides a lightweight, thread-safe wrapper around R
+ * matrixes.
  */
 
 /**
@@ -90,11 +100,11 @@ NumericMatrix parallelMatrixSqrt(NumericMatrix x) {
   // allocate the output matrix
   NumericMatrix output(x.nrow(), x.ncol());
   
-  // SquareRoot instance that takes a pointer to the input & output data
-  SquareRoot squareRoot(x.begin(), output.begin());
+  // SquareRoot functior (pass input and output matrixes)
+  SquareRoot squareRoot(x, output);
   
   // call parallelFor to do the work
-  RcppParallel::parallelFor(0, x.length(), squareRoot);
+  parallelFor(0, x.length(), squareRoot);
   
   // return the output matrix
   return output;
