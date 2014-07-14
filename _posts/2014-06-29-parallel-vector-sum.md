@@ -130,4 +130,4 @@ res[,1:4]
 </pre>
 
 If you interested in learning more about using RcppParallel see 
-[https://github.com/jjallaire/RcppParallel](https://github.com/jjallaire/RcppParallel).
+[https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
