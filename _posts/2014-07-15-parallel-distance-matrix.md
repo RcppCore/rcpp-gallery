@@ -1,48 +1,46 @@
-/**
- * @title Parallel Distance Matrix Calculation with RcppParallel
- * @author JJ Allaire and Jim Bullard
- * @license GPL (>= 2)
- * @tags parallel featured
- * @summary Demonstrates computing an n x n distance matrix from an n x p data
- *   matrix.
- *
- * The [RcppParallel](https://github.com/RcppCore/RcppParallel) package includes
- * high level functions for doing parallel programming with Rcpp. For example, 
- * the `parallelFor` function can be used to convert the work of a standard 
- * serial "for" loop into a parallel one.
- * 
- * This article describes using RcppParallel to compute pairwise distances for
- * each row in an input data matrix and return an n x n lower-triangular
- * distance matrix which can be used with clustering tools from within R, e.g., 
- * [hclust](http://stat.ethz.ch/R-manual/R-patched/library/stats/html/hclust.html).
- * 
- */
- 
-/** 
- * ### Jensen-Shannon Distance
- *
- * In this example, we compute the [Jensen-Shannon 
- * distance](http://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) 
- * (JSD); a metric not a part of base R. Calculating distance matrices is a 
- * common practice in clustering applications (unsupervised learning). Certain 
- * clustering methods, such as partitioning around medoids (PAM) and 
- * hierarchical clustering, operate directly on this matrix.
- * 
- * A distance matrix stores the n*(n-1)/2 pairwise distances/similarities 
- * between observations in an n x p matrix where n correspond to the independent
- * observational units and p represent the covariates measured on each 
- * individual. As a result we are typically limited by the size of n as the 
- * algorithm scales quadratically in both time and space in n.
- */
-  
-/**
- * ### Implementation in R
- * 
- * As a baseline we'll start with the implementation of Jenson-Shannon distance
- * in plain R:
- */
+---
+title: Parallel Distance Matrix Calculation with RcppParallel
+author: JJ Allaire and Jim Bullard
+license: GPL (>= 2)
+tags: parallel featured
+summary: Demonstrates computing an n x n distance matrix from an n x p data
+  matrix.
+layout: post
+src: 2014-07-15-parallel-distance-matrix.cpp
+---
+The [RcppParallel](https://github.com/RcppCore/RcppParallel) package includes
+high level functions for doing parallel programming with Rcpp. For example, 
+the `parallelFor` function can be used to convert the work of a standard 
+serial "for" loop into a parallel one.
 
-/*** R
+This article describes using RcppParallel to compute pairwise distances for
+each row in an input data matrix and return an n x n lower-triangular
+distance matrix which can be used with clustering tools from within R, e.g., 
+[hclust](http://stat.ethz.ch/R-manual/R-patched/library/stats/html/hclust.html).
+
+
+
+### Jensen-Shannon Distance
+
+In this example, we compute the [Jensen-Shannon 
+distance](http://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) 
+(JSD); a metric not a part of base R. Calculating distance matrices is a 
+common practice in clustering applications (unsupervised learning). Certain 
+clustering methods, such as partitioning around medoids (PAM) and 
+hierarchical clustering, operate directly on this matrix.
+
+A distance matrix stores the n*(n-1)/2 pairwise distances/similarities 
+between observations in an n x p matrix where n correspond to the independent
+observational units and p represent the covariates measured on each 
+individual. As a result we are typically limited by the size of n as the 
+algorithm scales quadratically in both time and space in n.
+
+### Implementation in R
+
+As a baseline we'll start with the implementation of Jenson-Shannon distance
+in plain R:
+
+{% highlight r %}
 js_distance <- function(mat) {
   kld = function(p,q) sum(ifelse(p == 0 | q == 0, 0, log(p/q)*p))
   res = matrix(0, nrow(mat), nrow(mat))
@@ -56,27 +54,26 @@ js_distance <- function(mat) {
   }
   res
 }
-*/
+{% endhighlight %}
 
-/**
- * ### Implementation using Rcpp
- * 
- * Here is a re-implementation of `js_distance` using Rcpp. Note that this 
- * doesn't yet take advantage of parallel processing, but still yields a roughly
- * 50x speedup over the original R version.
- * 
- * Abstractly, a Distance function will take two vectors in R<sup>J</sup> and 
- * return a value in R<sup>+</sup>. In this implementation, we don't support 
- * arbitrary distance metrics, i.e., the JSD code computes the values from 
- * within the parallel kernel.
- * 
- * Our distance function `kl_divergence` is defined below and takes three
- * parameters: iterators to the beginning and end of vector 1 and an iterator to
- * the beginning of vector 2 (the end position of vector2 is implied by the end 
- * position of vector1).
- *
- */
+### Implementation using Rcpp
 
+Here is a re-implementation of `js_distance` using Rcpp. Note that this 
+doesn't yet take advantage of parallel processing, but still yields a roughly
+50x speedup over the original R version.
+
+Abstractly, a Distance function will take two vectors in R<sup>J</sup> and 
+return a value in R<sup>+</sup>. In this implementation, we don't support 
+arbitrary distance metrics, i.e., the JSD code computes the values from 
+within the parallel kernel.
+
+Our distance function `kl_divergence` is defined below and takes three
+parameters: iterators to the beginning and end of vector 1 and an iterator to
+the beginning of vector 2 (the end position of vector2 is implied by the end 
+position of vector1).
+
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -108,13 +105,12 @@ inline double kl_divergence(InputIterator1 begin1, InputIterator1 end1,
    }
    return rval;  
 }
+{% endhighlight %}
 
+With the `kl_distance` function defined we can now iteratively apply it 
+to the rows of the input matrix to generate the distance matrix:
 
-/**
- * With the `kl_distance` function defined we can now iteratively apply it 
- * to the rows of the input matrix to generate the distance matrix:
- */
-
+{% highlight cpp %}
 // helper function for taking the average of two numbers
 inline double average(double val1, double val2) {
    return (val1 + val2) / 2;
@@ -151,33 +147,32 @@ NumericMatrix rcpp_js_distance(NumericMatrix mat) {
    
    return rmat;
 }
+{% endhighlight %}
 
+### Parallel Version using RcppParallel
 
-/**
- * ### Parallel Version using RcppParallel
- * 
- * Adapting the serial version to run in parallel is straightforward. A few 
- * notes about the implementation:
- * 
- * - To implement a parallel version we need to create a [function 
- * object](http://en.wikipedia.org/wiki/Function_object) that can process 
- * discrete chunks of work (i.e. ranges of input).
- * 
- * - Since the parallel version will be called from background threads, we can't
- * use R and Rcpp APIs directly. Rather, we use the threadsafe `RMatrix` 
- * accessor class provided by RcppParallel to read and write to directly the 
- * underlying matrix memory.
- * 
- * - Other than organzing the code as a function object and using `RMatrix`, the
- * parallel code is almost identical to the serial code. The main difference is 
- * that the outer loop starts with the `begin` index passed to the worker 
- * function rather than 0.
- * 
- * Parallelizing in this case has big payoff: we observe performance of about 5x
- * the serial version on a machine with 4 cores (8 with hyperthreading). Here is
- * the definition of the `JsDistance` function object:
- */
+Adapting the serial version to run in parallel is straightforward. A few 
+notes about the implementation:
 
+- To implement a parallel version we need to create a [function 
+object](http://en.wikipedia.org/wiki/Function_object) that can process 
+discrete chunks of work (i.e. ranges of input).
+
+- Since the parallel version will be called from background threads, we can't
+use R and Rcpp APIs directly. Rather, we use the threadsafe `RMatrix` 
+accessor class provided by RcppParallel to read and write to directly the 
+underlying matrix memory.
+
+- Other than organzing the code as a function object and using `RMatrix`, the
+parallel code is almost identical to the serial code. The main difference is 
+that the outer loop starts with the `begin` index passed to the worker 
+function rather than 0.
+
+Parallelizing in this case has big payoff: we observe performance of about 5x
+the serial version on a machine with 4 cores (8 with hyperthreading). Here is
+the definition of the `JsDistance` function object:
+
+{% highlight cpp %}
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
@@ -221,13 +216,13 @@ struct JsDistance : public Worker {
       }
    }
 };
+{% endhighlight %}
 
-/**
- * Now that we have the `JsDistance` function object we can pass it to 
- * `parallelFor`, specifying an iteration range based on the number of rows in
- * the input matrix:
- */
+Now that we have the `JsDistance` function object we can pass it to 
+`parallelFor`, specifying an iteration range based on the number of rows in
+the input matrix:
 
+{% highlight cpp %}
 // [[Rcpp::export]]
 NumericMatrix rcpp_parallel_js_distance(NumericMatrix mat) {
   
@@ -242,17 +237,14 @@ NumericMatrix rcpp_parallel_js_distance(NumericMatrix mat) {
 
    return rmat;
 }
+{% endhighlight %}
 
+### Benchmarks
 
-/**
- * ### Benchmarks
- * 
- * We now compare the performance of the three different implementations: pure
- * R, serial Rcpp, and parallel Rcpp:
- */
+We now compare the performance of the three different implementations: pure
+R, serial Rcpp, and parallel Rcpp:
 
-/*** R
-
+{% highlight r %}
 # create a matrix
 n  = 1000
 m = matrix(runif(n*10), ncol = 10)
@@ -273,16 +265,21 @@ res <- benchmark(js_distance(m),
                  replications = 3,
                  order="relative")
 res[,1:4]
-*/
+{% endhighlight %}
 
-/**
- * The serial Rcpp versions yields a more than 50x speedup over straight R code.
- * On a machine with 4 cores (8 with hyperthreading) the parallel Rcpp version 
- * yields another 5x plus speedup, yeilding a total speedup of 300x over the
- * original R version.
- */
- 
- /**
- * If you interested in learning more about using RcppParallel see 
- * [https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
- */ 
+
+
+<pre class="output">
+                          test replications elapsed relative
+3 rcpp_parallel_js_distance(m)            5   0.189    1.000
+2          rcpp_js_distance(m)            5   1.012    5.354
+1               js_distance(m)            5  59.093  312.661
+</pre>
+
+The serial Rcpp versions yields a more than 50x speedup over straight R code.
+On a machine with 4 cores (8 with hyperthreading) the parallel Rcpp version 
+yields another 5x plus speedup, yeilding a total speedup of 300x over
+the original R version.
+
+If you interested in learning more about using RcppParallel see 
+[https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
