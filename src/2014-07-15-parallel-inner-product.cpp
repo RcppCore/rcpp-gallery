@@ -15,6 +15,8 @@
  */
 
 /**
+ * ### Serial Version
+ * 
  * First the serial version of computing the inner product. For this we use
  * a simple call to the STL `std::inner_product` function:
  */
@@ -30,6 +32,8 @@ double innerProduct(NumericVector x, NumericVector y) {
 }
 
 /**
+ * ### Parallel Version
+ * 
  * Now we adapt our code to run in parallel. We'll use the `parallelReduce`
  * function to do this. This function requires a "worker" function object
  * (defined below as `InnerProduct`). For details on worker objects see the 
@@ -95,6 +99,8 @@ double parallelInnerProduct(NumericVector x, NumericVector y) {
 }
 
 /**
+ * ### Benchmarks
+ * 
  * A comparison of the performance of the two functions shows the parallel
  * version performing about 2.5 times as fast on a machine with 4 cores:
  */

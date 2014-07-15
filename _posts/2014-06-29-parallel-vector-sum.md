@@ -15,6 +15,8 @@ inputs in parallel. This article describes using RcppParallel to sum an R
 vector.
 
 
+### Serial Version
+
 First a serial version of computing the sum of a vector. For this we use
 a simple call to the STL `std::accumulate` function:
 
@@ -29,6 +31,8 @@ double vectorSum(NumericVector x) {
    return std::accumulate(x.begin(), x.end(), 0.0);
 }
 {% endhighlight %}
+
+### Parallel Version
 
 Now we adapt our code to run in parallel. We'll use the `parallelReduce` 
 function to do this. As with the [previous 
@@ -112,6 +116,8 @@ double parallelVectorSum(NumericVector x) {
 }
 {% endhighlight %}
 
+### Benchmarks
+
 A comparison of the performance of the two functions shows the parallel
 version performing about 4 times as fast on a machine with 4 cores:
 
@@ -134,8 +140,8 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.223    1.000
-1         vectorSum(v)          100   0.862    3.865
+2 parallelVectorSum(v)          100   0.224    1.000
+1         vectorSum(v)          100   0.864    3.857
 </pre>
 
 If you interested in learning more about using RcppParallel see 

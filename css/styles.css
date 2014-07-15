@@ -3,6 +3,10 @@ pre.output {
    background-color: white;
 }
 
+h3 {
+   margin-top: 16px;
+}
+
 .footer {
    font-size: .9em;
    color: #666;

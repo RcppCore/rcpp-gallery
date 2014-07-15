@@ -14,6 +14,8 @@
  */
 
 /**
+ * ### Serial Version
+ * 
  * First a serial version of computing the sum of a vector. For this we use
  * a simple call to the STL `std::accumulate` function:
  */
@@ -29,6 +31,8 @@ double vectorSum(NumericVector x) {
 }
 
 /**
+ * ### Parallel Version
+ * 
  * Now we adapt our code to run in parallel. We'll use the `parallelReduce` 
  * function to do this. As with the [previous 
  * article](2014-06-29-parallel-matrix-transform.cpp) describing `parallelFor`, 
@@ -113,6 +117,8 @@ double parallelVectorSum(NumericVector x) {
 }
 
 /**
+ * ### Benchmarks
+ * 
  * A comparison of the performance of the two functions shows the parallel
  * version performing about 4 times as fast on a machine with 4 cores:
  */

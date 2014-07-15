@@ -15,6 +15,8 @@ serial "for" loop into a parallel one. This article describes using
 RcppParallel to transform an R matrix in parallel.
 
 
+### Serial Version
+
 First a serial version of the matrix transformation. We take the square root 
 of each item of a matrix and return a new matrix with the tranformed values. 
 We do this by using `std::transform` to call the `sqrt` function on each
@@ -40,6 +42,8 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
   return mat;
 }
 {% endhighlight %}
+
+### Parallel Version
 
 Now we'll adapt our code to run in parallel using the `parallelFor` function.
 RcppParallel takes care of dividing up work between threads, our job is to 
@@ -110,6 +114,8 @@ NumericMatrix parallelMatrixSqrt(NumericMatrix x) {
   return output;
 }
 {% endhighlight %}
+
+### Benchmarks
 
 A comparison of the performance of the two functions shows the parallel
 version performing about 2.5 times as fast on a machine with 4 cores:

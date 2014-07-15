@@ -16,6 +16,8 @@ the [inner-product](http://gallery.rcpp.org/articles/stl-inner-product/)
 example previously posted to the Rcpp Gallery.
 
 
+### Serial Version
+
 First the serial version of computing the inner product. For this we use
 a simple call to the STL `std::inner_product` function:
 
@@ -30,6 +32,8 @@ double innerProduct(NumericVector x, NumericVector y) {
    return std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
 }
 {% endhighlight %}
+
+### Parallel Version
 
 Now we adapt our code to run in parallel. We'll use the `parallelReduce`
 function to do this. This function requires a "worker" function object
@@ -93,6 +97,8 @@ double parallelInnerProduct(NumericVector x, NumericVector y) {
    return innerProduct.product;
 }
 {% endhighlight %}
+
+### Benchmarks
 
 A comparison of the performance of the two functions shows the parallel
 version performing about 2.5 times as fast on a machine with 4 cores:
