@@ -197,8 +197,8 @@ struct JsDistance : public Worker {
    
    // function call operator that work for the specified range (begin/end)
    void operator()(std::size_t begin, std::size_t end) {
-      for (int i = begin; i < end; i++) {
-         for (int j = 0; j < i; j++) {
+      for (std::size_t i = begin; i < end; i++) {
+         for (std::size_t j = 0; j < i; j++) {
             
             // rows we will operate on
             RMatrix<double>::Row row1 = mat.row(i);
