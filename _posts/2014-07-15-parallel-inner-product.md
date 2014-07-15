@@ -1,5 +1,5 @@
 ---
-title: Computing the Inner Product of Two Vectors with RcppParallel
+title: Computing an Inner Product with RcppParallel
 author: JJ Allaire
 license: GPL (>= 2)
 tags: parallel
@@ -31,10 +31,9 @@ double innerProduct(NumericVector x, NumericVector y) {
 }
 {% endhighlight %}
 
-Now we adapt our code to run in parallel using RcppParallel. We'll use the 
-`parallelReduce` function to do this. This function requires a "worker" 
-function object (defined below as `InnerProduct`). For details on worker
-objects see the 
+Now we adapt our code to run in parallel. We'll use the `parallelReduce`
+function to do this. This function requires a "worker" function object
+(defined below as `InnerProduct`). For details on worker objects see the 
 [parallel-vector-sum](http://gallery.rcpp.org/articles/parallel-vector-sum/) 
 article on the Rcpp Gallery.
 
@@ -69,16 +68,16 @@ struct InnerProduct : public Worker
 };
 {% endhighlight %}
 
-Note that `InnerProduct` derives from the `RcppParallel::Worker` class, this
+Note that `InnerProduct` derives from the `RcppParallel::Worker` class. This
 is required for function objects passed to `parallelReduce`.
 
 Note also that we use use raw `double *` for accessing the vectors. This is 
 because this code will execute on a background thread where it's not safe to 
 call R or Rcpp APIs.
 
-Now that we've defined the functor, implementing the parallel inner product 
-function is straightforward. Just initialize an instance of `InnerProduct`
-with pointers to the input data and call `parallelReduce`:
+Now that we've defined the function object, implementing the parallel inner
+product function is straightforward. Just initialize an instance of
+`InnerProduct` with pointers to the input data and call `parallelReduce`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
@@ -114,9 +113,9 @@ res[,1:4]
 
 <pre class="output">
                         test replications elapsed relative
-3 parallelInnerProduct(x, y)          100   0.040     1.00
-2         innerProduct(x, y)          100   0.096     2.40
-1                 sum(x * y)          100   0.419    10.47
+3 parallelInnerProduct(x, y)          100   0.038    1.000
+2         innerProduct(x, y)          100   0.096    2.526
+1                 sum(x * y)          100   0.439   11.553
 </pre>
 
 If you interested in learning more about using RcppParallel see 

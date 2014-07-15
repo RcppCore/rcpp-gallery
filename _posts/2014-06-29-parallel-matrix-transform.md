@@ -16,7 +16,7 @@ RcppParallel to transform an R matrix in parallel.
 
 
 First a serial version of the matrix transformation. We take the square root 
-of each item of a matrix and return a new matrix with the tranformed values.
+of each item of a matrix and return a new matrix with the tranformed values. 
 We do this by using `std::transform` to call the `sqrt` function on each
 element of the matrix:
 
@@ -41,15 +41,15 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
 }
 {% endhighlight %}
 
-Now we adapt our code to run in parallel. We'll use the `parallelFor` 
-function to do this. RcppParallel takes care of dividing up work between 
-threads, our job is to implement a "Worker" functor that is called by the 
-RcppParallel scheduler.
+Now we'll adapt our code to run in parallel using the `parallelFor` function.
+RcppParallel takes care of dividing up work between threads, our job is to 
+implement a "Worker" function object that is called by the RcppParallel 
+scheduler.
 
-The `SquareRoot` functor below includes pointers to the input matrix as well
-as the output matrix. Within it's `operator()` method it performs a 
+The `SquareRoot` function object below includes pointers to the input matrix
+as well as the output matrix. Within it's `operator()` method it performs a 
 `std::transform` with the `sqrt` function on the array elements specified by 
-the `range` argument:
+the `begin` and `end` arguments:
 
 {% highlight cpp %}
 // [[Rcpp::depends(RcppParallel)]]
@@ -78,8 +78,8 @@ struct SquareRoot : public Worker
 };
 {% endhighlight %}
 
-Note that `SquareRoot` derives from the `RcppParallel::Worker` class, this is
-required for function objects passed to `parallelFor`.
+Note that `SquareRoot` derives from `RcppParallel::Worker`. This is required
+for function objects passed to `parallelFor`.
 
 Note also that we use the `RMatrix<double>` type for accessing the matrix. 
 This is because this code will execute on a background thread where it's not 
@@ -87,11 +87,11 @@ safe to call R or Rcpp APIs. The `RMatrix` class is included in the
 RcppParallel package and provides a lightweight, thread-safe wrapper around R
 matrixes.
 
-Here's the parallel version of our matrix transformation function that
-makes uses of the `SquareRoot` functor. The main difference is that 
-rather than calling `std::transform` directly, the `parallelFor`
-function is called with the range to operate on (based on the length
-of the input matrix) and an instance of `SquareRoot`:
+Here's the parallel version of our matrix transformation function that makes 
+uses of the `SquareRoot` function object. The main difference is that rather 
+than calling `std::transform` directly, the `parallelFor` function is called 
+with the range to operate on (in this case based on the length of the input
+matrix) and an instance of `SquareRoot`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
@@ -133,8 +133,8 @@ res[,1:4]
 
 <pre class="output">
                    test replications elapsed relative
-2 parallelMatrixSqrt(m)          100   0.417    1.000
-1         matrixSqrt(m)          100   0.842    2.019
+2 parallelMatrixSqrt(m)          100   0.407    1.000
+1         matrixSqrt(m)          100   0.866    2.128
 </pre>
 
 If you interested in learning more about using RcppParallel see 
