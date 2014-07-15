@@ -62,8 +62,8 @@ js_distance <- function(mat) {
  * ### Implementation using Rcpp
  * 
  * Here is a re-implementation of `js_distance` using Rcpp. Note that this 
- * doesn't yet take advantage of parallel processing, but still yields a roughly
- * 50x speedup over the original R version.
+ * doesn't yet take advantage of parallel processing, but still yields an 
+ * approximately 35x speedup over the original R version.
  * 
  * Abstractly, a Distance function will take two vectors in R<sup>J</sup> and 
  * return a value in R<sup>+</sup>. In this implementation, we don't support 
@@ -173,7 +173,7 @@ NumericMatrix rcpp_js_distance(NumericMatrix mat) {
  * that the outer loop starts with the `begin` index passed to the worker 
  * function rather than 0.
  * 
- * Parallelizing in this case has big payoff: we observe performance of about 5x
+ * Parallelizing in this case has big payoff: we observe performance of about 6x
  * the serial version on a machine with 4 cores (8 with hyperthreading). Here is
  * the definition of the `JsDistance` function object:
  */
@@ -276,9 +276,9 @@ res[,1:4]
 */
 
 /**
- * The serial Rcpp versions yields a more than 50x speedup over straight R code.
+ * The serial Rcpp versions yields a more than 30x speedup over straight R code.
  * On a machine with 4 cores (8 with hyperthreading) the parallel Rcpp version 
- * yields another 5x plus speedup, yeilding a total speedup of 300x over the
+ * yields another 6x plus speedup, yeilding a total speedup of 200x over the
  * original R version.
  */
  
