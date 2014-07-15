@@ -22,6 +22,8 @@ a simple call to the STL `std::accumulate` function:
 #include <Rcpp.h>
 using namespace Rcpp;
 
+#include <algorithm>
+
 // [[Rcpp::export]]
 double vectorSum(NumericVector x) {
    return std::accumulate(x.begin(), x.end(), 0.0);
@@ -63,13 +65,13 @@ using namespace RcppParallel;
 struct Sum : public Worker
 {   
    // source vector
-   double * input;
+   const double * input;
    
    // value that I have accumulated
    double value;
    
    // constructors
-   Sum(double* input) : input(input), value(0) {}
+   Sum(const double* input) : input(input), value(0) {}
    Sum(Sum& sum, Split) : input(sum.input), value(0) {}
    
    // accumulate just the element of the range I've been asked to
@@ -132,8 +134,8 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.229    1.000
-1         vectorSum(v)          100   0.879    3.838
+2 parallelVectorSum(v)          100   0.223    1.000
+1         vectorSum(v)          100   0.862    3.865
 </pre>
 
 If you interested in learning more about using RcppParallel see 

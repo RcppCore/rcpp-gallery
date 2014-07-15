@@ -25,6 +25,7 @@ element of the matrix:
 using namespace Rcpp;
 
 #include <cmath>
+#include <algorithm>
 
 // [[Rcpp::export]]
 NumericMatrix matrixSqrt(NumericMatrix orig) {
@@ -57,14 +58,14 @@ using namespace RcppParallel;
 
 struct SquareRoot : public Worker
 {
-    // source matrix
-   RMatrix<double> input;
+   // source matrix
+   const RMatrix<double> input;
    
    // destination matrix
    RMatrix<double> output;
    
    // initialize with source and destination
-   SquareRoot(NumericMatrix input, NumericMatrix output) 
+   SquareRoot(const NumericMatrix input, NumericMatrix output) 
       : input(input), output(output) {}
    
    // take the square root of the range of elements requested
@@ -99,7 +100,7 @@ NumericMatrix parallelMatrixSqrt(NumericMatrix x) {
   // allocate the output matrix
   NumericMatrix output(x.nrow(), x.ncol());
   
-  // SquareRoot functior (pass input and output matrixes)
+  // SquareRoot functor (pass input and output matrixes)
   SquareRoot squareRoot(x, output);
   
   // call parallelFor to do the work
@@ -132,8 +133,8 @@ res[,1:4]
 
 <pre class="output">
                    test replications elapsed relative
-2 parallelMatrixSqrt(m)          100   0.424    1.000
-1         matrixSqrt(m)          100   0.857    2.021
+2 parallelMatrixSqrt(m)          100   0.417    1.000
+1         matrixSqrt(m)          100   0.842    2.019
 </pre>
 
 If you interested in learning more about using RcppParallel see 
