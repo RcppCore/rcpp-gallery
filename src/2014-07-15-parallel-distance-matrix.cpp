@@ -276,13 +276,11 @@ res[,1:4]
 */
 
 /**
- * The serial Rcpp versions yields a more than 30x speedup over straight R code.
+ * The serial Rcpp version yields a more than 50x speedup over straight R code. 
  * On a machine with 4 cores (8 with hyperthreading) the parallel Rcpp version 
- * yields another 6x plus speedup, yeilding a total speedup of 200x over the
- * original R version.
- */
- 
-/**
+ * provides another 5.5x speedup, amounting to a total gain of over 300x 
+ * compared to the original R version.
+ * 
  * Note that performance gains will typically be 30-50% less on Windows systems 
  * as a result of less sophisticated thread scheduling (RcppParallel does not 
  * currently use [TBB](https://www.threadingbuildingblocks.org/) on Windows 
