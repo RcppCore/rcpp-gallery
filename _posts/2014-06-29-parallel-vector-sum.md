@@ -76,7 +76,7 @@ struct Sum : public Worker
    
    // constructors
    Sum(const double* input) : input(input), value(0) {}
-   Sum(Sum& sum, Split) : input(sum.input), value(0) {}
+   Sum(const Sum& sum, Split) : input(sum.input), value(0) {}
    
    // accumulate just the element of the range I've been asked to
    void operator()(std::size_t begin, std::size_t end) {
@@ -140,8 +140,8 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.224    1.000
-1         vectorSum(v)          100   0.864    3.857
+2 parallelVectorSum(v)          100   0.232     1.00
+1         vectorSum(v)          100   0.856     3.69
 </pre>
 
 If you interested in learning more about using RcppParallel see 

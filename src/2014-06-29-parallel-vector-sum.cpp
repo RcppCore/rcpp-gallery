@@ -75,7 +75,7 @@ struct Sum : public Worker
    
    // constructors
    Sum(const double* input) : input(input), value(0) {}
-   Sum(Sum& sum, Split) : input(sum.input), value(0) {}
+   Sum(const Sum& sum, Split) : input(sum.input), value(0) {}
    
    // accumulate just the element of the range I've been asked to
    void operator()(std::size_t begin, std::size_t end) {

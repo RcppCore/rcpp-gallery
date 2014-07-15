@@ -57,7 +57,7 @@ struct InnerProduct : public Worker
    
    // constructors
    InnerProduct(const double* x, const double* y) : x(x), y(y), product(0) {}
-   InnerProduct(InnerProduct& innerProduct, Split) 
+   InnerProduct(const InnerProduct& innerProduct, Split) 
       : x(innerProduct.x), y(innerProduct.y), product(0) {}
    
    // process just the elements of the range I've been asked to
@@ -119,9 +119,9 @@ res[,1:4]
 
 <pre class="output">
                         test replications elapsed relative
-3 parallelInnerProduct(x, y)          100   0.038    1.000
-2         innerProduct(x, y)          100   0.096    2.526
-1                 sum(x * y)          100   0.439   11.553
+3 parallelInnerProduct(x, y)          100   0.036    1.000
+2         innerProduct(x, y)          100   0.097    2.694
+1                 sum(x * y)          100   0.448   12.444
 </pre>
 
 If you interested in learning more about using RcppParallel see 

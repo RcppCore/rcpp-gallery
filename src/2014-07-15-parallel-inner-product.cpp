@@ -56,7 +56,7 @@ struct InnerProduct : public Worker
    
    // constructors
    InnerProduct(const double* x, const double* y) : x(x), y(y), product(0) {}
-   InnerProduct(InnerProduct& innerProduct, Split) 
+   InnerProduct(const InnerProduct& innerProduct, Split) 
       : x(innerProduct.x), y(innerProduct.y), product(0) {}
    
    // process just the elements of the range I've been asked to
