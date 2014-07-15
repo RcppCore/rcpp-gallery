@@ -119,9 +119,9 @@ res[,1:4]
 
 <pre class="output">
                         test replications elapsed relative
-3 parallelInnerProduct(x, y)          100   0.036    1.000
-2         innerProduct(x, y)          100   0.097    2.694
-1                 sum(x * y)          100   0.448   12.444
+3 parallelInnerProduct(x, y)          100   0.035    1.000
+2         innerProduct(x, y)          100   0.088    2.514
+1                 sum(x * y)          100   0.283    8.086
 </pre>
 
 Note that performance gains will typically be 30-50% less on Windows systems 

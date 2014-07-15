@@ -139,8 +139,8 @@ res[,1:4]
 
 <pre class="output">
                    test replications elapsed relative
-2 parallelMatrixSqrt(m)          100   0.407    1.000
-1         matrixSqrt(m)          100   0.866    2.128
+2 parallelMatrixSqrt(m)          100   0.294    1.000
+1         matrixSqrt(m)          100   0.755    2.568
 </pre>
 
 Note that performance gains will typically be 30-50% less on Windows systems 

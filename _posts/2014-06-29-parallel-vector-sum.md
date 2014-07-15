@@ -140,8 +140,8 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.232     1.00
-1         vectorSum(v)          100   0.856     3.69
+2 parallelVectorSum(v)          100   0.182    1.000
+1         vectorSum(v)          100   0.857    4.709
 </pre>
 
 Note that performance gains will typically be 30-50% less on Windows systems 
