@@ -44,62 +44,56 @@ The initial naive R implementation of the sampler is given below.
 # kposs: possible values of k
 # phi, k: starting values of chain for phi and k
 
-gibbsloop <- function(nsim, y, a, b, c, d, kposs, phi, k)
-{
-        # matrix to store simulated values from each cycle
-	out <- matrix(NA, nrow = nsim, ncol = 3)
+gibbsloop <- function(nsim, y, a, b, c, d, kposs, phi, k) {
+    # matrix to store simulated values from each cycle
+    out <- matrix(NA, nrow = nsim, ncol = 3)
 
-	# number of observations
-	n <- length(y)
+    # number of observations
+    n <- length(y)
 
-	for(i in 1:nsim)
-	{
-		# Generate value from full conditional of phi based on
-		# current values of other parameters
-		lambda <- rgamma(1, a + sum(y[1:k]), b + k)
-		
-		# Generate value from full conditional of phi based on
-		# current values of other parameters
-		phi <- rgamma(1, c + sum(y[min((k+1),n):n]), d + n - k)
+    for(i in 1:nsim) {
+	# Generate value from full conditional of phi based on
+	# current values of other parameters
+	lambda <- rgamma(1, a + sum(y[1:k]), b + k)
+	
+	# Generate value from full conditional of phi based on
+	# current values of other parameters
+	phi <- rgamma(1, c + sum(y[min((k+1),n):n]), d + n - k)
 
-		# generate value of k
-		# determine probability masses for full conditional of k
-		# based on current parameters values
-		pmf <- kprobloop(kposs, y, lambda, phi)
-		k <- sample(x = kposs, size = 1, prob = pmf)
-		
-		out[i, ] <- c(lambda, phi, k)
-	}
-	out
+	# generate value of k
+	# determine probability masses for full conditional of k
+	# based on current parameters values
+	pmf <- kprobloop(kposs, y, lambda, phi)
+	k <- sample(x = kposs, size = 1, prob = pmf)
+	
+	out[i, ] <- c(lambda, phi, k)
+    }
+    out
 }
 
 # Given a vector of values x, the logsumexp function calculates
 # log(sum(exp(x))), but in a "smart" way that helps avoid
 # numerical underflow or overflow problems.
 
-logsumexp <- function(x)
-{
-	log(sum(exp(x - max(x)))) + max(x)
+logsumexp <- function(x) {
+    log(sum(exp(x - max(x)))) + max(x)
 }
 
 # Determine pmf for full conditional of k based on current values of other
 # variables. Takes possible values of k, observed data y, current values of 
 # lambda, and phi. It does this naively using a loop.
 
-kprobloop <- function(kposs, y, lambda, phi)
-{	
-	# create vector to store argument of exponential function of 
-	# unnormalized pmf, then calculate them
-	x <- numeric(length(kposs))
-	for(i in kposs)
-	{
-		x[i] <- i*(phi - lambda) + sum(y[1:i]) * log(lambda/phi)
-	}
-	#return full conditional pmf of k
-	return(exp(x - logsumexp(x)))
+kprobloop <- function(kposs, y, lambda, phi) {	
+    # create vector to store argument of exponential function of 
+    # unnormalized pmf, then calculate them
+    x <- numeric(length(kposs))
+    for (i in kposs) {
+	x[i] <- i*(phi - lambda) + sum(y[1:i]) * log(lambda/phi)
+    }
+    # return full conditional pmf of k
+    return(exp(x - logsumexp(x)))
 }
 {% endhighlight %}
-
 
 Looking through the first implemention, we realize that we can 
 speed up our code by vectorizing when possible and not performing computations
@@ -108,52 +102,48 @@ mind.
 
 
 {% highlight r %}
-gibbsvec <- function(nsim, y, a, b, c, d, kposs, phi, k)
-{
-  # matrix to store simulated values from each cycle
-	out <- matrix(NA, nrow = nsim, ncol = 3)
+gibbsvec <- function(nsim, y, a, b, c, d, kposs, phi, k) {
+    # matrix to store simulated values from each cycle
+    out <- matrix(NA, nrow = nsim, ncol = 3)
 
-	# determine number of observations
-	n <- length(y)
+    # determine number of observations
+    n <- length(y)
 
-	# determine sum of y and cumulative sum of y.  
-	# Then cusum[k] == sum(y[1:k])
-	# and sum(y[(k+1):n]) == sumy - cusum[k]
-	sumy <- sum(y)
-	cusum <- cumsum(y)
+    # determine sum of y and cumulative sum of y.  
+    # Then cusum[k] == sum(y[1:k])
+    # and sum(y[(k+1):n]) == sumy - cusum[k]
+    sumy <- sum(y)
+    cusum <- cumsum(y)
 
-	for(i in 1:nsim)
-	{
-		# Generate value from full conditional of phi based on
-		# current values of other parameters
-		lambda <- rgamma(1, a + cusum[k], b + k)
+    for (i in 1:nsim) {
+	# Generate value from full conditional of phi based on
+	# current values of other parameters
+	lambda <- rgamma(1, a + cusum[k], b + k)
 		
-		# Generate value from full conditional of phi based on
-		# current values of other parameters
-		phi <- rgamma(1, c + sumy - cusum[k], d + n - k)
+	# Generate value from full conditional of phi based on
+	# current values of other parameters
+	phi <- rgamma(1, c + sumy - cusum[k], d + n - k)
 		
-		# generate value of k
-		pmf <- kprobvec(kposs, cusum, lambda, phi)
-		k <- sample(x = kposs, size = 1, prob = pmf)
+	# generate value of k
+	pmf <- kprobvec(kposs, cusum, lambda, phi)
+	k <- sample(x = kposs, size = 1, prob = pmf)
 		
-		out[i, ] <- c(lambda, phi, k)
-	}
-	out
+	out[i, ] <- c(lambda, phi, k)
+    }
+    out
 }
 
 # Determine pmf for full conditional of k based on current values of other
 # variables. Do this efficiently using vectors and stored information.
 # cusum is the cumulative sum of y.
 
-kprobvec <- function(kposs, cusum, lambda, phi)
-{
-	# calculate exponential argument of numerator of unnormalized pmf
-	x <- kposs * (phi - lambda) + cusum * log(lambda/phi)
-	# return pmf of full conditional for k
-	return(exp(x - logsumexp(x)))
+kprobvec <- function(kposs, cusum, lambda, phi) {
+    # calculate exponential argument of numerator of unnormalized pmf
+    x <- kposs * (phi - lambda) + cusum * log(lambda/phi)
+    # return pmf of full conditional for k
+    return(exp(x - logsumexp(x)))
 }
 {% endhighlight %}
-
 
 We should be able to improve the speed of our sampler by implementing it in C++.  We can reimplement the vectorized version of the sampler fairly easily using Rcpp and RcppArmadillo.  Note that the parameterization of `rgamma` used by Rcpp is slightly different from base R.
 
@@ -164,51 +154,46 @@ We should be able to improve the speed of our sampler by implementing it in C++.
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-double logsumexp(NumericVector x)
-{
-  return(log(sum(exp(x - max(x)))) + max(x));
+double logsumexp(NumericVector x) {
+    return(log(sum(exp(x - max(x)))) + max(x));
 }
 
 // [[Rcpp::export]]
-NumericVector kprobcpp(NumericVector kposs, NumericVector cusum, double lambda, double phi)
-{
-	NumericVector x = kposs * (phi - lambda) + cusum * log(lambda/phi);
-	return(exp(x - logsumexp(x)));
+NumericVector kprobcpp(NumericVector kposs, NumericVector cusum, double lambda, double phi) {
+    NumericVector x = kposs * (phi - lambda) + cusum * log(lambda/phi);
+    return(exp(x - logsumexp(x)));
 }
 
 // [[Rcpp::export]]
 NumericMatrix gibbscpp(int nsim, NumericVector y, double a, double b, double c,
-	double d, NumericVector kposs, NumericVector phi, NumericVector k)
-{
-	RNGScope scope ;
+                       double d, NumericVector kposs, NumericVector phi, NumericVector k) {
+    RNGScope scope ;
 
-	NumericVector lambda;
-	NumericVector pmf;
-	NumericMatrix out(nsim, 3);
+    NumericVector lambda;
+    NumericVector pmf;
+    NumericMatrix out(nsim, 3);
 
-	// determine sum of y and cumulative sum of y.  
-	double sumy = sum(y);
-	NumericVector cusum = cumsum(y);
+    // determine sum of y and cumulative sum of y.  
+    double sumy = sum(y);
+    NumericVector cusum = cumsum(y);
 
-	for(int i = 0; i < nsim; i++)
-	{
-		lambda = rgamma(1, a + cusum[k[0] - 1], 1/(b + k[0]));
-		phi = rgamma(1, c + sumy - cusum[k[0] - 1], 1/(d + 112 - k[0]));
+    for(int i = 0; i < nsim; i++) {
+        lambda = rgamma(1, a + cusum[k[0] - 1], 1/(b + k[0]));
+        phi = rgamma(1, c + sumy - cusum[k[0] - 1], 1/(d + 112 - k[0]));
 
-		pmf = kprobcpp(kposs, cusum, lambda[0], phi[0]);
-		k = RcppArmadillo::sample(kposs, 1, false, pmf) ;
+        pmf = kprobcpp(kposs, cusum, lambda[0], phi[0]);
+        k = RcppArmadillo::sample(kposs, 1, false, pmf) ;
 
-		// store values of this cycle
-		out(i, 0) = lambda[0];
-		out(i, 1) = phi[0];
-		out(i, 2) = k[0];
-	}
+        // store values of this cycle
+        out(i, 0) = lambda[0];
+        out(i, 1) = phi[0];
+        out(i, 2) = k[0];
+    }
 
-	// return results
-	return out;
+    // return results
+    return out;
 }
 {% endhighlight %}
-
 
 We will now compare and apply the implementations to a coal mining data set.
 
@@ -229,7 +214,6 @@ counts <- c(4,5,4,1,0,4,3,4,0,6,3,3,4,0,2,6,3,3,5,4,5,3,1,4,4,1,5,5,3,4,2,
             1,1,0,1,0,1,0,0,0,2,1,0,0,0,1,1,0,2,3,3,1,1,2,1,1,1,1,2,4,2,0,
             0,0,1,4,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1)
 {% endhighlight %}
-
 
 For simplicity, we'll refer to 1851 as year 1, 1852 as year 2, ..., 1962 as
 year 112.  We will set the initial values for `phi` and `k` to be 1 and 40,
@@ -256,7 +240,6 @@ all.equal(chain1, chain2, chain3)
 [1] TRUE
 </pre>
 
-
 We now compare compare the relative speed of the three implementations using the `benchmark` function.
 
 
@@ -276,11 +259,10 @@ benchmark(gibbsloop(nsim=nsim,y=counts,a=4,b=1,c=1,d=2,kposs=1:112,phi=1,k=40),
 2  gibbsvec(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
 1 gibbsloop(nsim = nsim, y = counts, a = 4, b = 1, c = 1, d = 2, kposs = 1:112, phi = 1, k = 40)
   replications elapsed relative
-3           10   2.392    1.000
-2           10   7.044    2.945
-1           10 116.531   48.717
+3           10   2.207    1.000
+2           10   5.611    2.542
+1           10  68.118   30.865
 </pre>
-
 
 The C++ version of the Gibbs sampler is a vast improvement over the looped R
 version and also quite a bit faster than the vectorized R version.   
@@ -323,4 +305,3 @@ colored blue.
 #lines(yr[1:changeyear], counts[1:changeyear], col = "orange")
 #lines(yr[-(1:(changeyear-1))], counts[-(1:(changeyear-1))], col = "blue")
 {% endhighlight %}
-
