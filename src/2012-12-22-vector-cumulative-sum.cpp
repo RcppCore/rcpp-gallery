@@ -55,13 +55,13 @@ NumericVector cumsum2(NumericVector x){
 NumericVector cumsum_sug(NumericVector x){
     return cumsum(x);    // compute the result vector and return it
 }
- 
- /*** R
- x <- 1:10
- cumsum1(x)
- cumsum2(x)
- cumsum_sug(x)
- # cumsum function in base R
- cumsum(x)
+
+/**
+ * And we can of course compare the versions discussed here with the base R variant.
  */
+
+/*** R
+x <- 1:10
+all.equal(cumsum1(x), cumsum2(x), cumsum_sug(x), cumsum(x))
+*/
  
