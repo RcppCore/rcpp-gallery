@@ -49,20 +49,24 @@ using namespace RcppParallel;
 struct InnerProduct : public Worker
 {   
    // source vectors
-   const double* x;
-   const double* y;
+   const RVector<double> x;
+   const RVector<double> y;
    
    // product that I have accumulated
    double product;
    
    // constructors
-   InnerProduct(const double* x, const double* y) : x(x), y(y), product(0) {}
+   InnerProduct(const NumericVector x, const NumericVector y) 
+      : x(x), y(y), product(0) {}
    InnerProduct(const InnerProduct& innerProduct, Split) 
       : x(innerProduct.x), y(innerProduct.y), product(0) {}
    
    // process just the elements of the range I've been asked to
    void operator()(std::size_t begin, std::size_t end) {
-      product += std::inner_product(x + begin, x + end, y + begin, 0.0);
+      product += std::inner_product(x.begin() + begin, 
+                                    x.begin() + end, 
+                                    y.begin() + begin, 
+                                    0.0);
    }
    
    // join my value with that of another InnerProduct
@@ -75,20 +79,22 @@ struct InnerProduct : public Worker
 Note that `InnerProduct` derives from the `RcppParallel::Worker` class. This
 is required for function objects passed to `parallelReduce`.
 
-Note also that we use use raw `double *` for accessing the vectors. This is 
-because this code will execute on a background thread where it's not safe to 
-call R or Rcpp APIs.
+Note also that we use the `RVector<double>` type for accessing the vector. 
+This is because this code will execute on a background thread where it's not 
+safe to call R or Rcpp APIs. The `RVector` class is included in the 
+RcppParallel package and provides a lightweight, thread-safe wrapper around R
+vectors.
 
 Now that we've defined the function object, implementing the parallel inner
 product function is straightforward. Just initialize an instance of
-`InnerProduct` with pointers to the input data and call `parallelReduce`:
+`InnerProduct` with the input vectors and call `parallelReduce`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
 double parallelInnerProduct(NumericVector x, NumericVector y) {
    
    // declare the InnerProduct instance that takes a pointer to the vector data
-   InnerProduct innerProduct(x.begin(), y.begin());
+   InnerProduct innerProduct(x, y);
    
    // call paralleReduce to start the work
    parallelReduce(0, x.length(), innerProduct);

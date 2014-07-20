@@ -69,18 +69,18 @@ using namespace RcppParallel;
 struct Sum : public Worker
 {   
    // source vector
-   const double * input;
+   const RVector<double> input;
    
    // accumulated value
    double value;
    
    // constructors
-   Sum(const double* input) : input(input), value(0) {}
+   Sum(const NumericVector input) : input(input), value(0) {}
    Sum(const Sum& sum, Split) : input(sum.input), value(0) {}
    
    // accumulate just the element of the range I've been asked to
    void operator()(std::size_t begin, std::size_t end) {
-      value += std::accumulate(input + begin, input + end, 0.0);
+      value += std::accumulate(input.begin() + begin, input.begin() + end, 0.0);
    }
      
    // join my value with that of another Sum
@@ -93,20 +93,22 @@ struct Sum : public Worker
 Note that `Sum` derives from the `RcppParallel::Worker` class. This is
 required for function objects passed to `parallelReduce`.
 
-Note also that we use a raw `double *` for accessing the vector. This is
-because this code will execute on a background thread where it's not safe to
-call R or Rcpp APIs.
+Note also that we use the `RVector<double>` type for accessing the vector. 
+This is because this code will execute on a background thread where it's not 
+safe to call R or Rcpp APIs. The `RVector` class is included in the 
+RcppParallel package and provides a lightweight, thread-safe wrapper around R
+vectors.
 
 Now that we've defined the functor, implementing the parallel sum 
 function is straightforward. Just initialize an instance of `Sum`
-with a pointer to the input data and call `parallelReduce`:
+with the input vector and call `parallelReduce`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
 double parallelVectorSum(NumericVector x) {
    
-   // declare the SumBody instance that takes a pointer to the vector data
-   Sum sum(x.begin());
+   // declare the SumBody instance 
+   Sum sum(x);
    
    // call parallel_reduce to start the work
    parallelReduce(0, x.length(), sum);
