@@ -10,7 +10,6 @@ src: 2012-12-22-vector-cumulative-sum.cpp
 ---
 
 
-
 The traditional way to compute the cumulative sum of a vector is with a
 for loop. This is demonstrated with the function cumsum1().
 
@@ -35,7 +34,6 @@ NumericVector cumsum1(NumericVector x){
 }
 {% endhighlight %}
 
-
 The C++ standard template library (STL) has the partial_sum() function
 that computes the cumulative sum of a vector. This is demonstrated with
 the function cumsum2().
@@ -50,7 +48,6 @@ NumericVector cumsum2(NumericVector x){
  }
 {% endhighlight %}
 
-
 With Rcpp sugar, there is a cumsum() function which makes writing 
 this function in C++ very similar to using the cumsum function in R.
 
@@ -61,52 +58,15 @@ NumericVector cumsum_sug(NumericVector x){
 }
 {% endhighlight %}
 
+And we can of course compare the versions discussed here with the base R variant.
 
 {% highlight r %}
- x <- 1:10
- cumsum1(x)
+x <- 1:10
+all.equal(cumsum1(x), cumsum2(x), cumsum_sug(x), cumsum(x))
 {% endhighlight %}
 
 
 
 <pre class="output">
- [1]  1  3  6 10 15 21 28 36 45 55
+[1] TRUE
 </pre>
-
-
-
-{% highlight r %}
- cumsum2(x)
-{% endhighlight %}
-
-
-
-<pre class="output">
- [1]  1  3  6 10 15 21 28 36 45 55
-</pre>
-
-
-
-{% highlight r %}
- cumsum_sug(x)
-{% endhighlight %}
-
-
-
-<pre class="output">
- [1]  1  3  6 10 15 21 28 36 45 55
-</pre>
-
-
-
-{% highlight r %}
- # cumsum function in base R
- cumsum(x)
-{% endhighlight %}
-
-
-
-<pre class="output">
- [1]  1  3  6 10 15 21 28 36 45 55
-</pre>
-

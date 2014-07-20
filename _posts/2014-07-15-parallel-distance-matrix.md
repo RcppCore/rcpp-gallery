@@ -60,14 +60,15 @@ js_distance <- function(mat) {
 
 Here is a re-implementation of `js_distance` using Rcpp. Note that this 
 doesn't yet take advantage of parallel processing, but still yields an 
-approximately 35x speedup over the original R version.
+approximately 50x speedup over the original R version on a 2.6GHz Haswell
+MacBook Pro.
 
 Abstractly, a Distance function will take two vectors in R<sup>J</sup> and 
 return a value in R<sup>+</sup>. In this implementation, we don't support 
 arbitrary distance metrics, i.e., the JSD code computes the values from 
 within the parallel kernel.
 
-Our distance function `kl_divergence` is defined below and takes three
+Our distance function `kl_divergence` is defined below and takes three 
 parameters: iterators to the beginning and end of vector 1 and an iterator to
 the beginning of vector 2 (the end position of vector2 is implied by the end 
 position of vector1).
@@ -168,9 +169,9 @@ parallel code is almost identical to the serial code. The main difference is
 that the outer loop starts with the `begin` index passed to the worker 
 function rather than 0.
 
-Parallelizing in this case has big payoff: we observe performance of about 6x
-the serial version on a machine with 4 cores (8 with hyperthreading). Here is
-the definition of the `JsDistance` function object:
+Parallelizing in this case has a big payoff: we observe performance of about
+5.5x the serial version on a 2.6GHz Haswell MacBook Pro with 4 cores (8 with
+hyperthreading). Here is the definition of the `JsDistance` function object:
 
 {% highlight cpp %}
 // [[Rcpp::depends(RcppParallel)]]
@@ -274,10 +275,9 @@ res[,1:4]
 1               js_distance(m)            3  35.560  323.273
 </pre>
 
-The serial Rcpp version yields a more than 50x speedup over straight R code.
-On a machine with 4 cores (8 with hyperthreading) the parallel Rcpp version 
-provides another 5.5x speedup, amounting to a total gain of over 300x 
-compared to the original R version.
+The serial Rcpp version yields a more than 50x speedup over straight R code. 
+The parallel Rcpp version provides another 5.5x speedup, amounting to a total
+gain of over 300x compared to the original R version.
 
 Note that performance gains will typically be 30-50% less on Windows systems 
 as a result of less sophisticated thread scheduling (RcppParallel does not 
