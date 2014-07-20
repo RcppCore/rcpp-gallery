@@ -44,13 +44,13 @@ all_sug(y == 0)
  
 // [[Rcpp::export]]
 void check_equal(NumericVector x, NumericVector y) {
-	if(all_sug(x == y)) {
-		Rcout << "Success! The input vectors are equal" << std::endl;
-		// do something
-	} else {
-		Rcout << "Fail! The input vectors are not equal" << std::endl;
-		// do something else
-	}
+    if (all_sug(x == y)) {
+	Rcout << "Success! The input vectors are equal" << std::endl;
+	// do something
+   } else {
+	Rcout << "Fail! The input vectors are not equal" << std::endl;
+	// do something else
+   }
 }
  
  
