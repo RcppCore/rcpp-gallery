@@ -148,5 +148,6 @@ res[,1:4]
  * 
  * You can learn more about using RcppParallel at 
  * [https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
- */ 
+ */
+ 
  
