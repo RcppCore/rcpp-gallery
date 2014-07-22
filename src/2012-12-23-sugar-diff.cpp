@@ -22,10 +22,10 @@ NumericVector diff_sug(NumericVector x){
 }
 
 /*** R
- x <- rnorm(10)
- diff_sug(x)
- # base R function
- diff(x)
+x <- rnorm(10)
+diff_sug(x)
+# base R function
+diff(x)
 */
  
 /**
@@ -46,8 +46,8 @@ NumericVector ret_simple(NumericVector x) {
 }
 
 /*** R
- # Close prices of S&P 500
- y <- c(1418.55, 1427.84, 1428.48, 1419.45, 1413.58, 
-        1430.36, 1446.79, 1435.81, 1443.69, 1430.15)
- ret_simple(y)
+# Close prices of S&P 500
+y <- c(1418.55, 1427.84, 1428.48, 1419.45, 1413.58, 
+       1430.36, 1446.79, 1435.81, 1443.69, 1430.15)
+ret_simple(y)
  */

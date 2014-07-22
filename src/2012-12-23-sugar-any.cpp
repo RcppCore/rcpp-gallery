@@ -56,6 +56,6 @@ void check_negative(NumericVector x) {
 }
  
 /*** R
- check_negative(x)
- check_negative(y)
+check_negative(x)
+check_negative(y)
  */
