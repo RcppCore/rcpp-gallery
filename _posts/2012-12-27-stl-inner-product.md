@@ -12,7 +12,6 @@ One useful function is `inner_product` which can be used to compute
 the sum oof the elements of two vectors.
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 #include <numeric>
@@ -25,11 +24,10 @@ double innerProduct(const std::vector<double>& x,
 }
 {% endhighlight %}
 
-
 {% highlight r %}
-  x <- c(1,2,3)
-  y <- c(4,5,6)
-  cbind(x,y)
+x <- c(1,2,3)
+y <- c(4,5,6)
+cbind(x,y)
 {% endhighlight %}
 
 
@@ -44,8 +42,7 @@ double innerProduct(const std::vector<double>& x,
 
 
 {% highlight r %}
-
-  innerProduct(x, y)
+innerProduct(x, y)
 {% endhighlight %}
 
 
@@ -57,7 +54,7 @@ double innerProduct(const std::vector<double>& x,
 
 
 {% highlight r %}
-  sum(x*y)  # check from R
+sum(x*y)  # check from R
 {% endhighlight %}
 
 
@@ -68,9 +65,8 @@ double innerProduct(const std::vector<double>& x,
 
 
 
-
 {% highlight r %}
-  innerProduct(x, x)
+innerProduct(x, x)
 {% endhighlight %}
 
 
@@ -82,7 +78,7 @@ double innerProduct(const std::vector<double>& x,
 
 
 {% highlight r %}
-  sum(x^2)
+sum(x^2)
 {% endhighlight %}
 
 
@@ -90,4 +86,3 @@ double innerProduct(const std::vector<double>& x,
 <pre class="output">
 [1] 14
 </pre>
-

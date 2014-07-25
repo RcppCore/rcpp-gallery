@@ -22,12 +22,12 @@ double innerProduct(const std::vector<double>& x,
 }
 
 /*** R
-  x <- c(1,2,3)
-  y <- c(4,5,6)
-  cbind(x,y)
+x <- c(1,2,3)
+y <- c(4,5,6)
+cbind(x,y)
 
-  innerProduct(x, y)
-  sum(x*y)  # check from R
+innerProduct(x, y)
+sum(x*y)  # check from R
 */
 
 /** 
@@ -35,6 +35,6 @@ double innerProduct(const std::vector<double>& x,
   */
 
 /*** R
-  innerProduct(x, x)
-  sum(x^2)
+innerProduct(x, x)
+sum(x^2)
 */
