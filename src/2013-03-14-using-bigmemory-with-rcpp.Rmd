@@ -2,7 +2,7 @@
 title: Using bigmemory with Rcpp
 author: Michael Kane and Scott Ritchie
 license: GPL (>= 2)
-tags: basics boost
+tags: basics boost bigmemory 
 summary: This post shows how to access big.matrix objects from Rcpp
 ---
 
