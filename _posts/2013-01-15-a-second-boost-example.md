@@ -15,8 +15,8 @@ library to convert text to numbers -- see the
 [Motivation](http://www.boost.org/doc/libs/1_51_0/doc/html/boost_lexical_cast.html#boost_lexical_cast.motivation)
 for more.
 
-As before, I should note that I initially wrote this post on a machine with [Boost](http://www.boost.org)  
-in a standard system location. <em>So stuff just works.</em> Others may have had to install Boost from source, 
+As before, I should note that I initially wrote this post on a machine with [Boost](http://www.boost.org) 
+in a standard system location. <em>So stuff just works.</em> Others may have had to install Boost from source,
 and into a non-standard location, which may have required an <code>-I</code> flag, 
 not unlike how we initially added 
 the C++11 flag in [this post](../first-steps-with-C++11) before the corresponding plugin was added. 
