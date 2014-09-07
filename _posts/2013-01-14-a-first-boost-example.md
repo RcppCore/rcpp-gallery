@@ -32,7 +32,7 @@ and into a non-standard location, which may have required an <code>-I</code> fla
 not unlike how we initially added 
 the C++11 flag in [this post](../first-steps-with-C++11) before the corresponding plugin was added. 
 
-These days, and thanks to the newer [BH package](http://dirk.eddelbuettel.com/code/bh.html) package 
+These days, and thanks to the newer [BH](http://dirk.eddelbuettel.com/code/bh.html) package 
 which, if installed, provides Boost headers for use by R in compilations, it works by just inclusing 
 a `[[Rcpp::depends(BH)]]` attribute as we do here.
 
@@ -107,8 +107,8 @@ print(res[,1:4])
 
 <pre class="output">
   test replications elapsed relative
-1   r1         5000   0.044    1.000
-2   r2         5000   0.276    6.273
+1   r1         5000   0.043    1.000
+2   r2         5000   0.277    6.442
 </pre>
 
 This shows a nice performance gain.
