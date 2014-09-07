@@ -30,9 +30,10 @@
  * and into a non-standard location, which may have required an <code>-I</code> flag, 
  * not unlike how we initially added 
  * the C++11 flag in [this post](../first-steps-with-C++11) before the corresponding plugin was added. 
- * Here, this is now automated thanks to the
- * [BH package](http://dirk.eddelbuettel.com/code/bh.html) which, if installed, provides Boost headers 
- * for use by R in compilations just like this one.
+ *
+ * These days, and thanks to the newer [BH package](http://dirk.eddelbuettel.com/code/bh.html) package 
+ * which, if installed, provides Boost headers for use by R in compilations, it works by just inclusing 
+ * a `[[Rcpp::depends(BH)]]` attribute as we do here.
  *
  */
 

@@ -26,17 +26,24 @@ posts.  Here, as an introduction, we going to use two simple functions from the
 [Boost.Math](http://www.boost.org/doc/libs/1_52_0/libs/math/doc/html/index.html)
 library to compute greatest common denominator and least common multiple.
 
-I should note that I write this post on a machine with [Boost](http://www.boost.org) headers 
-in a standard system location. <em>So stuff just works.</em> If you have to install Boost from source, 
-and into a non-standard location, you may need to add a <code>-I</code> flag, not unlike how added 
-the C++11 flag in [this post](../first-steps-with-C++11) .
+I should note that I initially wrote this post on a machine with [Boost](http://www.boost.org) 
+in a standard system location. <em>So stuff just works.</em> Others may have had to install Boost from source, 
+and into a non-standard location, which may have required an <code>-I</code> flag, 
+not unlike how we initially added 
+the C++11 flag in [this post](../first-steps-with-C++11) before the corresponding plugin was added. 
 
+These days, and thanks to the newer [BH package](http://dirk.eddelbuettel.com/code/bh.html) package 
+which, if installed, provides Boost headers for use by R in compilations, it works by just inclusing 
+a `[[Rcpp::depends(BH)]]` attribute as we do here.
 
 
 
 {% highlight cpp %}
+// We can now use the BH package
+// [[Rcpp::depends(BH)]]
+
 #include <Rcpp.h>
-#include <boost/math/common_factor.hpp>  // one file, automatically found here
+#include <boost/math/common_factor.hpp>  
 
 using namespace Rcpp;
  
@@ -50,7 +57,6 @@ int computeLCM(int a, int b) {
     return boost::math::lcm(a, b);
 }
 {% endhighlight %}
-
 
 We can test these:
 
@@ -70,7 +76,6 @@ cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
 
 
 {% highlight r %}
-
 a <- 96
 b <- 484
 cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
@@ -81,7 +86,6 @@ cat( c(computeGCD(a,b), computeLCM(a,b)), "\n")
 <pre class="output">
 4 11616 
 </pre>
-
 
 And as kindly suggested and submitted by Kohske Takahashi, we can also benchmark this 
 against an R solution using the [numbers](http://cran.r-project.org/package=numbers) package:
@@ -103,9 +107,8 @@ print(res[,1:4])
 
 <pre class="output">
   test replications elapsed relative
-1   r1         5000   0.054    1.000
-2   r2         5000   0.421    7.796
+1   r1         5000   0.044    1.000
+2   r2         5000   0.276    6.273
 </pre>
-
 
 This shows a nice performance gain.
