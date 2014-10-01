@@ -4,6 +4,7 @@ author: someone
 license: GPL (>= 2)
 summary:
 tags:
+mj: true
 
 ---
 
