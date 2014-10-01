@@ -1,0 +1,70 @@
+---
+title: nothing to see here
+author: someone
+license: GPL (>= 2)
+summary:
+tags:
+mathjax: true
+
+---
+
+Some math with conditional mathjax support. Same markup is used in both cases.
+
+```
+$$ \widehat{\beta} = (X'X)^{-1} X'y $$
+```
+
+## Inline
+
+Inline HTML markup generated based on the absence of "additional" linebreaks.
+
+Example 1: $$ \widehat{\beta} = (X'X)^{-1} X'y $$
+
+Example 2:
+$$ \widehat{\beta} = (X'X)^{-1} X'y $$
+
+## Display
+
+Display HTML markup generated based on the presence of a buffer linebreak.
+
+Example 3:
+
+$$ \widehat{\beta} = (X'X)^{-1} X'y $$
+
+## Tests 1
+
+This is not kramdown  math, so it should not render. \$$ asdfasdf $$
+
+This is not kramdown math, so it should not render.
+
+\$\$ asdfasdf $$
+
+## Tests 2
+
+### fonts
+
+$$
+\widehat{\beta} = (X'X)^{-1} X'y *asdf* _asdf_ **asdf**
+$$
+
+### lists
+
+$$
+\widehat{\beta} = (X'X)^{-1} X'y
+
+- a
+- b
+- c
+$$
+
+### pipes
+
+fails $$|x|=1$$
+
+works $$\vert x \vert = 1$$
+
+and works
+
+$$
+|x|=1
+$$

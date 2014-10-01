@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Rcpp" />
     <meta name="description" content="{{ page.summary }}"/>
-    
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
-    
+
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+
     <title>{{ page.title }}</title>
-    
+
     <link href="http://eddelbuettel.github.io/tb/themes/spacelab/bootstrap.css" rel="stylesheet">
     <style type="text/css">
       body {
@@ -18,43 +18,42 @@
          padding-bottom: 40px;
       }
     </style>
-
     <link href="http://eddelbuettel.github.io/tb/themes/spacelab/bootstrap-responsive.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    
+
     <!-- Other custom styles -->
     <link rel="stylesheet" href="/css/styles.css" type="text/css" />
-  
+
     <!-- Syntax highlighting CSS -->
     <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
-    
+
     <!-- jquery -->
     <script src="http://eddelbuettel.github.io/tb/jquery/jquery.js"></script>
-    
+
     <!-- Atom feeds -->
     <link rel="alternate" type="application/atom+xml" title="Rcpp Gallery" href="http://feeds.feedburner.com/rcpp-gallery" />
-  
+
     <!-- Google site verification -->
     <meta name="google-site-verification" content="js0YHwQux5nJCo2n1RFkyQy0ZPycXEdv8bx45raEMNM" />
-  
+
     <!-- Google analytics -->
     <script type="text/javascript">
      var _gaq = _gaq || [];
      _gaq.push(['_setAccount', 'UA-37160590-1']);
      _gaq.push(['_trackPageview']);
-   
+
      (function() {
        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
      })();
     </script>
-  
-  
+
+
     <!-- Google custom search engine -->
     <script>
     (function() {
@@ -65,10 +64,27 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
       })();
     </script>
- 
+
+    {% if page.mathjax == true %}
+    <!-- MathJax Support -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+      tex2jax: {
+      inlineMath: [],
+      displayMath: []
+      }
+      }) ;
+    </script>
+    <script
+       type="text/javascript"
+       src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+       >
+    </script>
+    {% endif %}
+
   </head>
   <body>
-    
+
      <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -116,14 +132,14 @@
         </div>
       </div>
     </div>
-  
-  
+
+
     <div class="container">
       <div class="row">
         <div class="span10 offset1">
-	  
+
           {{ content }}
-    
+
           <div class="footer">
             <div class="about">
               Rcpp Gallery &nbsp; &nbsp;
@@ -135,18 +151,18 @@
               Subscribe: &nbsp; <a href="http://feeds.feedburner.com/rcpp-gallery" rel="alternate" type="application/rss+xml"><img src="http://www.feedburner.com/fb/images/pub/feed-icon16x16.png" alt="" style="vertical-align:middle;border:0"/></a>&nbsp;<a href="http://feeds.feedburner.com/rcpp-gallery" rel="alternate" type="application/rss+xml">RSS</a>&nbsp; &nbsp;
 	      <a href="http://feedburner.google.com/fb/a/mailverify?uri=rcpp-gallery&amp;loc=en_US">
 	      <img src="/img/mail.png" alt="" style="vertical-align:middle;border:0"/></a>&nbsp; <a href="http://feedburner.google.com/fb/a/mailverify?uri=rcpp-gallery&amp;loc=en_US">Email</a>
-   
+
             </div> <!-- class="subscribe"-->
 	    &nbsp;
           </div> <!-- class="footer"-->
         </div> <!-- class="span"-->
       </div> <!-- class="row"-->
     </div> <!-- class="container"-->
-   
+
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-   
+
     <script src="http://eddelbuettel.github.io/tb/js/bootstrap-transition.js"></script>
     <script src="http://eddelbuettel.github.io/tb/js/bootstrap-alert.js"></script>
     <script src="http://eddelbuettel.github.io/tb/js/bootstrap-modal.js"></script>
@@ -160,6 +176,6 @@
     <script src="http://eddelbuettel.github.io/tb/js/bootstrap-carousel.js"></script>
     <script src="http://eddelbuettel.github.io/tb/js/bootstrap-typeahead.js"></script>
 
-   
+
   </body>
 </html>
