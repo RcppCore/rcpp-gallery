@@ -31,10 +31,40 @@ Example 3:
 
 $$ \widehat{\beta} = (X'X)^{-1} X'y $$
 
-## Tests
+## Tests 1
 
 This is not kramdown  math, so it should not render. \$$ asdfasdf $$
 
 This is not kramdown math, so it should not render.
 
 \$\$ asdfasdf $$
+
+## Tests 2
+
+### fonts
+
+$$
+\widehat{\beta} = (X'X)^{-1} X'y *asdf* _asdf_ **asdf**
+$$
+
+### lists
+
+$$
+\widehat{\beta} = (X'X)^{-1} X'y
+
+- a
+- b
+- c
+$$
+
+### pipes
+
+fails $$|x|=1$$
+
+works $$\vert x \vert = 1$$
+
+and works
+
+$$
+|x|=1
+$$
