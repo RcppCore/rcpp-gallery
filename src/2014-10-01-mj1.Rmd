@@ -30,3 +30,11 @@ Display HTML markup generated based on the presence of a buffer linebreak.
 Example 3:
 
 $$ \widehat{\beta} = (X'X)^{-1} X'y $$
+
+## Tests
+
+This is not kramdown  math, so it should not render. \$$ asdfasdf $$
+
+This is not kramdown math, so it should not render.
+
+\$\$ asdfasdf $$
