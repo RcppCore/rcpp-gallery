@@ -6,6 +6,8 @@ tags: openmp armadillo featured
 mathjax: true
 summary: We illustrate the development process of creating code to estimate the parameters of a Probit regression model using the EM algorithm sequentially and in parallel.
 
+layout: post
+src: 2014-10-01-EM-algorithm-example.Rmd
 ---
 
 Users new to the [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html)
@@ -48,25 +50,66 @@ the problem is just the Probit regression model loved by all.
 To make this concrete, consider a model of voter turnout using the dataset
 provided by the Zelig R package.
 
-```{r, message=FALSE}
+
+{% highlight r %}
 library("Zelig")
 data("turnout")
 head(turnout)
+{% endhighlight %}
+
+
+
+<pre class="output">
+   race age educate income vote
+1 white  60      14 3.3458    1
+2 white  51      10 1.8561    0
+3 white  24      12 0.6304    0
+4 white  38       8 3.4183    1
+5 white  25      12 2.7852    1
+6 white  67      12 2.3866    1
+</pre>
+
+
+
+{% highlight r %}
 dim(turnout)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 2000    5
+</pre>
 
 Our goal will be to estimate the parameters associated with the variables
 *income*, *educate*, and *age*. Since there is nothing special about this
 dataset, standard methods work perfectly well.
 
-```{r}
+
+{% highlight r %}
 fit0 <- glm(vote ~ income + educate + age,
             data = turnout,
             family = binomial(link = "probit")
             )
 
 fit0
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+
+Call:  glm(formula = vote ~ income + educate + age, family = binomial(link = &quot;probit&quot;), 
+    data = turnout)
+
+Coefficients:
+(Intercept)       income      educate          age  
+    -1.6824       0.0994       0.1067       0.0169  
+
+Degrees of Freedom: 1999 Total (i.e. Null);  1996 Residual
+Null Deviance:	    2270 
+Residual Deviance: 2030 	AIC: 2040
+</pre>
 
 Using `fit0` as our baseline, the question is how can we recover these estimates
 with an Rcpp-based approach. One answer is implement the EM-algorithm in C++
@@ -132,14 +175,15 @@ time.
 To begin, we prepare our R-level data for passage to our eventual C++-based
 functions.
 
-```{r}
+
+{% highlight r %}
 mY <- matrix(turnout$vote)
 mX <- cbind(1,
             turnout$income,
             turnout$educate,
             turnout$age
             )
-```
+{% endhighlight %}
 
 ### <a name="attempt-1">Attempt 1: Main Structure</a>
 
@@ -156,7 +200,8 @@ beginning. They allow you rapidly return new and different values to the R-level
 for inspection.
 
 
-```{r, engine="Rcpp"}
+
+{% highlight cpp %}
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -190,7 +235,7 @@ List em1 (const arma::mat y,
     ret["eystar"] = eystar ;
     return(ret) ;
 }
-```
+{% endhighlight %}
 
 We know that this code does not produce estimates of anything. Indeed, that is
 by design. Neither the `beta` nor `eystar` elements of the returned `list` are
@@ -199,15 +244,43 @@ ever updated after they are initialized to 0.
 However, we can see that much of the administrative work for a working
 implementation is complete.
 
-```{r}
+
+{% highlight r %}
 fit1 <- em1(y = mY,
             X = mX,
             maxit = 20
             )
 
 fit1$beta
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1]
+[1,]    0
+[2,]    0
+[3,]    0
+[4,]    0
+</pre>
+
+
+
+{% highlight r %}
 head(fit1$eystar)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1]
+[1,]    0
+[2,]    0
+[3,]    0
+[4,]    0
+[5,]    0
+[6,]    0
+</pre>
 
 Having verified that input data structures and output data structures are
 "working" as expected, we turn to updating the $$y_i^*$$ values.
@@ -224,7 +297,8 @@ Additionally, at the end of each imputation step (the *E* in *EM*) we update the
 $$\beta$$ estimate with the least squares estimate (the *M* in *EM*).
 
 
-```{r, engine="Rcpp"}
+
+{% highlight cpp %}
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -271,22 +345,50 @@ List em2 (const arma::mat y,
     ret["eystar"] = eystar ;
     return(ret) ;
 }
-```
+{% endhighlight %}
 
 This code, like that in Attempt 1, is syntactically fine. But, as we know, the
 update step is very wrong. However, we can see that the updates are happening as
 we'd expect and we see non-zero returns for the `beta` element and the `eystar`
 element.
 
-```{r}
+
+{% highlight r %}
 fit2 <- em2(y = mY,
             X = mX,
             maxit = 20
             )
 
 fit2$beta
+{% endhighlight %}
+
+
+
+<pre class="output">
+          [,1]
+[1,] -0.816273
+[2,]  0.046065
+[3,]  0.059481
+[4,]  0.009085
+</pre>
+
+
+
+{% highlight r %}
 head(fit2$eystar)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1]
+[1,]    1
+[2,]   -1
+[3,]   -1
+[4,]    1
+[5,]    1
+[6,]    1
+</pre>
 
 ### <a name="attempt-3">Attempt 3: EM with Correct Augmentation</a>
 
@@ -303,7 +405,8 @@ are not tagged to be exported (via `// [[Rcpp::export()]]`) to the R level.
 As it stands, this is a correct implementation (although there is room for
 improvement).
 
-```{r, engine="Rcpp"}
+
+{% highlight cpp %}
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -363,27 +466,73 @@ List em3 (const arma::mat y,
     ret["eystar"] = eystar ;
     return(ret) ;
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 fit3 <- em3(y = mY,
             X = mX,
             maxit = 100
             )
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 head(fit3$eystar)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+        [,1]
+[1,]  1.3910
+[2,] -0.6599
+[3,] -0.7743
+[4,]  0.8563
+[5,]  0.9160
+[6,]  1.2677
+</pre>
 
 
 Second, notice that this output is identical to the parameter estimates (the
 object `fit0`) from our R level call to the `glm()` function.
 
-```{r}
+
+{% highlight r %}
 fit3$beta
+{% endhighlight %}
+
+
+
+<pre class="output">
+         [,1]
+[1,] -1.68241
+[2,]  0.09936
+[3,]  0.10667
+[4,]  0.01692
+</pre>
+
+
+
+{% highlight r %}
 fit0
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+
+Call:  glm(formula = vote ~ income + educate + age, family = binomial(link = &quot;probit&quot;), 
+    data = turnout)
+
+Coefficients:
+(Intercept)       income      educate          age  
+    -1.6824       0.0994       0.1067       0.0169  
+
+Degrees of Freedom: 1999 Total (i.e. Null);  1996 Residual
+Null Deviance:	    2270 
+Residual Deviance: 2030 	AIC: 2040
+</pre>
 
 ### <a name="attempt-4">Attempt 4: EM with Correct Augmentation in Parallel</a>
 
@@ -397,10 +546,11 @@ relies on OpenMP. See [here](./tags/openmp/) for other examples of combining
 Rcpp and OpenMP or [here](./tags/parallel/) for a different approach.
 
 
-```{r}
+
+{% highlight r %}
 Sys.setenv("PKG_CXXFLAGS" = "-fopenmp")
 Sys.setenv("PKG_LIBS" = "-fopenmp")
-```
+{% endhighlight %}
 
 Aside from some additional compiler flags, the changes to our new implementation
 in `em4()` are minimal. They are:
@@ -409,7 +559,8 @@ in `em4()` are minimal. They are:
 - mark the `for` loop for parallelization with a `#pragma`
 
 
-```{r, engine="Rcpp"}
+
+{% highlight cpp %}
 # include <RcppArmadillo.h>
 # include <omp.h>
 
@@ -473,26 +624,34 @@ List em4 (const arma::mat y,
     ret["eystar"] = eystar ;
     return(ret) ;
 }
-```
+{% endhighlight %}
 
 This change should not (and does not) result in any change to the calculations
 being done. However, if our algorithm involved random number generation, great
 care would need to be taken to ensure our results were reproducible.
 
-```{r}
+
+{% highlight r %}
 fit4 <- em4(y = mY,
             X = mX,
             maxit = 100
             )
 
 identical(fit4$beta, fit3$beta)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] TRUE
+</pre>
 
 Finally, we can confirm that our parallelization was "successful". Again,
 because there is really no need to parallelize this code, performance gains are
 modest. But, that it indeed runs faster is clear.
 
-```{r}
+
+{% highlight r %}
 library("microbenchmark")
 
 microbenchmark(seq = (em3(y = mY,
@@ -508,7 +667,16 @@ microbenchmark(seq = (em3(y = mY,
                       ),
                times = 20
                )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Unit: milliseconds
+ expr   min    lq  mean median    uq   max neval cld
+  seq 32.94 33.01 33.04  33.03 33.07 33.25    20   b
+  par 11.16 11.20 11.35  11.26 11.29 13.16    20  a 
+</pre>
 
 ## Wrap-Up
 
