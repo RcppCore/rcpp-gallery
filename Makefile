@@ -1,10 +1,12 @@
 
-## Jekyll 1.0 broke with the pre-1.0 invocation, 
+## Jekyll 1.0 broke with the pre-1.0 invocation,
 ## so let us test if we have major release 0 or 1
 ## awk get the version token, cut picks off the first part
 jmaj	:= $(shell jekyll --version 2>&1 | awk '/^Jekyll/ {print $$2}' | cut -d. -f1 )
 
-all: knit
+all: knit img
+
+jek: knit
 ifeq ($(jmaj),0)
 	jekyll --no-server --no-auto
 else
@@ -14,7 +16,10 @@ endif
 knit:
 	$(MAKE) -C src
 
-.PHONY: clean
+img:
+	$(MAKE) -C src/figure
+
+.PHONY: clean img
 clean:
 	$(RM) -rf _site
 	$(MAKE) clean -C src
