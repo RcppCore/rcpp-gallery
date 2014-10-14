@@ -13,6 +13,7 @@ endif
 
 knit:
 	$(MAKE) -C src
+	cp figure/* articles/figure/
 
 .PHONY: clean
 clean:

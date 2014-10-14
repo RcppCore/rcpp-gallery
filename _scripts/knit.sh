@@ -9,7 +9,7 @@ knit <- function (inputFile, outputFile) {
   stem <- tools::file_path_sans_ext(inputFile)
   prefix <- paste(stem, "-", sep="")
   knitr::opts_chunk$set(cache.path=file.path('cache', prefix),
-                        fig.path=file.path('figure', prefix))
+                        fig.path=file.path('../figure', prefix))
   knitr::opts_chunk$set(tidy=FALSE, comment=NA)
   
   # configure output options

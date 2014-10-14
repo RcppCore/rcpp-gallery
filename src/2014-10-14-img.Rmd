@@ -1,0 +1,16 @@
+---
+title: img2
+author: Jonathan Olmsted
+license: GPL (>= 2)
+summary: demo of figs
+
+---
+
+
+```{r}
+a <- rnorm(100)
+```
+
+```{r, 'a-hist'}
+hist(a)
+```
