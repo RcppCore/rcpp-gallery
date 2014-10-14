@@ -3,7 +3,7 @@
 ## awk get the version token, cut picks off the first part
 jmaj	:= $(shell jekyll --version 2>&1 | awk '/^Jekyll/ {print $$2}' | cut -d. -f1 )
 
-all: knit jek
+all: knit jek img
 
 jek: knit
 ifeq ($(jmaj),0)
