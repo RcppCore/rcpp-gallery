@@ -1,0 +1,23 @@
+---
+title: Making imgs
+author: Jonathan Olmsted
+license: GPL (>= 2)
+summary: stuff
+
+---
+
+
+```{r}
+a <- rnorm(10)
+a
+```
+
+This figure should work.
+```{r, 'fig-A'}
+hist(a)
+```
+
+This should not.
+```{r, 'nofig-B'}
+hist(a)
+```
