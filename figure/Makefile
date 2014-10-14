@@ -1,5 +1,5 @@
-CPIMG = ../../_scripts/cp-img.sh
-P2ROOT = ../../
+P2ROOT = ../
+CPIMG = ${P2ROOT}_scripts/cp-img.sh
 
 IMG_FILES := $(patsubst %.png, %.png_, $(wildcard *.png))
 
