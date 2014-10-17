@@ -10,6 +10,7 @@ exclude:
   - README.md 
   - Makefile
   - src
+  - figure
 
 pygments: true
 
