@@ -3,8 +3,8 @@ title: Sampling Importance Resampling (SIR) and social revolution.
 author: Jonathan Olmsted
 license: GPL (>= 2)
 mathjax: true
+tags: armadillo modeling
 summary: We use SIR to characterize the posterior distribution of parameters associated with the probability of social revolution.
-
 ---
 
 ## Motivation
