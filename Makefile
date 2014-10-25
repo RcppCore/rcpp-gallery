@@ -11,7 +11,10 @@ else
 	jekyll build
 endif
 
-knit:
+articles/figure:
+	mkdir -p articles/figure
+
+knit:	articles/figure
 	$(MAKE) -C src
 	cp figure/* articles/figure/
 
