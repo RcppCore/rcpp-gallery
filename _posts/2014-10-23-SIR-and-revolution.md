@@ -5,6 +5,8 @@ license: GPL (>= 2)
 mathjax: true
 tags: armadillo modeling featured
 summary: We use SIR to characterize the posterior distribution of parameters associated with the probability of social revolution.
+layout: post
+src: 2014-10-23-SIR-and-revolution.Rmd
 ---
 
 ## Motivation
@@ -117,35 +119,72 @@ simulation is the best approach.
 In particular, we will consider our posterior beliefs about the
 different in probabilities under five different prior distributions.
 
-```{r}
+
+{% highlight r %}
 dfPriorInfo <- data.frame(id = 1:5,
                           dist = c("beta", "beta", "gamma", "beta", "beta"),
                           par1 = c(1, 1, 3, 10, .5),
                           par2 = c(1, 5, 20, 10, .5),
                           stringsAsFactors = FALSE)
 dfPriorInfo
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+  id  dist par1 par2
+1  1  beta  1.0  1.0
+2  2  beta  1.0  5.0
+3  3 gamma  3.0 20.0
+4  4  beta 10.0 10.0
+5  5  beta  0.5  0.5
+</pre>
 
 Using the data frame `dfPriorInfo` and the `plyr` package, we will
 draw a total of 20,000 values from *each* of the prior
 distributions. This can be done in any number of ways and is
 completely independent of using **Rcpp** for the SIR magic.
 
-```{r}
+
+{% highlight r %}
 library("plyr")
 MC1 <- 20000
 dfPriors <- ddply(dfPriorInfo, "id",
                   .fun = (function(X) data.frame(draws = (do.call(paste("r", X$dist, sep = ""),
                                                                   list(MC1, X$par1, X$par2))))))
-```
+{% endhighlight %}
 
 However, we can confirm that our draws are as we expect and that we
 have the right number of them (5 * 20k = 100k).
 
-```{r}
+
+{% highlight r %}
 head(dfPriors)
+{% endhighlight %}
+
+
+
+<pre class="output">
+  id     draws
+1  1 0.7124225
+2  1 0.5910231
+3  1 0.0595327
+4  1 0.4718945
+5  1 0.4485650
+6  1 0.0431667
+</pre>
+
+
+
+{% highlight r %}
 dim(dfPriors)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 100000      2
+</pre>
 
 ### Re-Sampling from the Prior
 
@@ -164,7 +203,8 @@ The return value of this function is a length `D` vector of draws from
 the posterior distribution given the draws from the prior distribution
 where the likelihood is used as a filtering weight.
 
-```{r, engine = "Rcpp"}
+
+{% highlight cpp %}
 # include <RcppArmadilloExtensions/sample.h>
 # include <RcppArmadilloExtensions/fixprob.h>
 
@@ -187,15 +227,16 @@ NumericVector samplePost (const NumericVector prdraws,
     NumericVector podraws = RcppArmadillo::sample(prdraws, D, true, wts);
     return(podraws);
 }
-```
+{% endhighlight %}
 
 To use the `samplePost()` function, we create the **R** representation
 of the data as follows.
 
-```{r}
+
+{% highlight r %}
 nS <- c(1, 2) # successes
 nF <- c(7, 74) # failures
-```
+{% endhighlight %}
 
 As a simple example, consider drawing a posterior sample of size 30
 for the "defeated case" from discrete prior distribution with equal
@@ -205,9 +246,18 @@ values. $$\theta$$ values of .8 were simply to unlikely (given the
 likelihood) to be resampled from the prior.
 
 
-```{r}
+
+{% highlight r %}
 table(samplePost(c(.125, .127, .8), 30, nS[1], nF[1]))
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+
+0.125 0.127 
+    9    21 
+</pre>
 
 Again making use of the **plyr** package, we construct samples of size
 20,000 for both $$\theta_1$$ and $$\theta_2$$ under each of the 5
@@ -215,7 +265,8 @@ prior distribution samples. These posterior draws are stored in the
 data frame `dfPost`.
 
 
-```{r}
+
+{% highlight r %}
 MC2 <- 20000
 f1 <- function(X) {
     draws <- X$draws
@@ -225,14 +276,37 @@ f1 <- function(X) {
 }
 
 dfPost <- ddply(dfPriors, "id", f1)
+{% endhighlight %}
 
-```
 
 
-```{r}
+{% highlight r %}
 head(dfPost)
+{% endhighlight %}
+
+
+
+<pre class="output">
+  id    theta1    theta2
+1  1 0.3067334 0.0130865
+2  1 0.1421879 0.0420830
+3  1 0.3218130 0.0634511
+4  1 0.0739756 0.0363466
+5  1 0.1065267 0.0460336
+6  1 0.0961749 0.0440790
+</pre>
+
+
+
+{% highlight r %}
 dim(dfPost)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 100000      3
+</pre>
 
 ## Summarizing Posterior Inferences
 
@@ -260,28 +334,7 @@ the two tails.
 
 
 
-```{r, echo = FALSE, message = FALSE, fig.align = "center", dpi = 200, out.width = "800px", out.height = "800px"}
-library("ggplot2")
-library("scales")
-dfSumm <- ddply(dfPost, "id", function (X) with(X, mean(theta1 - theta2 > 0)))
-
-dfPriorIll <- ddply(dfPriorInfo, "id",
-                    function(X) data.frame(x = seq(0, 1, length.out = 101),
-                                           dens = dbeta(seq(0, 1, length.out = 101), X$par1, X$par2)))
-
-ggplot(dfPost) +
-    geom_histogram(aes(x = theta1 - theta2, y = ..density.. ), alpha = .5, fill = muted("lightblue")) +
-    geom_vline(aes(x = 0), size = 2, color = "white") +
-    geom_text(aes(x = .2, y = 0, label = round(V1, 3)),
-              size = 4, color = "white", vjust = -.2, data = dfSumm) +
-    geom_rect(aes(xmin = .8, xmax = 1, ymin = 2, ymax = 4),
-              fill = "#000000", alpha = .6, data = dfSumm) +
-    geom_line(aes(x = x/5 + .8, y = dens/4 + 2), alpha = .9, color = "white", data = dfPriorIll) +
-    labs(x = expression(theta[1] - theta[2])) +
-    facet_grid(id ~ .,
-               labeller = (function(X, Y) paste(dfPriorInfo$dist[Y], " (", dfPriorInfo$par1[Y], ",", dfPriorInfo$par2[Y], ")", sep = ""))) +
-    scale_x_continuous(limits = c(-.25, 1))
-```
+<img src="../figure/2014-10-23-SIR-and-revolution-unnamed-chunk-9-1.png" title="plot of chunk unnamed-chunk-9" alt="plot of chunk unnamed-chunk-9" width="800px" height="800px" style="display: block; margin: auto;" />
 
 At least across these specifications of the prior distributions on
 $$\theta$$, the conclusion that "foreign threats matter" finds a good
