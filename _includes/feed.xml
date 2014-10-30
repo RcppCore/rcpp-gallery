@@ -6,8 +6,9 @@
 		<atom:link href="{{ site.url }}/{{ feed_file }}" rel="self" type="application/rss+xml" />
 		{% for post in feed_posts limit:20 %}
   		<item>
+          {% capture abspath %}{{ site.url }}{{ post.url }}/../figure/{% endcapture %}
 				<title>{{ post.title }}</title>
-				<description>{{ post.content | xml_escape }}</description>
+				<description>{{ post.content | xml_escape | replace: '../figure/', abspath }}</description>
 				<pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
 				<link>{{ site.url }}/{{ post.url }}</link>
 				<guid isPermaLink="true">{{ site.url }}/{{ post.url }}</guid>
