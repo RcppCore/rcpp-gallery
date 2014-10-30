@@ -1,8 +1,8 @@
 
-## Jekyll 1.0 broke with the pre-1.0 invocation, 
+## Jekyll 1.0 broke with the pre-1.0 invocation,
 ## so let us test if we have major release 0 or 1
 ## awk get the version token, cut picks off the first part
-jmaj	:= $(shell jekyll --version 2>&1 | awk '/^Jekyll/ {print $$2}' | cut -d. -f1 )
+jmaj	:= $(shell jekyll --version 2>&1 | awk '/^[Jj]ekyll/ {print $$2}' | cut -d. -f1 )
 
 all: knit
 ifeq ($(jmaj),0)
