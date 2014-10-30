@@ -16,7 +16,7 @@ articles/figure:
 
 knit:	articles/figure
 	$(MAKE) -C src
-	cp figure/* articles/figure/
+	cp -f figure/* articles/figure/
 
 .PHONY: clean
 clean:
