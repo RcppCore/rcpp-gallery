@@ -157,8 +157,8 @@ number of failures -- `nfail`).
 The most important feature to mention here is the use of some new and
 improved extensions which effectively provide an equivalent,
 performant mirror of **R**'s `sample()` function at the
-C++-level. **Important: as of the time of the writing of this post
-these features were not on CRAN, only on github.**
+C++-level. Note that you need the RcppArmadillo 0.4.500.0 or newer for this
+version of `sample()`.
 
 The return value of this function is a length `D` vector of draws from
 the posterior distribution given the draws from the prior distribution
