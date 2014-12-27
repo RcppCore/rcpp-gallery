@@ -1,15 +1,15 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
- * @title Create an R-tree data structure using Rcpp and Boost::Geometry
- * @author teramonagi and Dirk Eddelbuettel
+ * @title Create R-tree data structure using Rcpp and BH package(Boost::Geometry).
+ * @author teramonagi
  * @license GPL (>= 2)
  * @mathjax false
  * @tags boost 
- * @summary We show the use of Boost::Geometry and R-tree objects. 
+ * @summary In this document, We explain the basic concept of Boost::Geometry and R-tree, and show how to create a wrapper class of rtree class in Boost::Geometry library using Rcpp. 
  *
- * ### Introduction
+ * ## Introduction
  *
- * The purpose of this post is to show how to use
+ * The purpose of this gallery post is to show you how to use
  * [Boost::Geometry library](http://www.boost.org/doc/libs/1_57_0/libs/geometry/doc/html/index.html)
  * which was introduced
  * [recently](http://dirk.eddelbuettel.com/blog/2014/12/22/#bh_1.55.0-1) in
@@ -26,7 +26,7 @@
  * representations* and allows searching for objects occupying some space or
  * close to some point in space.
  * 
- * ### R-tree
+ * ## R-tree
  * 
  * R-tree is a tree data structure used for spatial searching, i.e., for
  * indexing multi-dimensional information such as geographical coordinates,
@@ -46,7 +46,7 @@
  * You can find more explanations about R-tree in
  * [Wikipedia](http://en.wikipedia.org/wiki/R-tree).
  * 
- * ### Write a wrapper class of rtree in Boost::Geometry using Rcpp
+ * ## Write a wrapper class of rtree in Boost::Geometry using Rcpp
  * 
  * Now, we write a simple C++ wrapper class of rtree class in
  * Boost::Geometry::Index that we can use in R.
@@ -79,6 +79,10 @@ typedef bg::model::point<float, 2, bg::cs::cartesian> point_t;
 typedef bg::model::box<point_t> box;
 typedef std::pair<box, unsigned int> value_t;
 
+// Forward declaration for RTreeCpp class and export setting.
+class RTreeCpp;
+RCPP_EXPOSED_CLASS(RTreeCpp)
+
 class RTreeCpp {
 public:
   // Constructor.
@@ -99,7 +103,6 @@ public:
   }
   // This method(query) is k-nearest neighbor search. 
   // It returns some number of values nearest to some point(point argument) in space.
-
   std::vector<int> knn(NumericVector point, unsigned int n) {
       std::vector<value_t> result_n;
       rtree_.query(bgi::nearest(point_t(point[0], point[1]), n), std::back_inserter(result_n));    
@@ -119,21 +122,22 @@ private:
     bgi::rtree<value_t, bgi::quadratic<16> > rtree_;
 };
 
-// [[Rcpp::export]]
-std::vector<int> showKNN(Rcpp::DataFrame df, NumericVector point, unsigned int n) {
-  RTreeCpp tree(df);            // recreate tree each time
-  return tree.knn(point, n);
+// Rcpp modules allow programmers to expose C++ functions/classes to R easily
+RCPP_MODULE(ModTree){
+    class_<RTreeCpp>("RTreeCpp")
+        .constructor<Rcpp::DataFrame>()
+        .method( "knn", &RTreeCpp::knn )
+    ;
 }
-
 
 /**
  * ### R code using RTreeCpp
  *
- * First, we create a sample data set of spatial data.
+ * At first, we make a sample spatial data.
  */
 
 /*** R
-# Sample spatial data(boxes)
+#Sample spatial data(boxes)
 points <- data.frame(
     id=0:2, 
     bl_x=c(0, 2, 4), 
@@ -143,7 +147,7 @@ points <- data.frame(
 */
 
 /* 
- * To visually the data, we use the following code: 
+ * To show this visually, we write the following code: 
  */
 
 /*** R
@@ -159,25 +163,14 @@ legend(4, 2, legend=points$id, fill=colors)
 */
 
 /**
- * One can use the RTreeCpp class as follows:
+ * You can use RTreeCpp class as the following:
  */
 
 /*** R
 # new RTreeCpp object
+#rt <- new(RTreeCpp, points)
 # Search nearest neighbor points(return value : id of points data)
-showKNN(points, c(0, 0), 1)
-showKNN(points, c(0, 0), 2)
-showKNN(points, c(0, 0), 3)
+#rt$knn(c(0, 0), 1)
+#rt$knn(c(0, 0), 2)
+#rt$knn(c(0, 0), 3)
 */
-
-/** 
- * Note the re-creation of the `RTreeCpp` object is of course
- * inefficient, but the Rcpp Gallery imposes some constraints on how we
- * present code. For actual application a stateful and persistent
- * object would be created. This could be done via Rcpp Modules as
- * well a number of different ways.  Here, however, we need to
- * recreate the object for each call as `knitr` (which is used behind
- * the scenes) cannot persist objects between code chunks. This is
- * simply a technical limitation of the Rcpp Gallery---but not of Rcpp
- * itself.
- */
