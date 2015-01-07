@@ -2,6 +2,7 @@
 title: First Derivative of the Multivariate Normal Densities with RcppArmadillo
 author: Joscha Legewie
 license: GPL (>= 2)
+mathjax: true
 tags: armadillo
 summary: Fast implementation of the first derivative of the Multivariate Normal density using RcppArmadillo.
 layout: post
@@ -12,108 +13,94 @@ There is a great RcppArmadillo
 [implementation](http://gallery.rcpp.org/articles/dmvnorm_arma/) of
 multivariate normal densities. But I was looking for the first derivative of
 the multivariate normal densities. Good implementations are surprisingly hard
-to come by. I wasn't able to find any online and my first solutions in R were
-pretty slow. RcppArmadillo might be a great alternative particularly because
-I am not aware of any c or Fortran versions that can be called from R. In
-such situations, we can expect the largest performance gains. Indeed, the
-RcppArmadillo version presented below is over 300-times faster than the R
-implementation!
+to come by. I wasn't able to find any online and my first R implementations
+were pretty slow. RcppArmadillo might be a great alternative particularly
+because I am not aware of any c or Fortran implementations in R. In these
+areas, we can expect the largest performance gains. Indeed, the RcppArmadillo
+version is over 400-times faster than the R implementation!
 
-Let us start with some R code. First, `dmvnorm_deriv1` is a simple R
-implementation of the formula shown in the [Matrix Cookbook](http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3274/pdf/imm3274.pdf) (formula 346 and 347,
-Nov 15, 2012 version). The second version `dmvnorm_deriv2` extends Peter
-Rossi's implementation of the multivariate normal densities in his package
-`bayesm`, which uses a much faster algorithm and can be used to improve our
-implementation of the first derivative.
+First, let's take a look at the density function
+$$ x \sim N(m,\Sigma) $$
+as shown in the *The Matrix Cookbook* (Nov 15, 2012 version) formula 346 and 347 
+
+$$
+\frac{\partial p(\mathbf{x})}{\partial\mathbf{x}}=-\frac{1}{\sqrt{det(2\pi\mathbf{\Sigma})}}exp\left[-\frac{1}{2}(\mathbf{x}-\mathbf{m})^{T}\mathbf{\Sigma}^{-1}(\mathbf{x}-\mathbf{m})\right]\mathbf{\Sigma}^{-1}(\mathbf{x}-\mathbf{m}) 
+$$
+
+where $$\mathbf{x}$$ and $$\mathbf{m}$$ are d-dimensional and $$\mathbf{\Sigma}$$ is a $$d \times d$$ variance-covariance matrix.
+
+Now we can start with a R implementation of the first derivative of the multivariate normal distribution. First, let's load some R packages:
 
 
 {% highlight r %}
-library(RcppArmadillo,quietly=TRUE)
-library(rbenchmark,quietly=TRUE)
-library(mvtnorm,quietly=TRUE)
+library('RcppArmadillo')
+library('mvtnorm')
+library('rbenchmark')
+library('fields')
+{% endhighlight %}
 
+Here are two implementations. One is pure R and one is based on `dmvnorm` in the `mvtnorm` package.
+
+
+{% highlight r %}
 dmvnorm_deriv1 <- function(X, mu=rep(0,ncol(X)), sigma=diag(ncol(X))) {
-    fn <- function(x) {
-        -1 * c((1/sqrt(det(2*pi*sigma))) * 
-             exp(-0.5*t(x-mu)%*%solve(sigma)%*%(x-mu))) * solve(sigma,(x-mu))
-    }
+    fn <- function(x) -1 * c((1/sqrt(det(2*pi*sigma))) * exp(-0.5*t(x-mu)%*%solve(sigma)%*%(x-mu))) * solve(sigma,(x-mu))
     out <- t(apply(X,1,fn))
     return(out)
 }
-
-# mv normal density based on Peter Rossi's implementation in `bayesm`
-dMvn <- function(X,mu,Sigma) {
-    k <- ncol(X)
-    rooti <- backsolve(chol(Sigma),diag(k))
-    quads <- colSums((crossprod(rooti,(t(X)-mu)))^2)
-    return(exp(-(k/2)*log(2*pi) + sum(log(diag(rooti))) - .5*quads))
-}
-
 dmvnorm_deriv2 <- function(X, mean, sigma) {
     if (is.vector(X)) X <- matrix(X, ncol = length(X))
     if (missing(mean)) mean <- rep(0, length = ncol(X))
     if (missing(sigma)) sigma <- diag(ncol(X))
     n <- nrow(X)
-    mvnorm <- dMvn(X, mu = mean, Sigma = sigma)
+    mvnorm <- dmvnorm(X, mean = mean, sigma = sigma)
     deriv <- array(NA,c(n,ncol(X)))
-    for (i in 1:n) {
+    for (i in 1:n)
         deriv[i,] <- -mvnorm[i] * solve(sigma,(X[i,]-mean))
-    }
     return(deriv)
 }
 {% endhighlight %}
 
-
-These implementations work but they are not very fast. `dmvnorm_deriv1` is a
-one-to-one translation of the formula in pure R and more efficient algorithms
-exist. `dmvnorm_deriv2` uses such an algorithm from the `bayesm` package and
-is significantly faster. As shown in
-[this](http://gallery.rcpp.org/articles/dmvnorm_arma/) gallery post, a
-translation of this algorithm to RcppArmadillo leads to further performance
-improvements. But I assume that the real bottleneck is the loop for the
-calculation of the derivative. So let's adopt the calculation of the
-multivariate normal from the [gallery
-post](http://gallery.rcpp.org/articles/dmvnorm_arma/) and translate the loop
-to RcppArmadillo. After some cleaning, we get a nice RcppArmadillo
-implementation called `dmvnorm_deriv_arma`.
+These implementations work but they are not very fast. So let's look at a RcppArmadillo version.
+The `Mahalanobis` function and the first part of `dmvnorm_deriv_arma` are based on [this](http://gallery.rcpp.org/articles/dmvnorm_arma/)
+gallery example, which implements a fast multivariate normal density with RcppArmadillo.
 
 
 {% highlight cpp %}
 #include <RcppArmadillo.h>
 
-const double log2pi = std::log(2.0 * M_PI);
-
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
-arma::mat dmvnorm_deriv_arma(arma::mat x,
-                             arma::rowvec mean,
-                             arma::mat sigma) {
+arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov){
+    int n = x.n_rows;
+    arma::mat x_cen;
+    x_cen.copy_size(x);
+    for (int i=0; i < n; i++) {
+        x_cen.row(i) = x.row(i) - center;
+    }
+    return sum((x_cen * cov.i()) % x_cen, 1);
+}
 
-    int xdim = x.n_cols;
+// [[Rcpp::export]]
+arma::mat dmvnorm_deriv_arma(arma::mat x, arma::rowvec mean, arma::mat sigma) {
+    // get result for mv normal
+    arma::vec distval = Mahalanobis(x,  mean, sigma);
+    double logdet = sum(arma::log(arma::eig_sym(sigma)));
+    double log2pi = std::log(2.0 * M_PI);
+    arma::vec mvnorm = exp(-( (x.n_cols * log2pi + logdet + distval)/2));
+
+    // get derivative of multivariate normal
+    int n = x.n_rows;
     arma::mat deriv;
     deriv.copy_size(x);
-    arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
-    double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(xdim/2) * log2pi;
-
-    int n = x.n_rows;
     for (int i=0; i < n; i++) {
-        arma::vec x_centered = arma::trans(x.row(i) - mean);
-        arma::vec z = rooti * x_centered;
-        // get derivative of multivariate normal
-        deriv.row(i) = -1 * exp(constants - 
-	      0.5 * arma::sum(z%z) + rootisum) * trans(solve(sigma, x_centered));
-        // The part `exp(constants - 0.5 * arma::sum(z%z) + rootisum)`
-	// returns the multivarate normal and the other terms translate it 
-	// to the first derivative
+        deriv.row(i) = -1 * mvnorm(i) * trans(solve(sigma, trans(x.row(i) - mean)));
     }
-
     return(deriv);
 }
 {% endhighlight %}
 
-
-Finally, we can compare the different versions using simulated data.
+Now we can compare the different implementations using simulated data.
 
 
 {% highlight r %}
@@ -125,19 +112,34 @@ X <- rmvnorm(10000, m, s)
 benchmark(dmvnorm_deriv_arma(X,m,s),
           dmvnorm_deriv1(X,mu=m,sigma=s),
           dmvnorm_deriv2(X,mean=m,sigma=s),
-          order="relative", replications=50)[,1:4]
+          order="relative", replications=10)[,1:4]
 {% endhighlight %}
 
 
 
 <pre class="output">
                                     test replications elapsed relative
-1            dmvnorm_deriv_arma(X, m, s)           50   0.107      1.0
-3 dmvnorm_deriv2(X, mean = m, sigma = s)           50  23.344    218.2
-2   dmvnorm_deriv1(X, mu = m, sigma = s)           50  76.775    717.5
+1            dmvnorm_deriv_arma(X, m, s)           10   0.021    1.000
+3 dmvnorm_deriv2(X, mean = m, sigma = s)           10   6.813  324.429
+2   dmvnorm_deriv1(X, mu = m, sigma = s)           10  22.439 1068.524
 </pre>
+The RcppArmadillo implementation is several hundred times faster! Such stunning performance increases are possible when existing implementation rely on pure R (or, as in `dmvnorm_deriv2`, do some of the heavy lifting in R). Of course, the R implementation can probably be improved.
+
+Finally, let's plot the x- and y- derivates of the 2-dimensional normal density function.
 
 
-The RcppArmadillo implementation is several hundred times faster! Such
-stunning performance increases are possible when existing implementation rely
-on pure R. Of course, the R implementation can be improved as well.
+{% highlight r %}
+n <- 100
+x <- seq(-3,3, length.out = n)
+y <- seq(-3,3, length.out = n)
+z1 <- outer (x, y , function(x1,x2) dmvnorm_deriv_arma(cbind(x1,x2),rep(0,2),diag(2))[,1])
+z2 <- outer (x, y , function(x1,x2) dmvnorm_deriv_arma(cbind(x1,x2),rep(0,2),diag(2))[,2])
+
+par(mfrow=c(1,2),mar=c(0,0,0,0), cex=0.8, cex.lab=0.8, cex.main=0.8, mgp=c(1.2,0.15,0), cex.axis=0.7, tck=-0.01)
+drape.plot(x,y,z1,border=NA, add.legend=FALSE, phi=30, theta= 50)
+drape.plot(x,y,z2,border=NA, add.legend=FALSE, phi=30, theta= 50)
+{% endhighlight %}
+
+![plot of chunk unnamed-chunk-5](../figure/2013-09-09-dmvnorm-deriv-arma-unnamed-chunk-5-1.png) 
+
+Note: This is an updated version dated 2015-01-06 of the original article.
