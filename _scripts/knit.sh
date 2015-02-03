@@ -10,7 +10,7 @@ knit <- function (inputFile, outputFile) {
   prefix <- paste(stem, "-", sep="")
   knitr::opts_chunk$set(cache.path=file.path('cache', prefix),
                         fig.path=file.path('../figure', prefix))
-  knitr::opts_chunk$set(tidy=FALSE, comment=NA)
+  knitr::opts_chunk$set(tidy=FALSE, comment=NA,error=FALSE)
   
   # configure output options
   knitr::pat_md()
