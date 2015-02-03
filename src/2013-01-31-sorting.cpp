@@ -106,9 +106,6 @@ NumericVector stl_nth_element(NumericVector x, int n) {
  */
 
 /*** R
-# check that the nth sorted elements of the vectors are equal
-stopifnot(all.equal(stl_nth_element(x, 43)[43], sort(x, partial=43)[43]))
-
 # benchmark nth_element and sort
 benchmark(stl_nth_element(z, n),
          sort(z, partial=n),
