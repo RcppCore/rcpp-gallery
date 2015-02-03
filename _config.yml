@@ -12,7 +12,7 @@ exclude:
   - src
   - figure
 
-pygments: true
+highlighter: pygments
 
 markdown: kramdown
 
