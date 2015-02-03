@@ -117,7 +117,7 @@ public:
     }
 
 private:
-    STORAGE* data ;
+    const STORAGE* data ;
 } ;
 
 template <>
@@ -130,7 +130,7 @@ public:
     }
 
 private:
-    SEXP* data ;
+    const SEXP* data ;
 } ;
 
 template <int RTYPE>
