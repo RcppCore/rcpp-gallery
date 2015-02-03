@@ -107,16 +107,15 @@ We also check that we fail gracefully when we encounter a non-accepted `SEXP`:
 
 
 {% highlight r %}
-do_stuff( list(new.env()) )
+tryCatch(do_stuff(list(new.env())),
+         error = function(e) print(e))
 {% endhighlight %}
 
 
 
 <pre class="output">
-Error: incompatible SEXP encountered; only accepts lists with REALSXPs and
-INTSXPs
+&lt;Rcpp::exception: incompatible SEXP encountered; only accepts lists with REALSXPs and INTSXPs&gt;
 </pre>
-
   
 However, this only operates on top-level objects within the list. What if your
 list contains other lists, and you want to recurse through those lists as well?

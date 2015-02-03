@@ -90,7 +90,8 @@ or handle other `SEXP`s as needed as well.
 We also check that we fail gracefully when we encounter a non-accepted `SEXP`:
 
 ```{r tidy=FALSE}
-do_stuff( list(new.env()) )
+tryCatch(do_stuff(list(new.env())),
+         error = function(e) print(e))
 ```
   
 However, this only operates on top-level objects within the list. What if your
