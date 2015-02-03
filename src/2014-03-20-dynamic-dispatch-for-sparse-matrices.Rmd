@@ -68,7 +68,8 @@ Y <- matrix(1:(d*p), d, p)
 
 **Check exception handling:**
 ```{r}
-matmult_cpp(as(X_ind, "ngTMatrix"), Y)
+tryCatch(matmult_cpp(as(X_ind, "ngTMatrix"), Y),
+         error = print)
 ```
 
 **Dense times dense:**

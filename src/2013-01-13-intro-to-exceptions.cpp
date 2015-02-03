@@ -46,8 +46,12 @@ double takeLog(double val) {
  */
 
 /*** R
-  takeLog(exp(1))   # works
-  takeLog(-1.0)     # throws exception
+# works
+takeLog(exp(1))
+  
+# throws exception
+tryCatch(takeLog(-1.0),
+         error = print)
 */
 
 /**
@@ -81,8 +85,12 @@ double takeLog2(double val) {
  */
 
 /*** R
-  takeLog2(exp(1))   # works
-  takeLog2(-1.0)     # throws exception
+# works
+takeLog2(exp(1))
+  
+# throws exception
+tryCatch(takeLog2(-1.0),    
+         error = print)
 */
 
 /**
@@ -106,6 +114,11 @@ double takeLog3(double val) {
 }
 
 /*** R
-  takeLog3(exp(1))   # works
-  takeLog3(-1.0)     # throws exception
+# works
+takeLog3(exp(1))
+
+# throws exception
+tryCatch(takeLog3(-1.0), 
+         error = print)
 */
+

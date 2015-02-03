@@ -54,7 +54,6 @@ arma::mat matmult_cpp(SEXP Xr, const arma::mat Y) {
 }
 {% endhighlight %}
 
-
 **Set up test cases:**
 
 {% highlight r %}
@@ -82,19 +81,18 @@ X_ind <- as(sample(1:d, n, rep=TRUE), "indMatrix")
 Y <- matrix(1:(d*p), d, p)
 {% endhighlight %}
 
-
 **Check exception handling:**
 
 {% highlight r %}
-matmult_cpp(as(X_ind, "ngTMatrix"), Y)
+tryCatch(matmult_cpp(as(X_ind, "ngTMatrix"), Y),
+         error = print)
 {% endhighlight %}
 
 
 
 <pre class="output">
-Error: unknown class of Xr
+&lt;Rcpp::exception: unknown class of Xr&gt;
 </pre>
-
 
 **Dense times dense:**
 
@@ -150,10 +148,9 @@ benchmark(X_sp%*%Y,
 
 <pre class="output">
                   test replications elapsed relative
-2 matmult_cpp(X_sp, Y)          100   0.009    1.000
-1           X_sp %*% Y          100   0.025    2.778
+2 matmult_cpp(X_sp, Y)          100   0.006    1.000
+1           X_sp %*% Y          100   0.013    2.167
 </pre>
-
 
 **`indMatrix` times dense:**
 
@@ -179,10 +176,9 @@ benchmark(X_ind%*%Y,
 
 <pre class="output">
                    test replications elapsed relative
-2 matmult_cpp(X_ind, Y)          100   0.013    1.000
-1           X_ind %*% Y          100   0.025    1.923
+2 matmult_cpp(X_ind, Y)          100   0.008      1.0
+1           X_ind %*% Y          100   0.012      1.5
 </pre>
-
     
 Based on [this](http://stackoverflow.com/a/22531129/295025) Q&A on StackOverflow,
 thanks again to Kevin Ushey for his helpful comment.

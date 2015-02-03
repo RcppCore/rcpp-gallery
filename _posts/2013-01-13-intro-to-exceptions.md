@@ -22,7 +22,6 @@ by a block of <code>try</code> and <code>catch</code>.
 A simple example will help.
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 
@@ -44,11 +43,11 @@ double takeLog(double val) {
 }
 {% endhighlight %}
 
-
 We can look at this example with a valid, and an invalid argument:
 
 {% highlight r %}
-  takeLog(exp(1))   # works
+# works
+takeLog(exp(1))
 {% endhighlight %}
 
 
@@ -60,15 +59,16 @@ We can look at this example with a valid, and an invalid argument:
 
 
 {% highlight r %}
-  takeLog(-1.0)     # throws exception
+# throws exception
+tryCatch(takeLog(-1.0),
+         error = print)
 {% endhighlight %}
 
 
 
 <pre class="output">
-Error: Inadmissible value
+&lt;std::range_error: Inadmissible value&gt;
 </pre>
-
 
 As we can see, execptions works as expected. By throwing an
 exception derived from the standard exception call, we arrive in
@@ -96,11 +96,11 @@ double takeLog2(double val) {
 }
 {% endhighlight %}
 
-
 Again, we can look at this example with a valid, and an invalid argument:
 
 {% highlight r %}
-  takeLog2(exp(1))   # works
+# works
+takeLog2(exp(1))
 {% endhighlight %}
 
 
@@ -112,15 +112,16 @@ Again, we can look at this example with a valid, and an invalid argument:
 
 
 {% highlight r %}
-  takeLog2(-1.0)     # throws exception
+# throws exception
+tryCatch(takeLog2(-1.0),    
+         error = print)
 {% endhighlight %}
 
 
 
 <pre class="output">
-Error: Inadmissible value
+&lt;std::range_error: Inadmissible value&gt;
 </pre>
-
 
 This shows that due to the automatic addition of the needed
 infrastructure, exception handling can add a useful mechanism to
@@ -142,9 +143,9 @@ double takeLog3(double val) {
 }
 {% endhighlight %}
 
-
 {% highlight r %}
-  takeLog3(exp(1))   # works
+# works
+takeLog3(exp(1))
 {% endhighlight %}
 
 
@@ -156,12 +157,13 @@ double takeLog3(double val) {
 
 
 {% highlight r %}
-  takeLog3(-1.0)     # throws exception
+# throws exception
+tryCatch(takeLog3(-1.0), 
+         error = print)
 {% endhighlight %}
 
 
 
 <pre class="output">
-Error: Inadmissible value
+&lt;Rcpp::exception: Inadmissible value&gt;
 </pre>
-

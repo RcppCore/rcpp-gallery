@@ -91,7 +91,7 @@ We also check that we fail gracefully when we encounter a non-accepted `SEXP`:
 
 ```{r tidy=FALSE}
 tryCatch(do_stuff(list(new.env())),
-         error = function(e) print(e))
+         error = print)
 ```
   
 However, this only operates on top-level objects within the list. What if your

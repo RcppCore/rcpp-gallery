@@ -64,7 +64,6 @@ List do_stuff( List x_ ) {
 }
 {% endhighlight %}
 
-
 A quick test:
  
 
@@ -86,7 +85,6 @@ print(tmp)
 [[2]]
 [1]  2  4  6  8 10
 </pre>
-
  
 Some notes on the above:
  
@@ -108,7 +106,7 @@ We also check that we fail gracefully when we encounter a non-accepted `SEXP`:
 
 {% highlight r %}
 tryCatch(do_stuff(list(new.env())),
-         error = function(e) print(e))
+         error = print)
 {% endhighlight %}
 
 
@@ -157,7 +155,6 @@ List recurse(List x_) {
 }
 {% endhighlight %}
 
-
 A test case:
  
 
@@ -190,7 +187,6 @@ $z$zx
 $z$zy
 [1] 40
 </pre>
-
 
 Note that all we had to do was add a `VECSXP` case in our `switch` statement.
 If we see a list, we call the same `recurse` function on that list, and then
