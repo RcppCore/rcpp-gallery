@@ -6,7 +6,7 @@
  * @summary Demonstrates transforming a matrix in parallel using 
  *   the RcppParallel package.
  *
- * The [RcppParallel](https://github.com/RcppCore/RcppParallel) package includes
+ * The [RcppParallel](https://rcppcore.github.com/RcppParallel) package includes
  * high level functions for doing parallel programming with Rcpp. For example,
  * the `parallelFor` function can be used to convert the work of a standard
  * serial "for" loop into a parallel one. This article describes using
@@ -139,12 +139,7 @@ res[,1:4]
 */
 
 /**
- * Note that performance gains will typically be 30-50% less on Windows systems 
- * as a result of less sophisticated thread scheduling (RcppParallel does not 
- * currently use [TBB](https://www.threadingbuildingblocks.org/) on Windows 
- * whereas it does on the Mac and Linux).
- * 
  * You can learn more about using RcppParallel at 
- * [https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
+ * [https://rcppcore.github.com/RcppParallel](https://rcppcore.github.com/RcppParallel).
  */ 
  

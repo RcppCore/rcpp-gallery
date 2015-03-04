@@ -8,7 +8,7 @@ summary: Demonstrates computing the sum of a vector in parallel using
 layout: post
 src: 2014-06-29-parallel-vector-sum.cpp
 ---
-The [RcppParallel](https://github.com/RcppCore/RcppParallel) package includes
+The [RcppParallel](https://rcppcore.github.com/RcppParallel) package includes
 high level functions for doing parallel programming with Rcpp. For example,
 the `parallelReduce` function can be used aggreggate values from a set of
 inputs in parallel. This article describes using RcppParallel to sum an R
@@ -146,10 +146,5 @@ res[,1:4]
 1         vectorSum(v)          100   0.857    4.709
 </pre>
 
-Note that performance gains will typically be 30-50% less on Windows systems 
-as a result of less sophisticated thread scheduling (RcppParallel does not 
-currently use [TBB](https://www.threadingbuildingblocks.org/) on Windows 
-whereas it does on the Mac and Linux).
-
 You can learn more about using RcppParallel at 
-[https://github.com/RcppCore/RcppParallel](https://github.com/RcppCore/RcppParallel).
+[https://rcppcore.github.com/RcppParallel](https://rcppcore.github.com/RcppParallel).
