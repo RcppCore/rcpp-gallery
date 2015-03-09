@@ -8,13 +8,14 @@ layout: post
 src: 2013-01-08-using-rcout.cpp
 ---
 
-The [Writing R Extensions](http://cran.r-project.org/doc/manuals/R-exts.html) manual, 
-which provides the gold standard of documentation as far as
-extending R goes, suggests to use `Rprintf` and `REprintf` for
-output (from C/C++ code) as these are matched to the usual output and error streams
-maintained by R itself.
+The [Writing R Extensions](http://cran.r-project.org/doc/manuals/R-exts.html)
+manual, which provides the gold standard of documentation as far as
+extending R goes, strongly suggests to use `Rprintf` and `REprintf`
+for output (from C/C++ code). The key reason is that these are
+matched to the usual output and error streams maintained by R
+itself.
 
-Also, use of `std::cout` and `std::cerr` (as common in standard C++ code) is flagged when
+In fact, use of `std::cout` and `std::cerr` (as common in standard C++ code) is flagged when
 running `R CMD check` and no longer permitted when uploading to CRAN.
 
 Thanks to an initial patch by Jelmer Ypma, which has since been
@@ -23,7 +24,6 @@ output) and `Rcerr` (for standard error) which intercept output and
 redirect it to R.
 
 To illustrate, we create a simple function which prints a value:
-
 
 
 {% highlight cpp %}
@@ -37,7 +37,6 @@ void showValue(double x) {
     Rcout << "The value is " << x << std::endl;
 }
 {% endhighlight %}
-
 
 We can use this from R, and output will be properly synchronised:
 
@@ -75,11 +74,10 @@ cat("After\n")
 After
 </pre>
 
-
-As of the 0.10.* releases, Rcpp itself still lacks the converter code to
-print simple non-scalar data structures---but RcppArmadillo can do
-so as Conrad permitted a hool for us to supply the Rcout device as
-the default device
+As of the 0.10.* abd 0.11.* releases, Rcpp itself still lacks the converter code to
+"pretty-print simple non-scalar data structures. But there are alternatives. First, RcppArmadillo can do
+so via its `operator<<()` as the (Rcpp)Armadillo output is automatically redirected to R output stream.
+See below for a recent alternative from Rcpp itself.
 
 {% highlight cpp %}
 #include <RcppArmadillo.h>
@@ -91,7 +89,6 @@ void showMatrix(arma::mat X) {
     Rcout << "Armadillo matrix is" << std::endl << X << std::endl;
 }
 {% endhighlight %}
-
 
 {% highlight r %}
 M <- matrix(1:9,3,3)
@@ -122,7 +119,70 @@ Armadillo matrix is
    3.0000   6.0000   9.0000
 </pre>
 
-
 Having output from R and C++ mix effortlessly is a very useful
 feature. We hope to over time add more features to output more of
-Rcpp basic objects.  Patches are of course always welcome.
+Rcpp basic objects. 
+
+Alternatively, starting with R version 0.11.5, we now have function
+`print()` which can print any `SEXP` object -- by calling the internal R
+function `Rf_PrintValue()`.
+
+A simple illustration follow. We first define helper function.
+
+{% highlight cpp %}
+// [[Rcpp::export]]
+void callPrint(RObject x) { 
+    Rcpp::print(x);             // will work on any SEXP object
+}
+{% endhighlight %}
+
+A few examples calls follow below.
+
+{% highlight r %}
+callPrint(1:3)             # print a simple vector
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 1 2 3
+</pre>
+
+
+
+{% highlight r %}
+callPrint(LETTERS[1:3])    # or characters
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;A&quot; &quot;B&quot; &quot;C&quot;
+</pre>
+
+
+
+{% highlight r %}
+callPrint(matrix(1:9,3))   # or a matrix
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1] [,2] [,3]
+[1,]    1    4    7
+[2,]    2    5    8
+[3,]    3    6    9
+</pre>
+
+
+
+{% highlight r %}
+callPrint(globalenv())    # or an environment object
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;environment: R_GlobalEnv&gt;
+</pre>
