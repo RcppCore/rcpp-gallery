@@ -1,6 +1,6 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
- * @title Parsing Date and Times 
+ * @title Parsing Dates and Times 
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
  * @tags boost featured
@@ -215,3 +215,4 @@ print(format(p, tz="UTC"))
 /**
  * Note that we always forced display using UTC rather local time, the R default.
  */
+

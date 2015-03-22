@@ -1,5 +1,5 @@
 ---
-title: Parsing Date and Times 
+title: Parsing Dates and Times 
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: boost featured
