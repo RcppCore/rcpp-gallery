@@ -10,7 +10,7 @@
  * 
  * ## Motivation
  * 
- * R has excellent for dates and times via the built-in `Date` and `POSIXt`
+ * R has excellent support for dates and times via the built-in `Date` and `POSIXt`
  * classes.  Their usage, however, is not always as straightforward as one
  * would want.  Certain conversions are more cumbersome than we would like: while
  * `as.Date("2015-03-22")`, would it not be nice if `as.Date("20150322")` (a
