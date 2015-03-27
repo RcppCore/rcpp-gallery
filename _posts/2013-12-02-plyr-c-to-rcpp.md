@@ -1,9 +1,11 @@
 ---
-title: "Converting C code to C++ code: An example from plyr"
+title: "Converting C code to C++ code&#58; An example from plyr"
 author: Hadley Wickham and Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: stl basics
 summary: C++ allows for more idiomatic code.
+layout: post
+src: 2013-12-02-plyr-c-to-rcpp.Rmd
 ---
 
 The [plyr](http://cran.r-project.org/package=plyr) package uses a couple of 
@@ -20,7 +22,8 @@ for many of the functions in [plyr](http://cran.r-project.org/package=plyr).
 
 It is fairly easy to see what is going on the in the C++ code:
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -42,7 +45,7 @@ std::vector<std::vector<int> > split_indices(IntegerVector x, int n = 0) {
   
     return ids;
 }
-```
+{% endhighlight %}
 
 * We create a `std::vector` containing `std::vector` (of type `integer`)
 called `ids`. It will grow efficiently as we add new values, and Rcpp will
@@ -60,7 +63,8 @@ the source of a bug in a previous version of this code).
 
 Compare it to the original C code:
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <R.h>
 #include <Rdefines.h>
 
@@ -101,7 +105,7 @@ SEXP split_indices(SEXP group, SEXP n) {
     UNPROTECT(1);
     return vec;
 }
-```
+{% endhighlight %}
 
 This function is almost three times as long, and has a bug in it.  It is
 substantially more complicated because it:
