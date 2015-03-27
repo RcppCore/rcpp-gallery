@@ -1,5 +1,5 @@
 ---
-title: Converting C code to C++ code&#58; An example from plyr
+title: "Converting C code to C++ code&#58; An example from plyr"
 author: Hadley Wickham and Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: stl basics
@@ -25,18 +25,18 @@ It is fairly easy to see what is going on the in the C++ code:
 
 {% highlight cpp %}
 #include <Rcpp.h>
-
 using namespace Rcpp;
 
 // [[Rcpp::exports]]
 std::vector<std::vector<int> > split_indices(IntegerVector x, int n = 0) {
-    if (n < 0) stop("n must be a positive integer");
+    if (n < 0) 
+      stop("n must be a positive integer");
   
     std::vector<std::vector<int> > ids(n);
   
     int nx = x.size();
     for (int i = 0; i < nx; ++i) {
-        if (x[i] > n) {
+        if (x[i] > ids.size()) {
            ids.resize(x[i]);
         }
     
@@ -57,7 +57,11 @@ ones are needed because C++ uses 0 based indices and R uses 1 based
 indices.)
 
 The code is simple, easy to understand (if one is a little familiar with
-the STL), and performant.  Compare it to the original C code:
+the STL), and performant. The most awkward aspect of the code is switching
+between R's 1-based indexing and C++ 0-based indexing (and indeed this was
+the source of a bug in a previous version of this code).
+
+Compare it to the original C code:
 
 
 {% highlight cpp %}
@@ -69,7 +73,7 @@ SEXP split_indices(SEXP group, SEXP n) {
     int i, j, k;
 
     int nlevs = INTEGER(n)[0];
-    int nobs = LENGTH(group);  
+    int nobs = Rf_length(group);  
     int *pgroup = INTEGER(group);
   
     // Count number of cases in each group
