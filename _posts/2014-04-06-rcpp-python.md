@@ -2,12 +2,11 @@
 title: Call Python from R through Rcpp
 author: Wush Wu
 license: GPL (>= 2)
-tags: featured boost 
+tags: featured boost python
 summary: Integrate Python into R via Rcpp and Boost.Python
 layout: post
 src: 2014-04-06-rcpp-python.Rmd
 ---
-
 
 
 
@@ -49,7 +48,6 @@ py_ldflags <- system("python2.7-config --ldflags", intern=TRUE)
 Sys.setenv("PKG_LIBS"=sprintf("%s %s %s", Sys.getenv("PKG_CFLAGS"), "-lboost_python-py27", py_ldflags))
 {% endhighlight %}
 
-
 The following `hello world` should then work:
 
 
@@ -81,9 +79,6 @@ void hello_python() {
 
 
 
-
-
-
 Let's call them in R:
 
 
@@ -93,11 +88,9 @@ hello_python()
 {% endhighlight %}
 
 
-
 <pre class="output">
-Today is Sun Apr  6 09:03:02 2014
+Today is Thu Apr  2 11:32:17 2015
 </pre>
-
 
 It shows that the `hello_python` function successfully initializes the Python
 engine and runs the Python script through `PyRun_SimpleString`.
@@ -132,7 +125,6 @@ SEXP IntVec_to_py_list(IntegerVector src) {
 {% endhighlight %}
 
 
-
 {% highlight r %}
 IntVec_to_py_list(1:10)
 {% endhighlight %}
@@ -140,9 +132,8 @@ IntVec_to_py_list(1:10)
 
 
 <pre class="output">
-&lt;pointer: 0x19d1f80&gt;
+&lt;pointer: 0x8e0b410&gt;
 </pre>
-
 
 The pointer refers to the memory of the transformed Python object.
 
@@ -180,7 +171,6 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
 {% endhighlight %}
 
 
-
 {% highlight r %}
 pycall("
 def print_list(src):
@@ -205,7 +195,6 @@ pyfun("print_list", a)
 9
 10
 </pre>
-
 
 ## Error Handling
 
@@ -240,7 +229,6 @@ void pyfun(std::string fun_name, SEXP fun_argument) {
 {% endhighlight %}
 
 
-
 {% highlight r %}
 pycall("
 def print_list(src):
@@ -257,7 +245,7 @@ pyfun("print_lists", a) # a typo of the function name
 KeyError: 'print_lists'
 Error in sys.excepthook:
 Traceback (most recent call last):
-  File &quot;/usr/lib/python2.7/dist-packages/apport_python_hook.py&quot;, line 64, in apport_excepthook
+  File &quot;/usr/lib/python2.7/dist-packages/apport_python_hook.py&quot;, line 63, in apport_excepthook
     from apport.fileutils import likely_packaged, get_recent_crashes
   File &quot;/usr/lib/python2.7/dist-packages/apport/__init__.py&quot;, line 5, in &lt;module&gt;
     from apport.report import Report
@@ -265,12 +253,11 @@ Traceback (most recent call last):
     from xml.parsers.expat import ExpatError
   File &quot;/usr/lib/python2.7/xml/parsers/expat.py&quot;, line 4, in &lt;module&gt;
     from pyexpat import *
-ImportError: /usr/lib/python2.7/lib-dynload/pyexpat.x86_64-linux-gnu.so: undefined symbol: _Py_ZeroStruct
+ImportError: /usr/lib/python2.7/lib-dynload/pyexpat.i386-linux-gnu.so: undefined symbol: _Py_ZeroStruct
 
 Original exception was:
 KeyError: 'print_lists'
 </pre>
-
 
 ## Summary
 

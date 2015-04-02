@@ -2,7 +2,7 @@
 title: Call Python from R through Rcpp
 author: Wush Wu
 license: GPL (>= 2)
-tags: featured boost 
+tags: featured boost python
 summary: Integrate Python into R via Rcpp and Boost.Python
 ---
 
