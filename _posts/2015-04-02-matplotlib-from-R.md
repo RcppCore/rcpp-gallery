@@ -153,8 +153,15 @@ initialize_python()
 numvec_to_python("x", x) 
 numvec_to_python("sx", sx)
 numvec_to_python("cx", cx)
+#Set plot size
+pyrun("plt.rcParams.update({'figure.figsize' : (7,4)})") 
 #Create plots
 pyrun("plt.plot(x, sx)")
 pyrun("plt.plot(x, cx, '--r', linewidth=2) ")
+pyrun("plt.legend(('sin(x)', 'cos(x)'))")
+pyrun("plt.savefig('../figure/2015-04-02-pyplot.png')")
 #pyrun("plt.show()") #Uncomment this line to show the plot
 {% endhighlight %}
+And here is the generated plot:
+
+![](../figure/2015-04-02-pyplot.png)
