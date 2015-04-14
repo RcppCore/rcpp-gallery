@@ -93,9 +93,6 @@ using namespace Rcpp ;
 // [[Rcpp::export]]
 IntegerMatrix cpp_getInts(int samples
                           ) {
-  
-    RNGScope scope;
-  
     int cnt = 0 ;
     IntegerMatrix results(20, samples) ;
     IntegerVector frame = seq_len(50) ;

@@ -29,7 +29,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector rcppNormals(int n) {
-    RNGScope scope;             // also done by sourceCpp()
     return rnorm(n);
 }
 {% endhighlight %}
