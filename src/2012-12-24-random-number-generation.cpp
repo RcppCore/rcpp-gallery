@@ -80,20 +80,24 @@ NumericVector rngCppScalar() {
 /**
  * ### RNG state
  * 
- * Section 6.3 of [Writing R Extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Random-number-generation)
- * describes an additional requirement for calling the R random number generation functions: 
- * you must call `GetRNGState` prior to using them and then `PutRNGState` afterwards. These functions (respectively) read 
+ * Section 6.3 of [Writing R
+ * Extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Random-number-generation)
+ * describes an additional requirement for calling the R random number
+ * generation functions: you must call `GetRNGState` prior to using them and
+ * then `PutRNGState` afterwards. These functions (respectively) read 
  * `.Random.seed` and then write it out after use.
  * 
- * When using Rcpp attributes (as we do via the `// [[Rcpp::export]]` annotation on the
- * functions above) it is not necessary to call `GetRNGState` and `PutRNGState` because
- * this is done automatically within the wrapper code generated for exported functions. 
- * In fact, since these calls don't nest it is actually an error to call them when within
- * a function exported via Rcpp attributes.
+ * When using Rcpp attributes (as we do via the `// [[Rcpp::export]]` annotation
+ * on the functions above) it is not necessary to call `GetRNGState` and
+ * `PutRNGState` because this is done automatically within the wrapper code
+ * generated for exported functions. In fact, since these calls don't nest it is
+ * actually an error to call them when within a function exported via Rcpp
+ * attributes.
  * 
- * In the case where you are writing an Rcpp function that doesn't use Rcpp attributes 
- * (e.g. a function using a raw `SEXP` interface that is exported via `extern C`)
- * Rcpp exposes a convenience class you can use to get and put the RNG state. For example:
+ * In the case where you are writing an Rcpp function that doesn't use Rcpp
+ * attributes (e.g. a function using a raw `SEXP` interface that is exported via
+ * `extern C`) Rcpp exposes a convenience class you can use to get and put the
+ * RNG state. For example:
  */
 
 extern "C" SEXP rngScopeCppScalar() {
