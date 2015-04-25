@@ -2,7 +2,7 @@
  * @title Stochastic SIR Epidemiological Compartment Model
  * @author Christian Gunning
  * @license GPL (>= 2)
- * @tags simulation parameter
+ * @tags simulation parameter random 
  * @summary Demonstrates a discrete, stochastic epidemiological 
  *  using a tau-leap method.  This model 
  *   takes a list of parameters and returns a data.frame
@@ -48,6 +48,10 @@
  * ### C++ Code
  * Note that cpp Functions must be marked with the following comment like for use in R
  * // [[Rcpp::export]]
+ *
+ * When functions are exported in this way via sourceCpp(), 
+ * RNG setup is automatically handled to use R's engine.
+ * For more details, see ??.
 */
 
 #include <Rcpp.h>
@@ -56,12 +60,12 @@ using Rcpp::NumericVector;
 using Rcpp::List;
 using Rcpp::DataFrame;
 using Rcpp::Named;
-// use Rcpp namespace R:: (alias to R API)
-// R::rpois always returns a single value
-// to return multiple (e.g. Integer/NumericVector, 
-// use Rcpp::rpois(int ndraw, param) and friends
-using R::rpois;
-// rcpp also has a pmin for vectors
+// Alternately, uncomment the following line to include 
+// *everything* from Rcpp (while convenient, global imports 
+// are confusing in production code):
+// using namespace Rcpp;
+
+// Rcpp also has a pmin for vectors
 using std::min;
 
 // This function will be used in R!
@@ -77,6 +81,10 @@ List tauleapCpp(List params){
 
     // initialize each state vector in its own vector
     // set all vals to initial vals
+    //
+    // I use doubles (NumericVector) rather than 
+    // ints (IntegerVector), since rpois returns double,
+    // and the domain of double is a superset of int
     NumericVector SS(nsteps, init["S"]);
     NumericVector II(nsteps, init["I"]);
     NumericVector RR(nsteps, init["R"]);
@@ -91,31 +99,29 @@ List tauleapCpp(List params){
     double gamma = params["gamma"];
     double tau = params["tau"];
 
-    // Rcpp magic: Initialize RNG (uses R engine)
-    Rcpp::RNGScope scope;
-    // Calculate the number of events for each day,
+    // Calculate the number of events for each step,
     // update state vectors
     for (int istep = 0; istep < (nsteps-1); istep++){
-        // for easier reading
-        // use references to *today's* state values
-        // these should really be ints, 
-        // but rpois returns double, and I'm being lazy
-        double & iS = SS[istep];
-        double & iI = II[istep];
-        double & iR = RR[istep];
-        double & iN = NN[istep];
+        // pull out this step's scalars for easier reading
+        // and to avoid compiler headaches
+        double iS = SS[istep];
+        double iI = II[istep];
+        double iR = RR[istep];
+        double iN = NN[istep];
         /////////////////////////
         // State Equations
         /////////////////////////
-        // R::rpois returns a single draw
-        double births = rpois(nu*iN*tau);
+        // R::rpois always returns a single value
+        // to return multiple (e.g. Integer/NumericVector, 
+        // use Rcpp::rpois(int ndraw, param) and friends
+        double births = R::rpois(nu*iN*tau);
         // Prevent negative states
-        double Sdeaths = min(iS, rpois(mu*iS*tau));
-        double maxtrans = rpois(beta*(iI/iN)*iS*tau);
+        double Sdeaths = min(iS, R::rpois(mu*iS*tau));
+        double maxtrans = R::rpois(beta*(iI/iN)*iS*tau);
         double transmission = min(iS-Sdeaths, maxtrans);
-        double Ideaths = min(iI, rpois(mu*iI*tau));
-        double recovery = min(iI-Ideaths, rpois(gamma*iI*tau));
-        double Rdeaths = min(iR, rpois(mu*iR*tau));
+        double Ideaths = min(iI, R::rpois(mu*iI*tau));
+        double recovery = min(iI-Ideaths, R::rpois(gamma*iI*tau));
+        double Rdeaths = min(iR, R::rpois(mu*iR*tau));
         // Calculate the change in each state variable
         double dS = births-Sdeaths-transmission;
         double dI = transmission-Ideaths-recovery;
