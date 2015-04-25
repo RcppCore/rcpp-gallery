@@ -167,7 +167,6 @@ NumericVector kprobcpp(NumericVector kposs, NumericVector cusum, double lambda, 
 // [[Rcpp::export]]
 NumericMatrix gibbscpp(int nsim, NumericVector y, double a, double b, double c,
                        double d, NumericVector kposs, NumericVector phi, NumericVector k) {
-    RNGScope scope ;
 
     NumericVector lambda;
     NumericVector pmf;

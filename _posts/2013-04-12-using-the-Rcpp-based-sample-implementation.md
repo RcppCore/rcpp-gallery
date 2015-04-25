@@ -84,7 +84,6 @@ CharacterVector csample_char( CharacterVector x,
                               bool replace, 
                               NumericVector prob = NumericVector::create()
                               ) {
-  RNGScope scope ;
   CharacterVector ret = RcppArmadillo::sample(x, size, replace, prob) ;
   return ret ;
 }
@@ -139,7 +138,6 @@ NumericVector csample_num( NumericVector x,
                            bool replace,
                            NumericVector prob = NumericVector::create()
                            ) {
-  RNGScope scope;
   NumericVector ret = RcppArmadillo::sample(x, size, replace, prob);
   return ret;
 }

@@ -24,7 +24,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericMatrix rngCpp(const int N) {
-  RNGScope scope;		// ensure RNG gets set/reset
   NumericMatrix X(N, 4);
   X(_, 0) = runif(N);
   X(_, 1) = rnorm(N);
@@ -98,7 +97,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector rngCppScalar() {
-  RNGScope scope;		// ensure RNG gets set/reset
   NumericVector x(4);
   x[0] = R::runif(0,1);
   x[1] = R::rnorm(0,1);

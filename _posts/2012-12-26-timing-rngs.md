@@ -71,7 +71,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector rcppNormal(const int N) {
-    RNGScope scope;		// ensure RNG gets set/reset
     return rnorm(N, 0, 1);
 }
 {% endhighlight %}

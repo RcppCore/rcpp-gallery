@@ -24,8 +24,6 @@ inline int randWrapper(const int n) { return floor(unif_rand()*n); }
 
 // [[Rcpp::export]]
 Rcpp::NumericVector randomShuffle(Rcpp::NumericVector a) {
-    // already added by sourceCpp(), but needed standalone
-    Rcpp::RNGScope scope;             
 
     // clone a into b to leave a alone
     Rcpp::NumericVector b = Rcpp::clone(a);
