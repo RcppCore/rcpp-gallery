@@ -2,7 +2,7 @@
  * @title Stochastic SIR Epidemiological Compartment Model
  * @author Christian Gunning
  * @license GPL (>= 2)
- * @tags simulation parameter random 
+ * @tags simulation parameters basic function
  * @summary Demonstrates a discrete, stochastic epidemiological 
  *  using a tau-leap method.  This model 
  *   takes a list of parameters and returns a data.frame
@@ -51,7 +51,8 @@
  *
  * When functions are exported in this way via sourceCpp(), 
  * RNG setup is automatically handled to use R's engine.
- * For more details, see ??.
+ * For details on random number generation with Rcpp, 
+ * see the [Dirk's Rcpp Gallery post](http://gallery.rcpp.org/articles/random-number-generation/).
 */
 
 #include <Rcpp.h>
