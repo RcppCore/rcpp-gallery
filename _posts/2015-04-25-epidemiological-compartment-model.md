@@ -1,52 +1,53 @@
-/**
- * @title Stochastic SIR Epidemiological Compartment Model
- * @author Christian Gunning
- * @license GPL (>= 2)
- * @tags simulation basics
- * @summary Demonstrates a discrete, stochastic epidemiological 
- *  using a tau-leap method.  This model 
- *   takes a list of parameters and returns a data.frame
- *   of simulation results.
- *
- * ### Introduction
- *
- * This post is a simple introduction to Rcpp for disease ecologists,
- * epidemiologists, or dynamical systems modelers - the sorts of folks who will
- * benefit from a simple but fully-working example. My intent is to provide a
- * complete, self-contained introduction to modeling with Rcpp. My hope is that
- * this model can be easily modified to run any dynamical simulation that has 
- * dependence on the previous time step (and can therefore not be vectorized).
- *
- * This post uses a classic Susceptible-Infected-Recovered (SIR) 
- * [epidemiological compartment
- * model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology). 
- * Compartment models are simple, commonly-used dynamical systems models.  Here
- * I demonstrate the [tau-leap
- * method](https://en.wikipedia.org/wiki/Tau-leaping), where a discrete number
- * of individuals move probabilistically between compartments at fixed intervals
- * in time. In this model, the wait-times within class are exponentially
- * distributed, and the number of transitions between states in a fixed time
- * step are Poisson distributed.
- *
- * This model is parameterized for the spread of measles in a closed population,
- * where the birth rate (nu) = death rate (mu). The transmission rate (beta)
- * describes how frequently susceptible (S) and infected (I) individuals come
- * into contact, and the recovery rate (gamma) describes the the average time an
- * individual spends infected before recovering.
-*/
+---
+title: Stochastic SIR Epidemiological Compartment Model
+author: Christian Gunning
+license: GPL (>= 2)
+tags: simulation basics
+summary: Demonstrates a discrete, stochastic epidemiological 
+  using a tau-leap method.  This model 
+  takes a list of parameters and returns a data.frame
+  of simulation results.
+layout: post
+src: 2015-04-25-epidemiological-compartment-model.cpp
+---
+### Introduction
 
-/** 
- * ### C++ Code
- * 
- * Note: C++ Functions must be marked with the following comment for use in
- * R: `// [[Rcpp::export]]`.
- *
- * When functions are exported in this way via sourceCpp(), RNG setup is
- * automatically handled to use R's engine. For details on random number
- * generation with Rcpp, see the [Dirk's Rcpp Gallery
- * post](http://gallery.rcpp.org/articles/random-number-generation/).
-*/
+This post is a simple introduction to Rcpp for disease ecologists,
+epidemiologists, or dynamical systems modelers - the sorts of folks who will
+benefit from a simple but fully-working example. My intent is to provide a
+complete, self-contained introduction to modeling with Rcpp. My hope is that
+this model can be easily modified to run any dynamical simulation that has 
+dependence on the previous time step (and can therefore not be vectorized).
 
+This post uses a classic Susceptible-Infected-Recovered (SIR) 
+[epidemiological compartment
+model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology). 
+Compartment models are simple, commonly-used dynamical systems models.  Here
+I demonstrate the [tau-leap
+method](https://en.wikipedia.org/wiki/Tau-leaping), where a discrete number
+of individuals move probabilistically between compartments at fixed intervals
+in time. In this model, the wait-times within class are exponentially
+distributed, and the number of transitions between states in a fixed time
+step are Poisson distributed.
+
+This model is parameterized for the spread of measles in a closed population,
+where the birth rate (nu) = death rate (mu). The transmission rate (beta)
+describes how frequently susceptible (S) and infected (I) individuals come
+into contact, and the recovery rate (gamma) describes the the average time an
+individual spends infected before recovering.
+
+
+### C++ Code
+
+Note: C++ Functions must be marked with the following comment for use in
+R: `// [[Rcpp::export]]`.
+
+When functions are exported in this way via sourceCpp(), RNG setup is
+automatically handled to use R's engine. For details on random number
+generation with Rcpp, see the [Dirk's Rcpp Gallery
+post](http://gallery.rcpp.org/articles/random-number-generation/).
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -138,19 +139,17 @@ List tauleapCpp(List params) {
     );
     return sim;
 };
+{% endhighlight %}
+
+### R Code
+
+Next we need to parameterize the model. Modelers often deal with many named
+parameters, some of which are dependent on each other.  My goal here is to 
+specify parameters in R once (and only once), and then pass all of them
+together to the main cpp function.
 
 
-/**
- * ### R Code
- *
- * Next we need to parameterize the model. Modelers often deal with many named
- * parameters, some of which are dependent on each other.  My goal here is to 
- * specify parameters in R once (and only once), and then pass all of them
- * together to the main cpp function.
- *
-*/
-
-/*** R
+{% highlight r %}
 ## Uncomment the following lines to compile code Note that sourceCpp("cppCode.cpp") 
 ## will only compile code as-needed, so this will be very fast the second time.
 ## 
@@ -210,22 +209,20 @@ result.rep <- ldply(1:nsim, function(.nn) {
     result$nsim <- .nn
     return(result)
 })
-*/
+{% endhighlight %}
 
-/** 
- * ### Plot Results
- *
- * Note that the model contains no seasonality.  Rather, the system experiences
- * [stochastic resonance](https://en.wikipedia.org/wiki/Stochastic_resonance), 
- * where the "noise" of stochastic state transitions stimulates a resonant
- * frequency of the system (here, 2-3 years).  For more information see
- * [here](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2373404/).
- *
- * Sometimes epidemics die out.  In fact, for this model, they will die out with
- * probability = 1 as time goes to infinity!
-*/
+### Plot Results
 
-/*** R
+Note that the model contains no seasonality.  Rather, the system experiences
+[stochastic resonance](https://en.wikipedia.org/wiki/Stochastic_resonance), 
+where the "noise" of stochastic state transitions stimulates a resonant
+frequency of the system (here, 2-3 years).  For more information see
+[here](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2373404/).
+
+Sometimes epidemics die out.  In fact, for this model, they will die out with
+probability = 1 as time goes to infinity!
+
+{% highlight r %}
 library(lattice)
 
 ## lattice plot of results
@@ -236,4 +233,6 @@ plot(
         scales=list(y=list(alternating=F))
     )
 )
-*/
+{% endhighlight %}
+
+![plot of chunk unnamed-chunk-4](../figure/2015-04-25-epidemiological-compartment-model-unnamed-chunk-4-1.png) 
