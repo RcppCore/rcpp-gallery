@@ -18,8 +18,8 @@ using namespace Rcpp;
 DataFrame modifyDataFrame(DataFrame df) {
 
   // access the columns
-  Rcpp::IntegerVector a = df["a"];
-  Rcpp::CharacterVector b = df["b"];
+  IntegerVector a = df["a"];
+  CharacterVector b = df["b"];
   
   // make some changes
   a[2] = 42;

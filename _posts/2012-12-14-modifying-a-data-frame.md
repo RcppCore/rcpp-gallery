@@ -13,7 +13,6 @@ indvidiual vectors composing a data frame can be accessed by name,
 modified, and then recombined into a new data frame.
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -22,8 +21,8 @@ using namespace Rcpp;
 DataFrame modifyDataFrame(DataFrame df) {
 
   // access the columns
-  Rcpp::IntegerVector a = df["a"];
-  Rcpp::CharacterVector b = df["b"];
+  IntegerVector a = df["a"];
+  CharacterVector b = df["b"];
   
   // make some changes
   a[2] = 42;
@@ -33,7 +32,6 @@ DataFrame modifyDataFrame(DataFrame df) {
   return DataFrame::create(_["a"]= a, _["b"]= b);
 }
 {% endhighlight %}
-
 
 Note the use of the `_["a"]` syntax to create named arguments to the 
 `DataFrame::create` function.
@@ -55,4 +53,3 @@ modifyDataFrame(df)
 2  2 foo
 3 42   z
 </pre>
-
