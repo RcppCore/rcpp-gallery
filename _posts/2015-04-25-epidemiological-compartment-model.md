@@ -44,7 +44,7 @@ R: `// [[Rcpp::export]]`.
 
 When functions are exported in this way via sourceCpp(), RNG setup is
 automatically handled to use R's engine. For details on random number
-generation with Rcpp, see the [Dirk's Rcpp Gallery
+generation with Rcpp, see the [this Rcpp Gallery 
 post](http://gallery.rcpp.org/articles/random-number-generation/).
 
 {% highlight cpp %}
@@ -150,12 +150,6 @@ together to the main cpp function.
 
 
 {% highlight r %}
-## Uncomment the following lines to compile code Note that sourceCpp("cppCode.cpp") 
-## will only compile code as-needed, so this will be very fast the second time.
-## 
-#require(Rcpp)
-#sourceCpp('cppCode.cpp')
-
 ## Specify model parameters use within() to make assignments *inside* an 
 ## empty (or existing) list. Yhis is a handy R trick that allows you to 
 ## refer to existing list elements on right hand side (RHS)
