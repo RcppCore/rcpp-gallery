@@ -56,18 +56,7 @@
 */
 
 #include <Rcpp.h>
-// Declare commonly used objects
-using Rcpp::NumericVector;
-using Rcpp::List;
-using Rcpp::DataFrame;
-using Rcpp::Named;
-// Alternately, uncomment the following line to include 
-// *everything* from Rcpp (while convenient, global imports 
-// are confusing in production code):
-// using namespace Rcpp;
-
-// Rcpp also has a pmin for vectors
-using std::min;
+using namespace Rcpp;
 
 // This function will be used in R!
 // Evaluates the number of events 
@@ -77,8 +66,8 @@ List tauleapCpp(List params){
     // chained operations are tricky in cpp
     // pull out list w/in list into its own object
     List init = params["init"];
-    // need to "cast" R vector to cpp scalar
-    int nsteps = Rcpp::as<int>(params["nsteps"]);
+    // use Rcpp as() function to "cast" R vector to cpp scalar
+    int nsteps = as<int>(params["nsteps"]);
 
     // initialize each state vector in its own vector
     // set all vals to initial vals
@@ -117,12 +106,12 @@ List tauleapCpp(List params){
         // use Rcpp::rpois(int ndraw, param) and friends
         double births = R::rpois(nu*iN*tau);
         // Prevent negative states
-        double Sdeaths = min(iS, R::rpois(mu*iS*tau));
+        double Sdeaths = std::min(iS, R::rpois(mu*iS*tau));
         double maxtrans = R::rpois(beta*(iI/iN)*iS*tau);
-        double transmission = min(iS-Sdeaths, maxtrans);
-        double Ideaths = min(iI, R::rpois(mu*iI*tau));
-        double recovery = min(iI-Ideaths, R::rpois(gamma*iI*tau));
-        double Rdeaths = min(iR, R::rpois(mu*iR*tau));
+        double transmission = std::min(iS-Sdeaths, maxtrans);
+        double Ideaths = std::min(iI, R::rpois(mu*iI*tau));
+        double recovery = std::min(iI-Ideaths, R::rpois(gamma*iI*tau));
+        double Rdeaths = std::min(iR, R::rpois(mu*iR*tau));
         // Calculate the change in each state variable
         double dS = births-Sdeaths-transmission;
         double dI = transmission-Ideaths-recovery;
@@ -153,9 +142,10 @@ List tauleapCpp(List params){
  *
  * Next we need to parameterize the model. Modelers 
  * often deal with many named parameters, some of which are
- * dependent on each other.  My goal here is to show simple 
- * ways of specifying parameters once (and only once) in R,
- * and then easily passing them to cpp code for use.
+ * dependent on each other.  My goal here is to 
+ * specify parameters in R once (and only once), 
+ * and then pass all of them together to the main cpp 
+ * function.
  *
 */
 
@@ -167,7 +157,7 @@ List tauleapCpp(List params){
 #require(Rcpp)
 #sourceCpp('cppCode.cpp')
 
-## specify model parameters
+## Specify model parameters
 ## use within() to make assignments 
 ## *inside* an empty (or existing) list
 ## 
@@ -214,7 +204,7 @@ result.rep <- ldply(1:nsim, function(.nn) {
     set.seed(.nn)
     ## run the model
     result <- tauleapCpp(params)
-    ## this wastes space, but is very simple
+    ## this wastes space, but is very simple and aids plotting
     result$nsim <- .nn
     return(result)
 })
@@ -231,7 +221,7 @@ result.rep <- ldply(1:nsim, function(.nn) {
  *
  * Sometimes epidemics die out.  In fact, for this model,
  * they will die
- * out with probability ~ 1 as time goes to infinity!
+ * out with probability = 1 as time goes to infinity!
 */
 
 /*** R
