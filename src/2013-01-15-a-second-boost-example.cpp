@@ -42,7 +42,7 @@ std::vector<double> lexicalCast(std::vector<std::string> v) {
 
     std::vector<double> res(v.size());
 
-    for (int i=0; i<v.size(); i++) {
+    for (unsigned int i=0; i<v.size(); i++) {
         try {
             res[i] = lexical_cast<double>(v[i]);
         } catch(bad_lexical_cast &) {
