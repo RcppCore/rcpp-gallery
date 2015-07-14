@@ -34,8 +34,9 @@ double vectorSum(NumericVector x) {
  * ### Parallel Version
  * 
  * Now we adapt our code to run in parallel. We'll use the `parallelReduce` 
- * function to do this. As with the [previous 
- * article](2014-06-29-parallel-matrix-transform.cpp) describing `parallelFor`, 
+ * function to do this. As with the
+ * [previous article](http://gallery.rcpp.org/articles/parallel-matrix-transform/)
+ * describing `parallelFor`, 
  * we implement a "Worker" function object with our logic and RcppParallel takes
  * care of scheduling work on threads and calling our function when required. For
  * parallelReduce the function object has three jobs:
