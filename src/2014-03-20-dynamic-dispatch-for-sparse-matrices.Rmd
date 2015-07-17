@@ -53,6 +53,7 @@ arma::mat matmult_cpp(SEXP Xr, const arma::mat Y) {
 
 **Set up test cases:**
 ```{r}
+library(methods)
 library(Matrix)
 library(rbenchmark)
 set.seed(12211212)

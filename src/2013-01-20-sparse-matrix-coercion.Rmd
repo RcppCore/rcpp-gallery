@@ -20,6 +20,7 @@ m
 This matrix can be coerced to a sparse matrix with
 
 ```{r}
+library("methods")
 library("Matrix")
 M1 <- as(m, "dgCMatrix")
 M1 

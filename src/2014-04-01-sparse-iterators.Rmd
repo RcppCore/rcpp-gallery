@@ -66,6 +66,7 @@ vec_loop2( idx1 )
 ## Iterating over a sparse matrix
 
 ```{r}
+library(methods)
 library(Matrix)
 M1<- new("dgCMatrix"
     , i = c(1L, 2L, 3L, 0L, 2L, 3L, 0L, 1L, 3L, 0L, 
