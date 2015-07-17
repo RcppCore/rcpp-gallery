@@ -158,7 +158,8 @@ arma::sp_mat doubleSparseMatrix(arma::sp_mat m) {
 
 /*** R
 suppressMessages({
-  library(methods); library(Matrix)
+  library(methods) 
+  library(Matrix)
 })
 i <- c(1,3:8)              # row indices
 j <- c(2,9,6:10)           # col indices
