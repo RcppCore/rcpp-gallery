@@ -16,7 +16,9 @@
  */
 
 /*** R
-suppressMessages(library(Matrix))
+suppressMessages({
+  library(methods); library(Matrix)
+})
 i <- c(1,3:8) 
 j <- c(2,9,6:10) 
 x <- 7 * (1:7)
