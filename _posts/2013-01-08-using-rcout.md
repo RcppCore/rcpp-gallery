@@ -196,12 +196,12 @@ vector and matrix types. See below for some examples.
 {% highlight cpp %}
 // [[Rcpp::export]]
 void useOperatorOnVector(NumericVector x) { 
-    Rcpp::Rcout << x << std::endl;
+    Rcpp::Rcout << "Rcpp vector is " << std::endl << x << std::endl;
 }
 
 // [[Rcpp::export]]
 void useOperatorOnMatrix(NumericMatrix x) { 
-    Rcpp::Rcout << x << std::endl;
+    Rcpp::Rcout << "Rcpp matrix is " << std::endl << x << std::endl;
 }
 {% endhighlight %}
 
@@ -213,6 +213,7 @@ useOperatorOnVector(v)
 
 
 <pre class="output">
+Rcpp vector is 
 0 2.5 5 7.5 10
 </pre>
 
@@ -226,6 +227,7 @@ useOperatorOnMatrix(M)
 
 
 <pre class="output">
+Rcpp matrix is 
       1       5       9      13
       2       6      10      14
       3       7      11      15

@@ -107,12 +107,12 @@ callPrint(globalenv())    # or an environment object
 
 // [[Rcpp::export]]
 void useOperatorOnVector(NumericVector x) { 
-    Rcpp::Rcout << x << std::endl;
+    Rcpp::Rcout << "Rcpp vector is " << std::endl << x << std::endl;
 }
 
 // [[Rcpp::export]]
 void useOperatorOnMatrix(NumericMatrix x) { 
-    Rcpp::Rcout << x << std::endl;
+    Rcpp::Rcout << "Rcpp matrix is " << std::endl << x << std::endl;
 }
 
 /*** R
@@ -121,3 +121,10 @@ useOperatorOnVector(v)
 M <- matrix(seq(1.0, 16.0, by=1.0), 4, 4)
 useOperatorOnMatrix(M)
 */
+
+
+
+
+
+
+
