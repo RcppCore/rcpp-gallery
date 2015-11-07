@@ -1,0 +1,111 @@
+---
+title: Serialize and Deserialize a C++ Object in Rcpp
+author: Wush Wu
+license: GPL (>= 2)
+tags: serialization
+summary: We demonstrate how to serialize a c++ object to the raw vector in R and deserialize it.
+layout: post
+src: 2015-11-07-rcpp-serialization.Rmd
+---
+
+This post shows how to serialize a c++ object to the raw vector in R and deserialize it with the help of Rcereal and BH.
+
+First, please install the Rcpp, Rcereal, and BH from CRAN and enable the support of C++11 via `Sys.setenv("PKG_CXXFLAGS"="-std=c++11")`.
+
+
+
+We can use the cereal library and boost iostreams in Rcpp. The following example shows a toy C++ class and the related serialize/deserialize functions.
+
+
+{% highlight cpp %}
+// [[Rcpp::depends(Rcereal)]]
+// [[Rcpp::depends(BH)]]
+
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <cereal/archives/binary.hpp>
+#include <Rcpp.h>
+
+struct MyClass
+{
+  int x, y, z;
+
+  // This method lets cereal know which data members to serialize
+  template<class Archive>
+  void serialize(Archive & archive)
+  {
+    archive( x, y, z ); // serialize things by passing them to the archive
+  }
+};
+
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+RawVector serialize_myclass(int x = 1, int y = 2, int z = 3) {
+  MyClass my_instance;
+  my_instance.x = x;
+  my_instance.y = y;
+  my_instance.z = z;
+  RawVector retval(100);
+  boost::iostreams::stream_buffer<boost::iostreams::array_sink> buf((char*) &retval[0], retval.size());
+  std::ostream ss(&buf);
+  {
+    cereal::BinaryOutputArchive oarchive(ss);
+    oarchive(my_instance);
+  }
+  return retval;
+}
+
+//[[Rcpp::export]]
+void deserialize_myclass(RawVector src) {
+  boost::iostreams::stream<boost::iostreams::array_source> ss((char*) &src[0], src.size());
+  MyClass my_instance;
+  {
+    cereal::BinaryInputArchive iarchive(ss);
+    iarchive(my_instance);
+  }
+  Rcout << my_instance.x << "," << my_instance.y << "," << my_instance.z << std::endl;
+}
+{% endhighlight %}
+
+Thanks to Rcpp, the compiler will automatically find the header file according to `// [[Rcpp::depends(Rcereal)]]` and `// [[Rcpp::depends(BH)]]`.
+The member function `void serialize(Archive & archive)` tells cereal how to serialize and deserialize the C++ class `MyClass`. 
+Data will be saved and loaded if they are passed to the argument `archive`.
+
+The `cereal::BinaryOutputArchive oarchive(ss);` defines an instance of bineary archive. The `oarchive(my_instance);` archives the instance of `MyClass` to the output stream and writes the data to the `RawVector`.
+
+Similarly, `cereal::BinaryInputArchive iarchive(ss);` defines an instace of bineary archive. The `iarchive(my_instance);` reads the data from the `RawVector` and restores the content to the instance of `MyClass`.
+
+Let's try these two functions in R:
+
+
+{% highlight r %}
+v <- serialize_myclass(1, 2, 4)
+head(v)
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 01 00 00 00 02 00
+</pre>
+
+
+
+{% highlight r %}
+deserialize_myclass(v)
+{% endhighlight %}
+
+
+
+<pre class="output">
+1,2,4
+</pre>
+
+As you can see, the instance of `MyClass` is successfully saved to `v` and loaded from `v`.
+
+The API of cereal is similar to ones of boost serialization. The main difference is that the cereal prefers using `()` to send data to archives.
+Please visit <http://uscilab.github.io/cereal/transition_from_boost.html> for more details about the difference between cereal and boost serialization.
+
+In my opinion, the most important advantage is that cereal is header only, so it is more easily to write portable package with cereal compared to boost serialization. 
+
