@@ -1,14 +1,13 @@
 ---
-title: Using a GSL function from R
+title: Using GSL functions from R
 author: Dirk Eddelbuettel
+updated: Nov 21, 2015
 license: GPL (>= 2)
 tags: modeling gsl featured
 summary: This example shows how to call a GSL function using RcppGSL
 layout: post
 src: 2012-12-22-gsl-colnorm-example.cpp
 ---
-<p style="font-size:80%">Edited 2015-11-21: Updated to RcppGSL (>= 0.3.0) features.</p>
-
 The [GNU GSL](http://www.gnu.org/software/gsl/) is a very
 popular--and versatile--library convering many, many scientific
 computing topics. It provides a standard C API. This API is
