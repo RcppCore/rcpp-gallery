@@ -4,7 +4,9 @@ layout: layout
    
  <h2>{{ page.title }}</h2>
  <p class="muted" style="margin-bottom: 1.2em; margin-top: .5em;">
-    {{ page.author }} &mdash; {{ page.date | date: "%b %e, %Y" }} | 
+    {{ page.author }} &mdash;
+    written {{ page.date | date: "%b %e, %Y" }} &mdash; 
+    {% if page.updated %} updated {{ page.updated }} &mdash; {% endif %} 
     <a href="https://github.com/RcppCore/rcpp-gallery/blob/gh-pages/src/{{ page.src }}">source</a>
  </p>
    
