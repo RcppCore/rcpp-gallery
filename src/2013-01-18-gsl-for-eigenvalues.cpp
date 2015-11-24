@@ -2,22 +2,25 @@
 /**
  * @title Using the GSL to compute eigenvalues
  * @author Dirk Eddelbuettel
+ * @updated Nov 23, 2015
  * @license GPL (>= 2)
  * @tags modeling gsl
  * @summary This example shows how to call a GSL function using RcppGSL
  *
- * Two posts showed how to compute eigenvalues 
+ * Two previous posts showed how to compute eigenvalues 
  * [using Armadillo](../armadillo-eigenvalues) and 
- * [using Eigen](../eigen-eigenvalues/). As we also looked at using the  
+ * [using Eigen](../eigen-eigenvalues/). As we have also looked at using the  
  * [GNU GSL](http://www.gnu.org/software/gsl/), this post will show how to
  * conpute eigenvalues using GSL.
  *
  * As mentioned in the [previous GSL post](../gsl-colnorm-example), we
  * instantiate C language pointers suitable for GSL (here the matrix
- * `M`). Those *must* be freed manually, as shown before the `return`
- * statement.  
+ * `M`). Prior to release 0.3.0 of RcppGSL, these *had to be freed manually*. 
+ * However, since release 0.3.0 since is now taken care of via the standard
+ * C++ mechanism of destructors.
  */
 
+// Tell Rcpp to rely on the RcppGSL package to find GSL library and headers
 // [[Rcpp::depends(RcppGSL)]]
 
 #include <RcppGSL.h>
@@ -25,24 +28,15 @@
 #include <gsl/gsl_eigen.h>
 
 // [[Rcpp::export]]
-Rcpp::NumericVector getEigenValues(Rcpp::NumericMatrix sM) {
-
-    RcppGSL::matrix<double> M(sM); 	// create gsl data structures from SEXP
+RcppGSL::Vector getEigenValues(RcppGSL::Matrix & M) {
     int k = M.ncol();
 
-    RcppGSL::vector<double> ev(k);  	// instead of gsl_vector_alloc(k);
+    RcppGSL::Vector ev(k);  	// instead of gsl_vector_alloc(k);
     gsl_eigen_symm_workspace *w = gsl_eigen_symm_alloc(k);
-    gsl_eigen_symm (M, ev, w);
+    gsl_eigen_symm(M, ev, w);
     gsl_eigen_symm_free (w);
 
-    // we need to invoke wrap() here to help the compiler, but at least we save a loop
-    // we also need to create a new Rcpp object as the RcppGSL one needs to be free'd.
-    Rcpp::NumericVector res(Rcpp::wrap(ev));
-
-    M.free();               		// important: GSL wrappers use C structure
-    ev.free();
-
-    return res;				// return results vector  
+    return ev;				// return results vector  
 }
 
 
