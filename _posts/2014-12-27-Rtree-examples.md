@@ -1,6 +1,6 @@
 ---
 title: Create an R-tree data structure using Rcpp and Boost&#58;&#58;Geometry
-author: teramonagi and Dirk Eddelbuettel
+author: Nagi Teramo and Dirk Eddelbuettel
 license: GPL (>= 2)
 mathjax: false
 tags: boost 

@@ -1,7 +1,7 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 /**
  * @title Create an R-tree data structure using Rcpp and Boost::Geometry
- * @author teramonagi and Dirk Eddelbuettel
+ * @author Nagi Teramo and Dirk Eddelbuettel
  * @license GPL (>= 2)
  * @mathjax false
  * @tags boost 
