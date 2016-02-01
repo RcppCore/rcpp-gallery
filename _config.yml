@@ -3,7 +3,7 @@ description: Articles and code that provide examples of using the Rcpp package
 repo: https://github.com/RcppCore/rcpp-gallery
 
 url: http://gallery.rcpp.org
-permalink: "articles/:title"
+permalink: "articles/:title/"
 
 exclude: 
   - COPYING
