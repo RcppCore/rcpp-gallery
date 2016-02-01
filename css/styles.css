@@ -30,3 +30,11 @@ h3 {
    float: right;
    margin-bottom: 2em;
 }
+
+p > code {
+   white-space: nowrap;
+}
+
+a > code {
+  color: #4183c4;
+}
