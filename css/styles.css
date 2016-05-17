@@ -39,3 +39,9 @@ a > code {
   color: #4183c4;
 }
 
+figure {
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+}
+
+
