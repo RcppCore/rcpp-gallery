@@ -38,3 +38,8 @@ p > code {
 a > code {
   color: #4183c4;
 }
+
+figure .highlight {
+  -webkit-margin-start: 0;
+  -webkit-margin-end: 0;
+}
