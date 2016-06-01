@@ -2,8 +2,8 @@
 title: "Gerber Statistic Implementation in Rcpp and OpenMP"
 author: Yi King, Rafael Nicolas Fermin Cota, and Chris Chong - Next Level Analytics
 license: GPL (>= 2)
-tags: Rcpp, OpenMP
-summary: Illustrates an implementation of the Gerber statistic
+tags: rcpp openmp portfolio-allocation gerber
+summary: Rcpp and OpenMP implementation of Gerber Statistic
 ---
 
 ### Summary 
@@ -21,7 +21,7 @@ This post is to illustrate an implementation of the Gerber statistic. The focus 
 
 #### Implementation in R
 
-```r
+```{r, eval = TRUE}
 gerber.correlation = function(hist.returns, lookback = nrow(hist.returns), threshold = 0.5) {
   n = ncol(hist.returns)
   nperiods = nrow(hist.returns)
@@ -49,7 +49,7 @@ gerber.correlation = function(hist.returns, lookback = nrow(hist.returns), thres
 
 #### Implementation in Rcpp
 
-```cpp
+```{r, eval = TRUE, engine='Rcpp'}
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 
@@ -166,8 +166,7 @@ mat GERBER_CORRELATION(arma::mat HIST_RETURN,
 
 #### Implementation in Rcpp with OpenMP
 
-
-```cpp
+```{r, eval = TRUE, engine='Rcpp'}
 #include <Rcpp.h>
 #include <omp.h>
 
@@ -296,10 +295,29 @@ background-color : #EEEEEE ;
 border: 1px solid white ;}
 </style>
 
-|Implementation        | replications| elapsed| relative|
-|:---------------------|------------:|-------:|--------:|
-|Rcpp + OpenMP Version |          500|    1.77|    1.000|
-|Rcpp Version          |          500|  116.53|   65.836|
-|R Version             |          500|  305.31|  172.492|
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+set.seed(1)
+NUM_ASSET  <- 30
+NUM_PERIOD <- 2500 
+HIST_RETURN <- matrix(rnorm(NUM_ASSET*NUM_PERIOD),NUM_PERIOD,NUM_ASSET)
+LOOKBACK <- 480
+
+stopifnot(identical(gerber.correlation(HIST_RETURN, LOOKBACK), GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK)))
+
+suppressMessages(library(rbenchmark))
+suppressMessages(library(data.table))
+result <- benchmark(gerber.correlation(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK),
+                    replications = 500)
+
+result <- as.data.table(result, stringsAsFactors = FALSE)
+result[, test := c("R Version", "Rcpp Version", "Rcpp + OpenMP Version")]
+setnames(result, "test", "Implementation")
+setorder(result, relative)
+
+kable(result[,1:4, with = FALSE])
+
+```
 
 
