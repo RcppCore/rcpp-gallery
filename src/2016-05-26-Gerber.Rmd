@@ -1,8 +1,8 @@
 ---
 title: "Gerber Statistic Implementation in Rcpp and OpenMP"
-author: Yi King, Rafael Nicolas Fermin Cota, and Chris Chong - Next Level Analytics
+author: Rafael Nicolas Fermin Cota, Yi King, and Chris Chong
 license: GPL (>= 2)
-tags: rcpp openmp portfolio-allocation gerber
+tags: openmp parallel rfinance correlation
 summary: Rcpp and OpenMP implementation of Gerber Statistic
 ---
 
