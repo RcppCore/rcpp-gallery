@@ -2,7 +2,7 @@
 title: "Hierarchical Risk Parity Implementation in Rcpp and OpenMP"
 author: Rafael Nicolas Fermin Cota, Yi King, and Chris Chong
 license: GPL (>= 2)
-tags: openmp parallel rfinance optimization machinelearning hrp
+tags: openmp recursion modelling optimization
 mathjax: true
 summary: Rcpp and OpenMP implementation of Hierarchy Risk Parity portfolio allocation method
 ---

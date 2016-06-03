@@ -2,7 +2,7 @@
 title: "Gerber Statistic Implementation in Rcpp and OpenMP"
 author: Rafael Nicolas Fermin Cota, Yi King, and Chris Chong
 license: GPL (>= 2)
-tags: openmp parallel rfinance correlation
+tags: openmp modelling rfinance correlation
 summary: Rcpp and OpenMP implementation of Gerber Statistic
 ---
 
