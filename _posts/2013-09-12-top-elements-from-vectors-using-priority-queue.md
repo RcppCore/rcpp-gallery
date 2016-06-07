@@ -25,7 +25,6 @@ top <- function(x, n){
 }
 {% endhighlight %}
 
-
 This is inefficient because it requires sorting the entire vector, which is 
 expensive. 
 
@@ -78,7 +77,6 @@ IntegerVector top_i_pq(NumericVector v, int n)
 }
 {% endhighlight %}
 
-
 The version we present here uses the `Compare` template argument of the
 `priority_queue` to control the comparison. This way, instead of storing 
 pairs of (value, index) we will only store the indices and implement 
@@ -130,8 +128,8 @@ public:
     }
 
 private:
-    const SEXP* data ;
-} ;
+   const Vector<STRSXP>::const_iterator data ;
+};
 
 template <int RTYPE>
 class IndexQueue {
@@ -193,8 +191,8 @@ IntegerVector top_index( SEXP x, int n){
     return IntegerVector() ; // not used
 }
 
-{% endhighlight %}
 
+{% endhighlight %}
 
 We will use the template implementation above for integer and numeric vectors. The 
 `IndexCompare` keeps a reference to the internal data of the vector, as a 
@@ -242,7 +240,6 @@ identical( res_cpp, res_r )
 
 
 {% highlight r %}
-
 top_index(letters, 10) 
 {% endhighlight %}
 
@@ -251,7 +248,6 @@ top_index(letters, 10)
 <pre class="output">
  [1] 17 18 19 20 21 22 23 24 25 26
 </pre>
-
 
 And then let's benchmark: 
 
@@ -281,10 +277,13 @@ microbenchmark(
 
 <pre class="output">
 Unit: microseconds
-    expr   min      lq  median      uq     max neval
- R_order 25108 25279.2 25466.8 26177.6 58612.3   100
-    cpp1   632   632.6   635.5   638.8   731.3   100
-    cpp2   239   239.8   242.0   243.7   287.7   100
+    expr       min         lq       mean     median         uq       max
+ R_order 28296.809 28465.3945 29240.9518 28664.6160 29752.7850 34109.235
+    cpp1   744.162   755.9295   779.9717   763.9000   779.2900  1461.870
+    cpp2   447.017   456.6620   493.9679   465.3965   474.1505  1497.729
+ neval cld
+   100   c
+   100  b 
+   100 a  
 </pre>
-
 
