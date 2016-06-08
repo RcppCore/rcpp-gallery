@@ -20,8 +20,8 @@ only keep the last `n` values:
 
 
 {% highlight r %}
-top <- function(x, n){
-    tail( order(x), n )
+top <- function(x, n) {
+    tail(order(x), n)
 }
 {% endhighlight %}
 
@@ -49,8 +49,7 @@ using namespace Rcpp;
 using namespace std;
 
 // [[Rcpp::export]]
-IntegerVector top_i_pq(NumericVector v, int n)
-{
+IntegerVector top_i_pq(NumericVector v, int n) {
     typedef pair<double, int> Elt;
     priority_queue< Elt, vector<Elt>, greater<Elt> > pq;
     vector<int> result;
@@ -101,92 +100,92 @@ appropriate version using a simple `switch`
 #include <Rcpp.h>
 #include <queue>
 
-using namespace Rcpp ;
+using namespace Rcpp;
 
 template <int RTYPE>
 class IndexComparator {
 public:
-    typedef typename Rcpp::traits::storage_type<RTYPE>::type STORAGE ;
+    typedef typename Rcpp::traits::storage_type<RTYPE>::type STORAGE;
     
-    IndexComparator( const Vector<RTYPE>& data_ ) : data(data_.begin()){}
+    IndexComparator(const Vector<RTYPE>& data_) : data(data_.begin()) {}
     
     inline bool operator()(int i, int j) const {
-        return data[i] > data[j] || (data[i] == data[j] && j > i ) ;    
+        return data[i] > data[j] || (data[i] == data[j] && j > i);    
     }
 
 private:
-    const STORAGE* data ;
-} ;
+    const STORAGE* data;
+};
 
 template <>
 class IndexComparator<STRSXP> {
 public:
-    IndexComparator( const CharacterVector& data_ ) : data(data_.begin()){}
+    IndexComparator( const CharacterVector& data_ ) : data(data_.begin()) {}
     
     inline bool operator()(int i, int j) const {
         return (String)data[i] > (String)data[j] || (data[i] == data[j] && j > i );    
     }
 
 private:
-   const Vector<STRSXP>::const_iterator data ;
+   const Vector<STRSXP>::const_iterator data;
 };
 
 template <int RTYPE>
 class IndexQueue {
     public:
-        typedef std::priority_queue<int, std::vector<int>, IndexComparator<RTYPE> > Queue ;
+        typedef std::priority_queue<int, std::vector<int>, IndexComparator<RTYPE> > Queue;
         
-        IndexQueue( const Vector<RTYPE>& data_ ) : comparator(data_), q(comparator), data(data_) {}
+        IndexQueue(const Vector<RTYPE>& data_) : comparator(data_), q(comparator), data(data_) {}
         
-        inline operator IntegerVector(){
-            int n = q.size() ;
-            IntegerVector res(n) ;
-            for( int i=0; i<n; i++){
+        inline operator IntegerVector() {
+            int n = q.size();
+            IntegerVector res(n);
+            for( int i=0; i<n; i++) {
                 // +1 for 1-based R indexing
                 res[i] = q.top() + 1;
-                q.pop() ;
+                q.pop();
             }
-            return res ;
+            return res;
         }
-        inline void input( int i){ 
-            // if( data[ q.top() ] < data[i] ){
-            if( comparator(i, q.top() ) ){
+        inline void input( int i) { 
+            // if( data[ q.top() ] < data[i] ) {
+            if (comparator(i, q.top())) {
                 q.pop(); 
-                q.push(i) ;    
+                q.push(i);    
             }
         }
-        inline void pop(){ q.pop() ; }
-        inline void push( int i){ q.push(i) ; }
+        inline void pop() { q.pop(); }
+        inline void push(int i) { q.push(i); }
         
     private:
-       IndexComparator<RTYPE> comparator ;
-       Queue q ;  
-       const Vector<RTYPE>& data ;
-} ;
+       IndexComparator<RTYPE> comparator;
+       Queue q;  
+       const Vector<RTYPE>& data;
+};
 
 
 template <int RTYPE>
-IntegerVector top_index(Vector<RTYPE> v, int n){
-    int size = v.size() ;
+IntegerVector top_index(Vector<RTYPE> v, int n) {
+    int size = v.size();
     
     // not interesting case. Less data than n
     if( size < n){
-        return seq( 0, n-1 ) ;
+        return seq( 0, n-1 );
     }
     
-    IndexQueue<RTYPE> q( v )  ;
-    for( int i=0; i<n; i++) q.push(i) ;
-    for( int i=n; i<size; i++) q.input(i) ;   
-    return q ;
+    IndexQueue<RTYPE> q( v );
+    for( int i=0; i<n; i++) q.push(i);
+    for( int i=n; i<size; i++) q.input(i);   
+    return q;
 }
 
 // [[Rcpp::export]]
-IntegerVector top_index( SEXP x, int n){
-    switch( TYPEOF(x) ){
-    case INTSXP: return top_index<INTSXP>( x, n ) ;
-    case REALSXP: return top_index<REALSXP>( x, n ) ;
-    case STRSXP: return top_index<STRSXP>( x, n ) ;
-    default: stop("type not handled") ; 
+IntegerVector top_index(SEXP x, int n) {
+    switch (TYPEOF(x)) {
+    case INTSXP: return top_index<INTSXP>(x, n);
+    case REALSXP: return top_index<REALSXP>(x, n);
+    case STRSXP: return top_index<STRSXP>(x, n);
+    default: stop("type not handled"); 
     }
     return IntegerVector() ; // not used
 }
@@ -224,11 +223,11 @@ Let's check that we get what we want:
 
 
 {% highlight r %}
-x <- rnorm( 1000 )
+x <- rnorm(1000)
 
-res_cpp <- top_index( x, 30L )
-res_r   <- tail( order(x), 30L )  
-identical( res_cpp, res_r )
+res_cpp <- top_index(x, 30L)
+res_r   <- tail(order(x), 30L)  
+identical(res_cpp, res_r)
 {% endhighlight %}
 
 
@@ -249,7 +248,7 @@ top_index(letters, 10)
  [1] 17 18 19 20 21 22 23 24 25 26
 </pre>
 
-And then let's benchmark: 
+And then let us benchmark: 
 
 
 {% highlight r %}
@@ -277,13 +276,13 @@ microbenchmark(
 
 <pre class="output">
 Unit: microseconds
-    expr       min         lq       mean     median         uq       max
- R_order 28296.809 28465.3945 29240.9518 28664.6160 29752.7850 34109.235
-    cpp1   744.162   755.9295   779.9717   763.9000   779.2900  1461.870
-    cpp2   447.017   456.6620   493.9679   465.3965   474.1505  1497.729
+    expr       min         lq       mean   median         uq       max
+ R_order 28264.304 28461.3320 29190.3675 28602.28 29412.4410 42631.973
+    cpp1   745.554   755.0810   774.4438   762.33   777.0160  1030.393
+    cpp2   447.278   455.8515   478.6965   464.09   471.9845  1472.173
  neval cld
-   100   c
-   100  b 
-   100 a  
+   100   b
+   100  a 
+   100  a 
 </pre>
 
