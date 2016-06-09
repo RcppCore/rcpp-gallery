@@ -4,9 +4,7 @@ author: James Joseph Balamuta
 license: GPL (>= 2)
 tags: armadillo cube openmp parallel
 mathjax: true
-summary: Illustrates the effects of optimizing code in R vs. C++ across serial and parallel efforts
-   with 3D arrays / `arma:&#58;cube` while also highlighting that sometimes it might be more efficient
-   to look for and exploit patterns in the data.
+summary: Illustrates the effects of optimizing code in R versus. C++ across serial and parallel efforts with 3D arrays and `arma&#58;&#58;cube`.
 layout: post
 src: 2016-06-08-optimizing-code-vs-recognizing-patterns-with-3d-arrays.Rmd
 ---
@@ -22,42 +20,36 @@ Consider an array of matrices that contain only 1 and 0 entries that are spread 
 
 {% highlight r %}
 # Matrix Dimensions
-xdim = 20
-ydim = 20
+xdim <- 20
+ydim <- 20
 
 # Number of Time Steps
-tdim = 5
+tdim <- 5
 
 # Generation of 3D Arrays
 
 # Initial Neighborhoods
-a = array(0:1, dim = c(xdim, ydim, tdim))
+a <- array(0:1, dim = c(xdim, ydim, tdim))
 
 # Result storing matrix
-res = array(0:1, dim = c(xdim, ydim, tdim))
+res <- array(0:1, dim = c(xdim, ydim, tdim))
 
 # Calculation loop over time
-for (t in 1:tdim){
-  
-  # Subset by specific rows
-  for (x in 3:(xdim-2)){
-    
-    # Subset by specific columns
-    for (y in 3:(ydim-2)){
-      
-      # Sum over each region within a time point
-      res[x,y,t] <- sum(a[(x-2):(x+2),(y-2):(y+2),t])
-      
+for (t in 1:tdim) {
+    ## Subset by specific rows
+    for (x in 3:(xdim-2)) {
+        ## Subset by specific columns
+        for (y in 3:(ydim-2)) {
+            ## Sum over each region within a time point
+            res[x,y,t] <- sum(a[(x-2):(x+2),(y-2):(y+2),t])
+        }
     }
-    
-  }
-  
 }
 {% endhighlight %}
 
 ### Sample Result:
 
-Without a loss of generality, I've opted to downscale the problem to avoid a considerable amount of output while display a sample result. Thus, the sample result is of dimensions: `x = 6`, `y = 6`, `t = 2`.  Therefore, the results of the neighboring clusters are: 
+Without a loss of generality, I've opted to downscale the problem to avoid a considerable amount of output while display a sample result. Thus, the sample result is of dimensions: `x <- 6`, `y <- 6`, `t <- 2`.  Therefore, the results of the neighboring clusters are: 
 
 
 {% highlight r %}
@@ -82,7 +74,7 @@ Without a loss of generality, I've opted to downscale the problem to avoid a con
 [6,]    1    1    1    1    1    1
 {% endhighlight %}
 
-**Note:** Both time points, `t = 1` and `t = 2`, are the same!!! More on this interesting pattern later... 
+**Note:** Both time points, `t <- 1` and `t <- 2`, are the same!!! More on this interesting pattern later... 
 
 ## Possible Solutions
 
@@ -96,7 +88,7 @@ Thus, there are really three different components within this post that will be 
 
 ## Optimizing within R
 
-The initial problem statement has something that all users of `R` dread: a loop. However, it isn't just one loop, it's 3! As is known, one of the key downsides to `R` is looping. This problem has a lot of coverage - my favorite being the [straight, curly, or compiled](http://dirk.eddelbuettel.com/blog/2011/04/12/) - and is primarily one of the key reasons why `Rcpp` is favored in loop heavy problems.
+The initial problem statement has something that all users of `R` dread: a loop. However, it isn't just one loop, it's 3! As is known, one of the key downsides to `R` is looping. This problem has a lot of coverage --- my favorite being the [straight, curly, or compiled](http://dirk.eddelbuettel.com/blog/2011/04/12/) --- and is primarily one of the key reasons why `Rcpp` is favored in loop heavy problems.
 
 There are a few ways we can aim to optimize just the R code: 
 
@@ -110,14 +102,14 @@ To show differences between functions, I'll opt to declare the base computationa
 
 {% highlight r %}
 cube_r = function(a,res,xdim,ydim,tdim){
-  for (t in 1:tdim){
-    for (x in 3:(xdim-2)){
-      for (y in 3:(ydim-2)){
-        res[x,y,t] = sum(a[(x-2):(x+2),(y-2):(y+2),t])
-      }
+    for (t in 1:tdim) {
+        for (x in 3:(xdim-2)) {
+            for (y in 3:(ydim-2)) {
+                res[x,y,t] <- sum(a[(x-2):(x+2),(y-2):(y+2),t])
+            }
+        }
     }
-  }
-  res
+    res
 }
 {% endhighlight %}
 
@@ -128,17 +120,17 @@ The first order of business is to implement a cached value schema so that we avo
 
 
 {% highlight r %}
-cube_r_cache = function(a,res,xdim,ydim,tdim){
-  for (t in 1:tdim){
-    temp_time = a[,,t]
-    for (x in 3:(xdim-2)){
-      temp_row = temp_time[(x-2):(x+2),]
-      for (y in 3:(ydim-2)){
-        res[x,y,t] = sum(temp_row[,(y-2):(y+2)])
-      }
+cube_r_cache <- function(a,res,xdim,ydim,tdim){
+    for (t in 1:tdim) {
+        temp_time <- a[,,t]
+        for (x in 3:(xdim-2)) {
+            temp_row <- temp_time[(x-2):(x+2),]
+            for (y in 3:(ydim-2)) {
+                res[x,y,t] <- sum(temp_row[,(y-2):(y+2)])
+            }
+        }
     }
-  }
-  res
+    res
 }
 {% endhighlight %}
 
@@ -150,39 +142,35 @@ Next up, let's implement a way to parallelize the computation over time using R'
 {% highlight r %}
 library(parallel)
 
-cube_r_parallel = function(a, xdim, ydim, tdim, ncores){
+cube_r_parallel <- function(a, xdim, ydim, tdim, ncores){
+    ## Create a cluster
+    cl <- makeCluster(ncores)
   
-  # Create a cluster
-  cl = makeCluster(ncores)
-  
-  # Create a time-based computation loop
-  computation_loop = function(X, a, xdim, ydim, tdim){
-    
-    temp_time = a[,,X]
-    res = temp_time
-    
-    for (x in 3:(xdim-2)){
-      temp_row = temp_time[(x-2):(x+2),]
-      for (y in 3:(ydim-2)){
-        res[x,y] = sum(temp_row[,(y-2):(y+2)])
-      }
+    ## Create a time-based computation loop
+    computation_loop <- function(X, a, xdim, ydim, tdim) {
+        temp_time <- a[,,X]
+        res <- temp_time
+        for (x in 3:(xdim-2)) {
+            temp_row <- temp_time[(x-2):(x+2),]
+            for (y in 3:(ydim-2)) {
+                res[x,y] <- sum(temp_row[,(y-2):(y+2)])
+            }
+        }
+        res
     }
-    
-    res
-  }
   
-  # Obtain the results
-  r_parallel = parSapply(cl = cl,
-                         X = seq_len(tdim), 
-                         FUN = computation_loop, 
-                         a = a, xdim = xdim, ydim = ydim, tdim = tdim, 
-                         simplify = "array")
+    ## Obtain the results
+    r_parallel <- parSapply(cl = cl,
+                            X = seq_len(tdim), 
+                            FUN = computation_loop, 
+                            a = a, xdim = xdim, ydim = ydim, tdim = tdim, 
+                            simplify = "array")
   
-  # Kill the cluster
-  stopCluster(cl)
+    ## Kill the cluster
+    stopCluster(cl)
   
-  # Return
-  r_parallel
+    ## Return
+    r_parallel
 }
 {% endhighlight %}
 
@@ -192,12 +180,12 @@ As this **is** `Rcpp`, benchmarks are king. Here I've opted to create a benchmar
 
 
 {% highlight r %}
-rtimings = microbenchmark(op_answer = cube_r(a,res,xdim,ydim,tdim),
-                          r_cached_subset = cube_r_cache(a,res,xdim,ydim,tdim),
-                          r_parallel1 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 1),
-                          r_parallel2 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 2),
-                          r_parallel3 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 3),
-                          r_parallel4 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 4))
+rtimings <- microbenchmark(op_answer = cube_r(a,res,xdim,ydim,tdim),
+                           r_cached_subset = cube_r_cache(a,res,xdim,ydim,tdim),
+                           r_parallel1 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 1),
+                           r_parallel2 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 2),
+                           r_parallel3 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 3),
+                           r_parallel4 = cube_r_parallel(a,xdim,ydim,tdim, ncores = 4))
 {% endhighlight %}
 
 **Output:**
@@ -254,37 +242,37 @@ With this being said, let's look at the C++ port of the R function:
 // [[Rcpp::export]]
 arma::cube cube_cpp_parallel(arma::cube a, arma::cube res, int ncores = 1) {
   
-  // Extract the different dimensions
+    // Extract the different dimensions
 
-  // Normal Matrix dimensions
-  unsigned int xdim = res.n_rows;
+    // Normal Matrix dimensions
+    unsigned int xdim = res.n_rows;
   
-  unsigned int ydim = res.n_cols;
+    unsigned int ydim = res.n_cols;
   
-  // Depth of Array
-  unsigned int tdim = res.n_slices;
+    // Depth of Array
+    unsigned int tdim = res.n_slices;
   
-  // Added an omp pragma directive to parallelize the loop with ncores
-  #pragma omp parallel for num_threads(ncores)
-  for (unsigned int t = 0; t < tdim; t++){ // Note: Array's Index in C++ starts at 0 and goes to N - 1
+    // Added an omp pragma directive to parallelize the loop with ncores
+    #pragma omp parallel for num_threads(ncores)
+    for (unsigned int t = 0; t < tdim; t++) { // Note: Array Index in C++ starts at 0 and goes to N - 1
     
-    // Pop time `t` from `a` e.g. `a[,,t]`
-    arma::mat temp_mat = a.slice(t);
+        // Pop time `t` from `a` e.g. `a[,,t]`
+        arma::mat temp_mat = a.slice(t);
     
-    // Begin region selection
-    for (unsigned int x = 2; x < xdim-2; x++){
+        // Begin region selection
+        for (unsigned int x = 2; x < xdim-2; x++) {
       
-      // Subset the rows
-      arma::mat temp_row_sub = temp_mat.rows(x-2, x+2);
+            // Subset the rows
+            arma::mat temp_row_sub = temp_mat.rows(x-2, x+2);
       
-      // Iterate over the columns with unit accumulative sum
-      for (unsigned int y = 2; y <  ydim-2; y++){
-        res(x,y,t) = accu(temp_row_sub.cols(y-2,y+2));
-      }
+            // Iterate over the columns with unit accumulative sum
+            for (unsigned int y = 2; y <  ydim-2; y++) {
+                res(x,y,t) = accu(temp_row_sub.cols(y-2,y+2));
+            }
+        }
     }
-  }
   
-  return res;
+    return res;
 }
 {% endhighlight %}
 
@@ -298,7 +286,7 @@ To verify that this is an equivalent function, we opt to check the object equali
 
 
 {% highlight r %}
-cpp_parallel = cube_cpp_parallel(a, res, ncores)
+cpp_parallel <- cube_cpp_parallel(a, res, ncores)
 
 all.equal(cpp_parallel, op_answer)
 {% endhighlight %}
@@ -315,12 +303,12 @@ Just as before, let's check the benchmarks to see how well we did:
 
 
 {% highlight r %}
-port_timings = microbenchmark(op_answer = cube_r(a,res,xdim,ydim,tdim),
-                              r_cached_subset = cube_r_cache(a,res,xdim,ydim,tdim),
-                              cpp_core1 = cube_cpp_parallel(a,res,1),
-                              cpp_core2 = cube_cpp_parallel(a,res,2),
-                              cpp_core3 = cube_cpp_parallel(a,res,3),
-                              cpp_core4 = cube_cpp_parallel(a,res,4))
+port_timings <- microbenchmark(op_answer = cube_r(a,res,xdim,ydim,tdim),
+                               r_cached_subset = cube_r_cache(a,res,xdim,ydim,tdim),
+                               cpp_core1 = cube_cpp_parallel(a,res,1),
+                               cpp_core2 = cube_cpp_parallel(a,res,2),
+                               cpp_core3 = cube_cpp_parallel(a,res,3),
+                               cpp_core4 = cube_cpp_parallel(a,res,4))
 {% endhighlight %}
 
 **Output:**
@@ -359,10 +347,10 @@ Let's see the cases in action to observe the patterns. Note, the size of these a
 
 
 {% highlight r %}
-xdim = 2
-ydim = 3
-tdim = 2
-a = array(0:1, dim = c(xdim, ydim, tdim))
+xdim <- 2
+ydim <- 3
+tdim <- 2
+a <- array(0:1, dim = c(xdim, ydim, tdim))
 {% endhighlight %}
 
 **Output**:
@@ -386,10 +374,10 @@ a = array(0:1, dim = c(xdim, ydim, tdim))
 
 
 {% highlight r %}
-xdim = 3
-ydim = 4
-tdim = 2
-a = array(0:1, dim = c(xdim, ydim, tdim))
+xdim <- 3
+ydim <- 4
+tdim <- 2
+a <- array(0:1, dim = c(xdim, ydim, tdim))
 {% endhighlight %}
 
 **Output:**
@@ -415,10 +403,10 @@ a = array(0:1, dim = c(xdim, ydim, tdim))
 
 
 {% highlight r %}
-xdim = 3
-ydim = 3
-tdim = 3
-a = array(0:1, dim = c(xdim, ydim, tdim))
+xdim <- 3
+ydim <- 3
+tdim <- 3
+a <- array(0:1, dim = c(xdim, ydim, tdim))
 {% endhighlight %}
 
 **Output:**
@@ -494,32 +482,32 @@ To obtain such an alternating vector that switches between two values, we opt to
 // ------- Make Alternating Column Vectors
 
 // Creates a vector with initial value 1
-arma::vec odd_vec(unsigned int xdim){
+arma::vec odd_vec(unsigned int xdim) {
   
-  // make a temporary vector to create alternating 0-1 effect by row.
-  arma::vec temp_vec(xdim);
+    // make a temporary vector to create alternating 0-1 effect by row.
+    arma::vec temp_vec(xdim);
   
-  // Alternating vector (anyone have a better solution? )
-  for (unsigned int i = 0; i < xdim; i++) {
-    temp_vec(i) = (i % 2 ? 0 : 1); // Ternary operator in C++, e.g. if(TRUE){1}else{0}
-  }
+    // Alternating vector (anyone have a better solution? )
+    for (unsigned int i = 0; i < xdim; i++) {
+        temp_vec(i) = (i % 2 ? 0 : 1); // Ternary operator in C++, e.g. if(TRUE){1}else{0}
+    }
   
-  return temp_vec;
+    return temp_vec;
 }
 
 // Creates a vector with initial value 0
 // [[Rcpp::export]]
 arma::vec even_vec(unsigned int xdim){
   
-  // make a temporary vector to create alternating 0-1 effect by row.
-  arma::vec temp_vec(xdim);
+    // make a temporary vector to create alternating 0-1 effect by row.
+    arma::vec temp_vec(xdim);
   
-  // Alternating vector (anyone have a better solution? )
-  for (unsigned int i = 0; i < xdim; i++) {
-    temp_vec(i) = (i % 2 ? 1 : 0); // changed
-  }
+    // Alternating vector (anyone have a better solution? )
+    for (unsigned int i = 0; i < xdim; i++) {
+        temp_vec(i) = (i % 2 ? 1 : 0); // changed
+    }
   
-  return temp_vec;
+    return temp_vec;
 }
 {% endhighlight %}
 
@@ -539,49 +527,49 @@ With our ability to now generate **odd** and **even** vectors by column, we now 
 
 // Case 1: xdim is even
 // [[Rcpp::export]]
-arma::mat make_even_matrix_case1(unsigned int xdim, unsigned int ydim){
+arma::mat make_even_matrix_case1(unsigned int xdim, unsigned int ydim) {
   
-  arma::mat temp_mat(xdim,ydim);
+    arma::mat temp_mat(xdim,ydim);
   
-  temp_mat.each_col() = even_vec(xdim);
-  
-  return temp_mat;
+    temp_mat.each_col() = even_vec(xdim);
+    
+    return temp_mat;
 }
 
 // Case 2: xdim is odd and ydim is odd    
 // [[Rcpp::export]]
 arma::mat make_odd_matrix_case2(unsigned int xdim, unsigned int ydim){
   
-  arma::mat temp_mat(xdim,ydim);
+    arma::mat temp_mat(xdim,ydim);
   
-  // Cache values
-  arma::vec e_vec = even_vec(xdim);
-  arma::vec o_vec = odd_vec(xdim);
+    // Cache values
+    arma::vec e_vec = even_vec(xdim);
+    arma::vec o_vec = odd_vec(xdim);
   
-  // Alternating column 
-  for (unsigned int i = 0; i < ydim; i++) {
-    temp_mat.col(i) = (i % 2 ? e_vec : o_vec); 
-  }
+    // Alternating column 
+    for (unsigned int i = 0; i < ydim; i++) {
+        temp_mat.col(i) = (i % 2 ? e_vec : o_vec); 
+    }
   
-  return temp_mat;
+    return temp_mat;
 }
 
 // Case 3: xdim is odd and ydim is even
 // [[Rcpp::export]]
 arma::mat make_odd_matrix_case3(unsigned int xdim, unsigned int ydim){
   
-  arma::mat temp_mat(xdim,ydim);
+    arma::mat temp_mat(xdim,ydim);
   
-  // Cache values
-  arma::vec e_vec = even_vec(xdim);
-  arma::vec o_vec = odd_vec(xdim);
+    // Cache values
+    arma::vec e_vec = even_vec(xdim);
+    arma::vec o_vec = odd_vec(xdim);
   
-  // Alternating column 
-  for (unsigned int i = 0; i < ydim; i++) {
-    temp_mat.col(i) = (i % 2 ? o_vec : e_vec); // slight change
-  }
+    // Alternating column 
+    for (unsigned int i = 0; i < ydim; i++) {
+        temp_mat.col(i) = (i % 2 ? o_vec : e_vec); // slight change
+    }
   
-  return temp_mat;
+    return temp_mat;
 }
 {% endhighlight %}
 
@@ -597,26 +585,26 @@ Next, we need to create a computational loop to subset the appropriate continuou
 // --- Calculation engine
 
 // [[Rcpp::export]]
-arma::mat calc_matrix(arma::mat temp_mat){
+arma::mat calc_matrix(arma::mat temp_mat) {
   
-  unsigned int xdim = temp_mat.n_rows;
+    unsigned int xdim = temp_mat.n_rows;
   
-  unsigned int ydim = temp_mat.n_cols;
+    unsigned int ydim = temp_mat.n_cols;
   
-  arma::mat res = temp_mat;
+    arma::mat res = temp_mat;
   
-  // Subset the rows
-  for (unsigned int x = 2; x < xdim-2; x++){
+    // Subset the rows
+    for (unsigned int x = 2; x < xdim-2; x++){
     
-    arma::mat temp_row_sub = temp_mat.rows(x-2, x+2);
+        arma::mat temp_row_sub = temp_mat.rows(x-2, x+2);
     
-    // Iterate over the columns with unit accumulative sum
-    for (unsigned int y = 2; y <  ydim-2; y++){
-      res(x,y) = accu(temp_row_sub.cols(y-2,y+2));
+        // Iterate over the columns with unit accumulative sum
+        for (unsigned int y = 2; y <  ydim-2; y++){
+            res(x,y) = accu(temp_row_sub.cols(y-2,y+2));
+        }
     }
-  }
   
-  return res;
+    return res;
 }
 {% endhighlight %}
 
@@ -640,32 +628,24 @@ Now, the we are ready to write the glue that combines all the different componen
 // [[Rcpp::export]]
 arma::cube dim_to_cube(unsigned int xdim = 4, unsigned int ydim = 4, unsigned int tdim = 3) {
   
-  // Initialize values in A
-  arma::cube res(xdim,ydim,tdim);
+    // Initialize values in A
+    arma::cube res(xdim,ydim,tdim);
   
-  if(xdim % 2 == 0){
-    res.each_slice() = calc_matrix(make_even_matrix_case1(xdim, ydim));
-  }else{
-    
-    if(ydim % 2 == 0){
+    if (xdim % 2 == 0) {
+        res.each_slice() = calc_matrix(make_even_matrix_case1(xdim, ydim));
+    } else {
+        if (ydim % 2 == 0) {
+            res.each_slice() = calc_matrix(make_odd_matrix_case3(xdim, ydim));
+        } else {
+            arma::mat first_odd_mat = calc_matrix(make_odd_matrix_case2(xdim, ydim));
+            arma::mat sec_odd_mat = calc_matrix(make_odd_matrix_case3(xdim, ydim));
       
-      res.each_slice() = calc_matrix(make_odd_matrix_case3(xdim, ydim));
-      
-    }else{
-      
-      arma::mat first_odd_mat = calc_matrix(make_odd_matrix_case2(xdim, ydim));
-      
-      arma::mat sec_odd_mat = calc_matrix(make_odd_matrix_case3(xdim, ydim));
-      
-      for(unsigned int t = 0; t < tdim; t++){
-        res.slice(t) = (t % 2 ? first_odd_mat  : sec_odd_mat);
-      }
-      
+            for (unsigned int t = 0; t < tdim; t++) {
+                res.slice(t) = (t % 2 ? first_odd_mat  : sec_odd_mat);
+            }
+        }
     }
-    
-  }
-  
-  return res;
+    return res;
 }
 {% endhighlight %}
 
@@ -677,8 +657,8 @@ To verify, let's quickly create similar cases and test them against the original
 ##### Case 1: 
 
 {% highlight r %}
-xdim = 6; ydim = 5; tdim = 3
-a = array(0:1,dim=c(xdim,ydim,tdim)); res = a
+xdim <- 6; ydim <- 5; tdim <- 3
+a <- array(0:1,dim=c(xdim,ydim,tdim)); res <- a
 
 all.equal(dim_to_cube(xdim, ydim, tdim), cube_r(a, res, xdim, ydim, tdim))
 {% endhighlight %}
@@ -692,8 +672,8 @@ all.equal(dim_to_cube(xdim, ydim, tdim), cube_r(a, res, xdim, ydim, tdim))
 
 
 {% highlight r %}
-xdim = 7; ydim = 6; tdim = 3
-a = array(0:1,dim=c(xdim,ydim,tdim)); res = a
+xdim <- 7; ydim <- 6; tdim <- 3
+a <- array(0:1,dim=c(xdim,ydim,tdim)); res <- a
 
 all.equal(dim_to_cube(xdim, ydim, tdim), cube_r(a, res, xdim, ydim, tdim))
 {% endhighlight %}
@@ -707,8 +687,8 @@ all.equal(dim_to_cube(xdim, ydim, tdim), cube_r(a, res, xdim, ydim, tdim))
 
 
 {% highlight r %}
-xdim = 7; ydim = 7; tdim = 3
-a = array(0:1,dim=c(xdim,ydim,tdim)); res = a
+xdim <- 7; ydim <- 7; tdim <- 3
+a <- array(0:1,dim=c(xdim,ydim,tdim)); res <- a
 
 all.equal(dim_to_cube(xdim, ydim, tdim), cube_r(a, res, xdim, ydim, tdim))
 {% endhighlight %}
@@ -725,11 +705,11 @@ With all of these different methods now thoroughly described, let's do one last 
 
 
 {% highlight r %}
-xdim = 20
-ydim = 20
-tdim = 5
-a = array(0:1,dim=c(xdim,ydim,tdim))
-res = a
+xdim <- 20
+ydim <- 20
+tdim <- 5
+a <- array(0:1,dim=c(xdim,ydim,tdim))
+res <- a
 
 
 microbenchmark::microbenchmark(r_orig      = cube_r(a, res, xdim, ydim, tdim),
