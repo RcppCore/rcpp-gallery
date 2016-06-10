@@ -1,0 +1,323 @@
+---
+title: "Gerber Statistic Implementation in Rcpp and OpenMP"
+author: Rafael Nicolas Fermin Cota, Yi King, and Chris Chong
+license: GPL (>= 2)
+tags: openmp modelling rfinance correlation
+summary: Rcpp and OpenMP implementation of Gerber Statistic
+---
+
+### Summary 
+Recently there has been a new research coming out on using a co-movement measure to construct the covariance matrix as part of the Modern Portfolio Theory (MPT) style portfolio construction. Below is the abstract of the paper which can be downloaded [here](http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2627803), the methodology is also currently [patent pending](http://www.google.com/patents/WO2014036396A1?cl=en). 
+
+>Markowitz's mean-variance MPT has remained the cornerstone of portfolio selection methods after decades of research and debate. There is an extensive literature on MPT implementation, especially on estimation errors and expected return assumptions. However, covariance matrix estimation, an essential input, continues to be frequently based on historical correlations. There has been a recent new study that proposes replacing historical correlations with a robust co-movement measure called the Gerber Statistic.
+
+In the research paper, it is stated that MPT using the Gerber Statistic outperformed portfolios using historical correlation as measured by ex-post returns under realistic investment constraints, including transaction costs and a broad range of investor types, for an investment universe of global stock indices, bonds and commodities for the period January 1994 to December 2013.
+
+This post is to illustrate an implementation of the Gerber statistic. The focus is to compare the speed of computation for three different implementations with increasing performance
+
+* R
+* Rcpp
+* Rcpp with OpenMP for parallization
+
+#### Implementation in R
+
+```{r, eval = TRUE}
+gerber.correlation = function(hist.returns, lookback = nrow(hist.returns), threshold = 0.5) {
+  n = ncol(hist.returns)
+  nperiods = nrow(hist.returns)
+  
+  if(lookback > nperiods) lookback = nperiods
+  index = (nperiods - lookback + 1) : nperiods
+  
+  standard.deviation = apply(hist.returns[index,,drop=F], 2, sd, na.rm = T)
+  threshold = threshold * standard.deviation
+  
+  correlation = matrix(1, n, n)
+  for(i in 1:(n-1))
+    for(j in 2:n) {
+      pos = sum((hist.returns[,i] >= threshold[i] & hist.returns[,j] >= threshold[j]) |
+                  (hist.returns[,i] <= -threshold[i] & hist.returns[,j] <= -threshold[j]), na.rm = T)
+      
+      neg = sum((hist.returns[,i] >= threshold[i] & hist.returns[,j] <= -threshold[j]) |
+                  (hist.returns[,i] <= -threshold[i] & hist.returns[,j] >= threshold[j]), na.rm = T)
+      
+      correlation[i,j] = correlation[j,i] = (pos - neg) / (pos + neg)
+    }
+  correlation
+}
+```
+
+#### Implementation in Rcpp
+
+```{r, eval = TRUE, engine='Rcpp'}
+// [[Rcpp::depends(RcppArmadillo)]]
+#include <RcppArmadillo.h>
+
+using namespace arma; 
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double SD_RCPP(arma::vec DATA_VEC) {
+  
+  double SD;
+  double MEAN;
+  
+  MEAN = std::accumulate(DATA_VEC.begin(), DATA_VEC.end(),0.0)/DATA_VEC.size();
+  DATA_VEC = pow(DATA_VEC - MEAN,2);
+  SD = pow(std::accumulate(DATA_VEC.begin(), DATA_VEC.end(),0.0)/(DATA_VEC.size()-1), 0.5);
+  
+  return SD;
+}
+
+// [[Rcpp::export]]
+mat GERBER_CORRELATION(arma::mat HIST_RETURN,
+                                 int LOOKBACK = 0,
+                                 double THRESHOLD = 0.5,
+                                 bool LOOKBACK_ORDER= false) {
+  
+  arma::mat CORRELATION_MAT;
+  arma::mat HIST_RETURN_SD;
+  arma::vec SD_VEC;
+  arma::vec THRESHOLD_VEC;
+  
+  arma::uvec TEMP_VEC_POS;
+  arma::uvec TEMP_VEC_NEG;
+  
+  arma::uvec TEMP_UVEC_1;
+  arma::uvec TEMP_UVEC_2;
+  arma::uvec TEMP_UVEC_3;
+  arma::uvec TEMP_UVEC_4;
+  
+  double NCOL;
+  double NPERIODS;
+  
+  int i;
+  int j;
+  
+  double POS;
+  double NEG;
+  
+  NCOL= HIST_RETURN.n_cols;
+  NPERIODS = HIST_RETURN.n_rows;
+  
+  if(LOOKBACK > 0)
+  {
+    if(LOOKBACK_ORDER)
+    {
+      if(LOOKBACK < NPERIODS - 1){NPERIODS = LOOKBACK;}
+      HIST_RETURN_SD = HIST_RETURN.rows(0, NPERIODS-1);
+    }else{
+      if(LOOKBACK > NPERIODS - 1){LOOKBACK = NPERIODS;}
+      HIST_RETURN_SD = HIST_RETURN.rows(NPERIODS - LOOKBACK, NPERIODS-1);
+    }
+  }
+
+  SD_VEC.set_size(NCOL);
+  for (i = 0; i < NCOL; i++)
+  {
+    SD_VEC[i] = SD_RCPP(HIST_RETURN_SD.col(i));
+  }
+
+  THRESHOLD_VEC.set_size(NCOL);
+  THRESHOLD_VEC = THRESHOLD * SD_VEC;
+
+  CORRELATION_MAT.set_size(NCOL, NCOL);
+  CORRELATION_MAT.fill(1);
+
+  
+  for(i = 0; i < NCOL-1; i++)
+  {
+    for(j = 0; j < i; j++)
+    {
+      if(i == j)
+      {
+        CORRELATION_MAT.at(i,j) = 1;
+      }else{
+        TEMP_UVEC_1 = find(HIST_RETURN.col(i)>THRESHOLD_VEC[i]);
+        TEMP_UVEC_2 = find(HIST_RETURN.col(j)>THRESHOLD_VEC[j]);
+        TEMP_UVEC_3 = find(HIST_RETURN.col(i)<-THRESHOLD_VEC[i]);
+        TEMP_UVEC_4 = find(HIST_RETURN.col(j)<-THRESHOLD_VEC[j]);
+        
+        TEMP_VEC_POS = find_unique(join_cols(TEMP_UVEC_1, TEMP_UVEC_2));
+        TEMP_VEC_NEG = find_unique(join_cols(TEMP_UVEC_3, TEMP_UVEC_4));
+        
+        POS = (TEMP_UVEC_1.size() + TEMP_UVEC_2.size() - TEMP_VEC_POS.size()) + (TEMP_UVEC_3.size() + TEMP_UVEC_4.size() - TEMP_VEC_NEG.size());
+        
+        
+        TEMP_UVEC_1 = find(HIST_RETURN.col(i)>THRESHOLD_VEC[i]);
+        TEMP_UVEC_2 = find(HIST_RETURN.col(j)<-THRESHOLD_VEC[j]);
+        TEMP_UVEC_3 = find(HIST_RETURN.col(i)<-THRESHOLD_VEC[i]);
+        TEMP_UVEC_4 = find(HIST_RETURN.col(j)>THRESHOLD_VEC[j]);
+        
+        TEMP_VEC_POS = find_unique(join_cols(TEMP_UVEC_1, TEMP_UVEC_2));
+        TEMP_VEC_NEG = find_unique(join_cols(TEMP_UVEC_3, TEMP_UVEC_4));
+        
+        NEG = (TEMP_UVEC_1.size() + TEMP_UVEC_2.size() - TEMP_VEC_POS.size()) + (TEMP_UVEC_3.size() + TEMP_UVEC_4.size() - TEMP_VEC_NEG.size());
+        
+        CORRELATION_MAT.at(i,j) = (POS - NEG)/(POS + NEG);
+      }
+      CORRELATION_MAT.at(j,i) = CORRELATION_MAT.at(i,j);
+    }
+  }
+  
+  return CORRELATION_MAT;
+}
+```
+
+#### Implementation in Rcpp with OpenMP
+
+```{r, eval = TRUE, engine='Rcpp'}
+#include <Rcpp.h>
+#include <omp.h>
+
+// [[Rcpp::plugins(openmp)]]
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericMatrix GERBER_CORRELATION_PARALLEL_OMP(NumericMatrix HIST_RETURN_RAW,
+                                              int LOOKBACK = 0,
+                                              double THRESHOLD = 0.5,
+                                              bool LOOKBACK_ORDER = false)
+{
+  double NPERIODS;
+  
+  int NROW_BEGIN;
+  int NROW_END;
+  
+  int i,j,k;
+  double POS, NEG;
+  
+  NPERIODS = HIST_RETURN_RAW.nrow();
+  NROW_BEGIN = 0;
+  NROW_END = NPERIODS;
+  
+  NumericMatrix HIST_RETURN;
+  if(LOOKBACK > 0)
+  {
+    if(LOOKBACK_ORDER)
+    {
+      if(LOOKBACK < NPERIODS){NPERIODS = LOOKBACK;}
+      NROW_BEGIN = 0;
+      NROW_END = NPERIODS - 1;
+    }else{
+      if(LOOKBACK > NPERIODS){LOOKBACK = NPERIODS;}
+      NROW_BEGIN = NPERIODS - LOOKBACK;
+      NROW_END = NPERIODS - 1;
+    }
+    HIST_RETURN = HIST_RETURN_RAW(Range(NROW_BEGIN,NROW_END),Range(0,HIST_RETURN_RAW.ncol()-1));
+  }else{
+    HIST_RETURN = clone(HIST_RETURN_RAW);
+  }
+  
+  
+  //calculate standard deviation matrix
+  NumericMatrix SD_MAT(HIST_RETURN.ncol(),1);
+  std::fill(SD_MAT.begin(), SD_MAT.end(), 0.0);
+  for(j = 0; j < HIST_RETURN.ncol(); j++)
+  {
+    for(i = 0; i < HIST_RETURN.nrow(); i++)
+    {
+      SD_MAT(j, 0) = SD_MAT(j,0) + HIST_RETURN(i, j);
+    }
+    SD_MAT(j, 0) = SD_MAT(j, 0)/HIST_RETURN.nrow();
+    for(i = 0; i < HIST_RETURN.nrow(); i++)
+    {
+      HIST_RETURN(i,j) = std::pow((HIST_RETURN(i,j) - SD_MAT(j, 0)), 2);
+    }
+    SD_MAT(j, 0) = 0;
+    for(i = 0; i < HIST_RETURN.nrow(); i++)
+    {
+      SD_MAT(j, 0) = SD_MAT(j,0) + HIST_RETURN(i, j);
+    }
+    SD_MAT(j, 0) = std::pow(SD_MAT(j, 0)/(HIST_RETURN.nrow()-1), 0.5) * THRESHOLD;
+  }
+  
+  
+  //calculate correlation matrix
+  NumericMatrix CORRELATION_MAT(HIST_RETURN_RAW.ncol(), HIST_RETURN_RAW.ncol());
+  std::fill(CORRELATION_MAT.begin(), CORRELATION_MAT.end(), 1.0);
+  
+  #pragma omp parallel for private(i, j, POS, NEG)
+  for(i = 0; i < CORRELATION_MAT.nrow(); i++)
+  {
+    for(j = 0; j < i; j++)
+    {
+      if(i == j)
+      {
+        CORRELATION_MAT(i,j) = 1;
+      }else{
+        POS = 0;
+        NEG = 0;
+        
+        for(k = 0; k < HIST_RETURN_RAW.nrow(); k++)
+        {
+          if(((HIST_RETURN_RAW(k,i) > SD_MAT(i,0)) & (HIST_RETURN_RAW(k,j) > SD_MAT(j,0))) |
+             ((HIST_RETURN_RAW(k,i) < -1.0*SD_MAT(i,0)) & (HIST_RETURN_RAW(k,j) < -1.0*SD_MAT(j,0))))
+          {
+            POS++;
+          }
+          if(((HIST_RETURN_RAW(k,i) > SD_MAT(i,0)) & (HIST_RETURN_RAW(k,j) < -1.0*SD_MAT(j,0))) |
+             ((HIST_RETURN_RAW(k,i) < -1.0*SD_MAT(i,0)) & (HIST_RETURN_RAW(k,j) > SD_MAT(j,0))))
+          {
+            NEG++;
+          }
+        }
+        CORRELATION_MAT(i,j) = (POS - NEG)/(POS + NEG);
+      }
+      CORRELATION_MAT(j,i) = CORRELATION_MAT(i,j);
+    }
+  }
+  
+  
+  
+  return CORRELATION_MAT;
+  
+}
+```
+
+#### Speed Comparison
+
+Finally, let's compare the speed gain result. The test data is based on a return matrix of 30 securities with 2500 data points. It can be seen that the OpenMP version of the calculation is __more than 150x__ faster than the R version. 
+
+<style>
+table {
+    margin-bottom: 1rem;
+    margin-right : auto ;
+    border: 1px solid #e5e5e5;
+    border-collapse: collapse;
+    font-size: 15px;
+    border-left: none;
+}
+table, th, td {
+padding : 5px ;
+background-color : #EEEEEE ;
+border: 1px solid white ;}
+</style>
+
+```{r, echo = FALSE, message=FALSE, warning = FALSE}
+set.seed(1)
+NUM_ASSET  <- 30
+NUM_PERIOD <- 2500 
+HIST_RETURN <- matrix(rnorm(NUM_ASSET*NUM_PERIOD),NUM_PERIOD,NUM_ASSET)
+LOOKBACK <- 480
+
+stopifnot(identical(gerber.correlation(HIST_RETURN, LOOKBACK), GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK)))
+
+suppressMessages(library(rbenchmark))
+suppressMessages(library(data.table))
+result <- benchmark(gerber.correlation(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK),
+                    replications = 500)
+
+result <- as.data.table(result, stringsAsFactors = FALSE)
+result[, test := c("R Version", "Rcpp Version", "Rcpp + OpenMP Version")]
+setnames(result, "test", "Implementation")
+setorder(result, relative)
+
+kable(result[,1:4, with = FALSE])
+
+```
+
+

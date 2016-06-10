@@ -1,0 +1,427 @@
+---
+title: "Hierarchical Risk Parity Implementation in Rcpp and OpenMP"
+author: Rafael Nicolas Fermin Cota, Yi King, and Chris Chong
+license: GPL (>= 2)
+tags: openmp recursion modelling optimization
+mathjax: true
+summary: Rcpp and OpenMP implementation of Hierarchy Risk Parity portfolio allocation method
+---
+
+### Summary 
+Recently, there has been a new research paper coming out with the goal of improving Markowitz's Critical Line Algorithm (CLA) published by Marcos Lopez de Prado. The methodology is also currently patent pending and the paper can be downloaded [here](http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2708678). The methodology suggested by the paper proposes the Hierarchical Risk Parity (HRP) approach. The HRP approach aims at tackling the issues of the original CLA regarding instability, concentration, and underperformance.
+
+>HRP applies modern mathematics (graph theory and machine learning techniques) to build a
+diversified portfolio based on the information contained in the covariance matrix. However,
+unlike quadratic optimizers, HRP does not require the invertibility of the covariance matrix. In
+fact, HRP can compute a portfolio on an ill-degenerated or even a singular covariance matrix, an
+impossible feat for quadratic optimizers. Monte Carlo experiments show that HRP delivers lower
+out-of-sample variance than CLA, even though minimum-variance is CLA's optimization
+objective. HRP also produces less risky portfolios out-of-sample compared to traditional risk
+parity methods.
+
+The main idea of HRP is to allocate weights to a portfolio of securities based on 
+
+* the clusters formed by securities (determined on how each security correlates to the portfolio)
+* the volatility of each cluster (more volatile clusters receive lesser weighting, and vice versa)
+
+This post demonstrates a Rcpp + OpenMP implementation of the HRP methodology suggested by the paper. It uses security returns as input and churns out a weighting vector applies to all securities involved.
+
+The computation is split into four stages
+
+* Compute Distance Matrix
+* Clusterize Securities
+* Quasi-Diagonalize (QD) the Covariance Matrix
+* Generate Security Weighting
+
+
+#### Compute Distance Matrix
+In the HRP paper, clusters is defined by a group of securities that similarly correlates with other securities within the portfolio.  
+
+First, we compute a n by n distance matrix based on the correlation matrix on the n assets. The distance is defined as $$d_{i,j} = \sqrt{\frac{1}{2}*\left(1-\rho_{i,j}\right)}$$ which produces the distance between __each asset__. The lower the the "distance", the more correlated two assets are. This step is implemented in the `distanceMatrix_elementwise` function.  
+
+Secondly, we compute the Euclidean distance between the column-vectors of the distance matrix. $$D_{i,j} = \sqrt{\sum_{i=1}^n \left(d_{n,i} - d_{n,j}\right)^2}$$ This measures the similarity between two asset on how they correlates __to the portfolio__. The lower the distance, the more similar two assets' correlations with the portfolio are. This step is implemented in the `distanceMatrix_rowwise` function.  
+
+```{r, engine = "Rcpp"}
+#include <omp.h>
+#include <RcppArmadillo.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+
+// [[Rcpp::export]]
+NumericMatrix distanceMatrix_elementwise(NumericMatrix MAT_CORR){
+  int i, j;
+  NumericMatrix distanceMatrix(MAT_CORR.nrow(), MAT_CORR.nrow());
+  
+  #pragma omp parallel for collapse(2)
+  for(i = 0; i < MAT_CORR.nrow(); i++)
+  {
+    for(j = 0; j < MAT_CORR.ncol(); j++)
+    {
+      distanceMatrix(i,j) = std::pow(0.5*(1-MAT_CORR(i,j)), 0.5);
+    }
+  }
+  return distanceMatrix;
+}
+
+
+// [[Rcpp::export]]
+NumericMatrix distanceMatrix_rowwise(NumericMatrix MAT_CORR){
+  int i,j,k;
+  double temp_SUM = 0;
+  NumericMatrix distanceMatrix(MAT_CORR.nrow(), MAT_CORR.nrow());
+  
+  #pragma omp parallel for private(temp_SUM, j, k)
+  for(i = 1; i < MAT_CORR.nrow(); ++i)
+  {
+    for(j = 0; j < i; ++j)
+    {
+      temp_SUM = 0;
+      for(k = 0; k < MAT_CORR.nrow(); k++)
+      {
+        temp_SUM += std::pow(MAT_CORR(k,i) - MAT_CORR(k,j), 2); 
+      }
+      temp_SUM = std::pow(temp_SUM, 0.5);
+      distanceMatrix(i,j) = temp_SUM;
+      distanceMatrix(j,i) = temp_SUM;
+    }
+  }
+  return distanceMatrix;
+}
+
+```
+
+#### Cluster Generation
+Provided the matrix of similarities between each assets, we proceed to the clustering step to group securities into a hierarchy of clusters.  
+
+During each iteration, we pick a set of two most similar securities based on the distance matrix generated from the previous step, group them together as a cluster, and replace this cluster with a generalizing branch. In this implementation, the generalizaing branch is created using the nearest point algorithm. For branch $$u$$ consists of security $$i$$ and $$j$$, the similarty with all remaining securities in the portfolio is calculated as $$D_{,u} = min\{D_{,i}, D_{,j}\}$$
+  
+At the end of the clustering step, we have a $$N by 4$$ matrix where $$N$$ stands for the number of clusters. The first two elements consist of branch index (can by both a security or a generalizing branch). The third element is the similarity/distance between the two branches, and the last element indicates the number of securities in the cluster.
+
+```{r, engine = "Rcpp"}
+#include <omp.h>
+#include <RcppArmadillo.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+
+// [[Rcpp::export]]
+NumericMatrix clusterMatrix(NumericMatrix MAT_CORR){
+  
+  //Auxillary Variables
+  int i = 0;
+  int dim = MAT_CORR.nrow();
+  double max_MAT_CORR = max(MAT_CORR);
+  
+  arma::mat    temp_MAT_CORR(MAT_CORR.begin(), dim, dim, false);
+    
+  arma::uword temp_idx_row = 0;
+  arma::uword temp_idx_col = 0;
+  
+  double min_dist = 0.0;
+  
+  arma::mat    temp_cluster_mat;
+  arma::colvec temp_cluster_vec;
+  arma::rowvec temp_cluster_rvec;
+  
+  //result matrix
+  NumericMatrix clusterMatrix(dim-1, 4);
+  
+  arma::colvec clusterIndex((dim-1)*2);
+  
+  
+  //fill diagonal of corr matrix
+  #pragma omp parallel for
+  for(i = 0; i < dim; ++i)
+  {
+    temp_MAT_CORR(i,i) = max_MAT_CORR*2;
+  }
+  
+  #pragma omp parallel for
+  for(i = 0; i < (dim-1)*2; ++i)
+  {
+    clusterIndex(i) = i+1;
+  }
+  
+  
+  for(i = 0; i < dim-1; i++)
+  {
+    //calculate clustermatrix row
+    min_dist = temp_MAT_CORR.min(temp_idx_row, temp_idx_col);
+    
+    clusterMatrix(i,0) = clusterIndex(temp_idx_row);
+    clusterMatrix(i,1) = clusterIndex(temp_idx_col);
+    clusterMatrix(i,2) = min_dist;
+    clusterMatrix(i,3) = (clusterMatrix(i,0) <= dim ? 1 : 0) + (clusterMatrix(i,1) <= dim ? 1 : 0);
+    
+    
+    //re-construct correlation matrix
+    clusterIndex.shed_row(temp_idx_row);
+    clusterIndex.shed_row(temp_idx_col);
+    
+    temp_cluster_mat = join_rows(temp_MAT_CORR.col(temp_idx_row), 
+                                 temp_MAT_CORR.col(temp_idx_col));
+    
+    temp_cluster_vec = min(temp_cluster_mat,1);
+    temp_cluster_rvec = temp_cluster_vec.t();
+    temp_cluster_rvec.insert_cols(temp_cluster_vec.n_elem, 1);
+    temp_cluster_rvec(temp_cluster_rvec.n_elem-1) = max_MAT_CORR;
+    
+    temp_MAT_CORR = join_rows(temp_MAT_CORR, temp_cluster_vec);
+    temp_MAT_CORR = join_cols(temp_MAT_CORR, temp_cluster_rvec);
+    
+    
+    temp_MAT_CORR.shed_row(temp_idx_row);
+    temp_MAT_CORR.shed_row(temp_idx_col);
+    temp_MAT_CORR.shed_col(temp_idx_row);
+    temp_MAT_CORR.shed_col(temp_idx_col);
+  
+  }
+  return clusterMatrix;
+}
+```
+
+#### Quasi-Diagonalization
+Provided the clusterization from the last step, we want tp re-organize the covariance matrix so the indexing follows clusters. In order to achive this, we need to first "flatten the clusters" based on the $$N by 4$$ matrix generated from the last step. This step is implemented in function `clusterIndex` with a recursive call on `flatCluster`, the result is a security index based on generated clusters from previous step. 
+
+In the `flatCluster` function, we start with the last cluster generated and trace back to its components based on the first two element in the cluster matrix. If a component is a generalizing branch, the function calls itself recursively to trace back the components of the generalizing brach, until the index of a security is returned. `task` constructs from `OpenMP` is used to speed up the process by teating each "trace back" as a task, and a `taskwait` construct is used to ensure the security index is generated from a bottom-up approach.
+
+With the cluster based security index generated. `quasiDiag` function re-arranges the covariance matrix based on the new index into a quasi-diagonoal covariance matrix. In this way, "similar" securities are group together for the weight allocation step. To re-iterate, the HRP approach first divides securities into clusters and then allocates weightings based on each clusters' risk level.
+```{r, engine = "Rcpp"}
+#include <omp.h>
+#include <RcppArmadillo.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+
+arma::mat flatCluster(int index, int threshold, NumericMatrix clusterMatrix){
+  arma::mat temp_index;
+  arma::mat temp_index_a;
+  arma::mat temp_index_b;
+  
+  if(index <= threshold)
+  {
+    temp_index.set_size(1,1);
+    temp_index(0,0) = index;
+    return temp_index;
+  }
+  
+  #pragma omp task shared(temp_index_a)
+  temp_index_a = flatCluster(clusterMatrix(index - threshold - 1,1), threshold, clusterMatrix);
+  #pragma omp task shared(temp_index_b)
+  temp_index_b = flatCluster(clusterMatrix(index - threshold - 1,0), threshold, clusterMatrix);
+  #pragma omp taskwait
+  temp_index = join_rows(temp_index_a, temp_index_b);
+  
+  return temp_index;
+}
+// [[Rcpp::export]]
+arma::mat clusterIndex(NumericMatrix clusterMatrix, NumericMatrix MAT_COV){
+  
+  int num_asset;
+  int nrow_clusterMatrix;
+  
+  nrow_clusterMatrix = clusterMatrix.nrow();
+  num_asset = MAT_COV.nrow();
+  
+  arma::mat assetIndex;
+  
+  omp_set_nested(1);
+  
+  #pragma omp parallel 
+  {
+    #pragma omp single
+    {
+      assetIndex = join_rows(flatCluster(clusterMatrix(nrow_clusterMatrix - 1,1), num_asset, clusterMatrix), 
+                             flatCluster(clusterMatrix(nrow_clusterMatrix - 1,0), num_asset, clusterMatrix));
+    }
+  }
+  
+  return assetIndex;
+}
+
+// [[Rcpp::export]]
+NumericMatrix quasiDiag(NumericMatrix MAT_COV, arma::mat assetIndex){
+  
+  int num_asset;
+  int index_asset;
+  num_asset = MAT_COV.nrow();
+  
+  NumericMatrix interMatrix(num_asset, num_asset);
+  NumericMatrix quasiDiagMatrix(num_asset, num_asset);
+
+  #pragma omp parallel for private(index_asset)
+  for(int i = 0; i < num_asset; ++i)
+  {
+    index_asset = assetIndex(0,i) - 1;
+    // printf("current %d, total %d\n", num_asset-1, index_asset);
+    interMatrix(_, i) = MAT_COV(_, index_asset);
+  }
+
+  #pragma omp parallel for private(index_asset)
+  for(int i = 0; i < num_asset; ++i)
+  {
+    index_asset = assetIndex(0,i) - 1;
+    quasiDiagMatrix(i, _) = interMatrix(index_asset, _);
+  }
+  
+  return quasiDiagMatrix;
+}
+
+```
+
+#### Weighting Generation
+With the re-organized quasi-diagonal covariance matrix and the asset index of clustered securities, we proceed into weight allocation. 
+
+As stated in the paper, the inverse-variance allocation is optimal for a diagonal covariance matrix. This step takes the advantage of this by 
+
+* defining the variance of a set as the variance for inverse-variance allocation
+* split the allocations between adjacent subsets in inverse proportion to their aggregated variances
+
+We initialize the weighting to each security to 1, $$w_i = 1, i = \{1..n\}$$. 
+
+The allocation algorithm is as follows
+
+* bisect the portfolio into two sets, $$s_1$$ and $$s_2$$
+* let $$V_i$$ be the covariance matrix for set $$s_i$$
+* let $$W_i = diag\left(V_i\right)^{-1} * \frac{1}{tr\left(diag\left(V_i\right)^{-1}\right)}$$
+* let $$V_{adj,i} = W_i^{'} * V_i * W_i$$
+* let $$a_1 = 1 - \frac{V_{adj,1}}{V_{adj,1} + V_{adj,2}}, a_2 = 1-a_1$$
+* adjust weightings for each set as $$w_{s_i} = w_{s_i} * a_i$$
+
+
+The implementation is done in function `weightAllocation` with recursive calls on `bisectWeightAllocation`. Similar to the cluster flatenning step, `task` constructs from `OpenMP` is used to speed up the process by treating each bisection step as a task. A `taskwait` construct is not required in this step as the update on the weight vector is top-down, and child tasks (further bisection steps) are not generated until the parent task (current bisection step) is finished.
+
+
+```{r, engine = "Rcpp"}
+#include <omp.h>
+#include <RcppArmadillo.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::plugins(openmp)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+
+void bisectWeightAllocation(arma::mat& weightMat, arma::mat& covMat, arma::uword idx_start, arma::uword idx_end){
+  arma::colvec wi_upper;
+  arma::colvec wi_lower;
+  
+  arma::mat temp_covMat_upper;
+  arma::mat temp_covMat_lower;
+  
+  arma::uword idx_mid;
+  
+  double temp_scale_upper;
+  double temp_scale_lower;
+  
+  if(idx_start != idx_end)
+  {
+    idx_mid = (idx_start + idx_end)/2;
+    
+    temp_covMat_upper = covMat.submat(idx_start, idx_start, idx_mid, idx_mid);
+    temp_covMat_lower = covMat.submat(idx_mid+1, idx_mid+1, idx_end, idx_end);
+    
+    wi_upper = temp_covMat_upper.diag();
+    wi_lower = temp_covMat_lower.diag();
+    
+    temp_scale_upper = as_scalar(wi_upper.t() * temp_covMat_upper * wi_upper);
+    temp_scale_lower = as_scalar(wi_lower.t() * temp_covMat_lower * wi_lower);
+    
+    weightMat.submat(0, idx_start, 0, idx_mid) = weightMat.submat(0, idx_start, 0, idx_mid) * (temp_scale_lower /(temp_scale_upper + temp_scale_lower));
+    weightMat.submat(0, idx_mid+1, 0, idx_end) = weightMat.submat(0, idx_mid+1, 0, idx_end) * (temp_scale_upper /(temp_scale_upper + temp_scale_lower));
+
+    #pragma omp task shared(weightMat, covMat) firstprivate(idx_start, idx_mid)
+    {
+      bisectWeightAllocation(weightMat, covMat, idx_start, idx_mid);
+    }
+
+    
+    #pragma omp task shared(weightMat, covMat) firstprivate(idx_mid, idx_end)
+    {
+      bisectWeightAllocation(weightMat, covMat, idx_mid+1, idx_end);
+    }
+
+  }
+}
+// [[Rcpp::export]]
+arma::mat weightAllocation(NumericMatrix quasiDiagMatrix, arma::mat assetIndex){
+  int num_asset = quasiDiagMatrix.nrow();
+  
+  arma::mat covMat(quasiDiagMatrix.begin(), num_asset, num_asset, false);
+  arma::mat weightMat_temp(1, num_asset, arma::fill::ones);
+  arma::mat weightMat(1, num_asset, arma::fill::ones);
+  
+  omp_set_nested(0);
+  
+  #pragma omp parallel
+  {
+    #pragma omp single
+    {
+      bisectWeightAllocation(weightMat_temp, covMat, 0, num_asset-1);
+    }
+  }
+  
+  for(int i = 0; i < num_asset; i++)
+  {
+    weightMat[0,i] = weightMat_temp[0,assetIndex[0,i]-1];
+  }
+  
+  return weightMat;
+}
+```
+
+
+With Rcpp and OpenMP, the speed of the computation competitive when it is used for backtesting resuls in faster performance. The test data is based on a return matrix of 30 securities with 2500 data points. 
+
+<style>
+table {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e5e5;
+    border-collapse: collapse;
+    margin-right : auto ;
+    font-size: 15px;
+    border-left: none;
+}
+table, th, td {
+padding : 5px ;
+background-color : #EEEEEE ;
+border: 1px solid white ;}
+</style>
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(rbenchmark)
+library(data.table)
+set.seed(1)
+NUM_ASSET  <- 30
+NUM_PERIOD <- 2500 
+HIST_RETURN <- matrix(rnorm(NUM_ASSET*NUM_PERIOD),NUM_PERIOD,NUM_ASSET)
+
+HRP_Weighting <- function(HIST_RETURN){
+  HRP_DM_Elementwise  <- distanceMatrix_elementwise(cor(HIST_RETURN))
+  HRP_DM_Rowwise      <- distanceMatrix_rowwise(HRP_DM_Elementwise)
+  HRP_Cluster         <- clusterMatrix(HRP_DM_Rowwise)
+  HRP_Index           <- clusterIndex(HRP_Cluster, cov(HIST_RETURN))
+  HRP_QUASIDIAG       <- quasiDiag(cov(HIST_RETURN), HRP_Index)
+  HRP_ALLOCATION      <- weightAllocation(HRP_QUASIDIAG, HRP_Index)
+  
+  return (HRP_ALLOCATION)
+}
+
+Result <- benchmark(HRP_Weighting(HIST_RETURN), replications = 1000)
+Result <- as.data.table(Result)
+
+kable(Result[, 2:3, with = FALSE])
+
+```
+
+## System and R-Packages Information
+
+```{r, echo=FALSE}
+sessionInfo()
+```
