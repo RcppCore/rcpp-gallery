@@ -416,7 +416,7 @@ HRP_Weighting <- function(HIST_RETURN){
 Result <- benchmark(HRP_Weighting(HIST_RETURN), replications = 1000)
 Result <- as.data.table(Result)
 
-kable(Result[, 2:3, with = FALSE])
+knitr::kable(Result[, 2:3, with = FALSE])
 
 ```
 
