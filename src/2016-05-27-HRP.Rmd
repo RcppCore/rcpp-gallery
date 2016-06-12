@@ -212,11 +212,8 @@ arma::mat flatCluster(int index, int threshold, NumericMatrix clusterMatrix){
     return temp_index;
   }
   
-  #pragma omp task shared(temp_index_a)
   temp_index_a = flatCluster(clusterMatrix(index - threshold - 1,1), threshold, clusterMatrix);
-  #pragma omp task shared(temp_index_b)
   temp_index_b = flatCluster(clusterMatrix(index - threshold - 1,0), threshold, clusterMatrix);
-  #pragma omp taskwait
   temp_index = join_rows(temp_index_a, temp_index_b);
   
   return temp_index;
@@ -232,16 +229,8 @@ arma::mat clusterIndex(NumericMatrix clusterMatrix, NumericMatrix MAT_COV){
   
   arma::mat assetIndex;
   
-  omp_set_nested(1);
-  
-  #pragma omp parallel 
-  {
-    #pragma omp single
-    {
-      assetIndex = join_rows(flatCluster(clusterMatrix(nrow_clusterMatrix - 1,1), num_asset, clusterMatrix), 
-                             flatCluster(clusterMatrix(nrow_clusterMatrix - 1,0), num_asset, clusterMatrix));
-    }
-  }
+  assetIndex = join_rows(flatCluster(clusterMatrix(nrow_clusterMatrix - 1,1), num_asset, clusterMatrix), 
+                         flatCluster(clusterMatrix(nrow_clusterMatrix - 1,0), num_asset, clusterMatrix));
   
   return assetIndex;
 }
