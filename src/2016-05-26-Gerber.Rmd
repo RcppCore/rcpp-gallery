@@ -124,7 +124,7 @@ mat GERBER_CORRELATION(arma::mat HIST_RETURN,
     CORRELATION_MAT.set_size(NCOL, NCOL);
     CORRELATION_MAT.fill(1);
   
-    for (i = 0; i < NCOL-1; i++) {
+    for (i = 0; i < NCOL; i++) {
         for (j = 0; j < i; j++) {
             if (i == j) {
                 CORRELATION_MAT.at(i,j) = 1;
@@ -282,7 +282,9 @@ NUM_PERIOD <- 2500
 HIST_RETURN <- matrix(rnorm(NUM_ASSET*NUM_PERIOD),NUM_PERIOD,NUM_ASSET)
 LOOKBACK <- 480
 
-stopifnot(identical(gerber.correlation(HIST_RETURN, LOOKBACK), GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK)))
+stopifnot(identical(gerber.correlation(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION(HIST_RETURN, LOOKBACK),
+                    GERBER_CORRELATION_PARALLEL_OMP(HIST_RETURN, LOOKBACK)))
 
 suppressMessages(library(rbenchmark))
 suppressMessages(library(data.table))
