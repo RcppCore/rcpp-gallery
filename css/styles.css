@@ -4,6 +4,11 @@ body {
   line-height: 20px;
 }
 
+p {
+  font-size: 15px;
+  line-height: 20px;
+}
+
 pre.output {
    background-color: white;
 }
