@@ -16,7 +16,6 @@ The following function `foo` transforms two numeric vectors into a
 third one:
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -39,7 +38,6 @@ NumericVector foo(NumericVector x, NumericVector y) {
 }
 {% endhighlight %}
 
-
 While this code is performant, the equivilant R code would be much shorter:
 
 {% highlight r %}
@@ -47,7 +45,6 @@ foo <- function(x, y){
    ifelse( x < y, x*x, -(y*y) )
 }
 {% endhighlight %}
-
 
 Rcpp sugar enables us to write C++ code that operates on entire vectors
 much like we do in R. Re-writing using the sugar `ifelse` function and
@@ -60,4 +57,3 @@ NumericVector fooSugar(NumericVector x, NumericVector y) {
    return ifelse( x < y, x*x, -(y*y) );
 }
 {% endhighlight %}
-

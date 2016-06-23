@@ -14,7 +14,6 @@ new matrix with the tranformed values. We do this by using
 the matrix:
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 #include <cmath>
@@ -35,7 +34,6 @@ NumericMatrix matrixSqrt(NumericMatrix orig) {
 }
 {% endhighlight %}
 
-
 Here we call the function from R:
 
 {% highlight r %}
@@ -46,8 +44,7 @@ matrixSqrt(m)
 
 
 <pre class="output">
-      [,1]  [,2]  [,3]
-[1,] 1.000 1.732 3.464
-[2,] 1.414 3.317 3.606
+         [,1]     [,2]     [,3]
+[1,] 1.000000 1.732051 3.464102
+[2,] 1.414214 3.316625 3.605551
 </pre>
-

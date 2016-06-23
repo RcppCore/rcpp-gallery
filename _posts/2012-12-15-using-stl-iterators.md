@@ -10,7 +10,6 @@ src: 2012-12-15-using-stl-iterators.cpp
 ---
 
 
-
 Iterators are used extensively in the STL: many functions either accept or 
 return iterators. They are the next step up from basic loops, abstracting 
 away the details of the underlying data structure. Iterators have three main 
@@ -31,7 +30,6 @@ double calculateSum(NumericVector x) {
   return total;
 }
 {% endhighlight %}
-
 
 Some differences to highlight about using iterators rather than 
 contentional for loop indexing:
@@ -57,7 +55,6 @@ double sum4(NumericVector x) {
   return std::accumulate(x.begin(), x.end(), 0.0);
 }
 {% endhighlight %}
-
 
 The third argument to accumulate gives the initial value: it's particularly
 important because this also determines the data type that accumulate uses
