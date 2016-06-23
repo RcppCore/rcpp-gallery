@@ -42,7 +42,7 @@ c(piR(1000), piR(10000), piR(100000), piR(1000000))
 
 
 <pre class="output">
-[1] 3.156 3.155 3.139 3.141
+[1] 3.156000 3.155200 3.139000 3.141008
 </pre>
 
 The neat thing about Rcpp sugar enables us to write C++ code that
@@ -76,5 +76,5 @@ c(piSugar(1000), piSugar(10000), piSugar(100000), piSugar(1000000))
 
 
 <pre class="output">
-[1] 3.156 3.155 3.139 3.141
+[1] 3.156000 3.155200 3.139000 3.141008
 </pre>

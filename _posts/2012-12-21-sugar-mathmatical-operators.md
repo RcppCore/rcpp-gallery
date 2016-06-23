@@ -13,7 +13,6 @@ R thanks to a little magic with Rcpp sugar. Here are some simple
 examples of their usage:
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -47,7 +46,6 @@ void applyOperators(NumericVector x, NumericVector y) {
 }
 {% endhighlight %}
 
-
 The above examples are rather simple, but it's also possible to 
 combine operators into more complex expressions. For example:
 
@@ -58,7 +56,6 @@ NumericVector computeResult(NumericVector x, NumericVector y) {
 }
 {% endhighlight %}
 
-
 {% highlight r %}
 computeResult(c(1,2,3), c(4,5,6))
 {% endhighlight %}
@@ -66,6 +63,5 @@ computeResult(c(1,2,3), c(4,5,6))
 
 
 <pre class="output">
-[1] 10.75 11.80 12.83
+[1] 10.75000 11.80000 12.83333
 </pre>
-

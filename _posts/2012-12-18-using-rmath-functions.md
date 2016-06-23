@@ -20,7 +20,6 @@ The short example below shows this for a simple function taking a vector,
 and returning its pnorm computed using the R `pnorm` function:
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 
@@ -37,7 +36,6 @@ Rcpp::NumericVector mypnorm(Rcpp::NumericVector x) {
 }
 {% endhighlight %}
 
-
 We can now use the function to compute the probability distribution: 
 
 {% highlight r %}
@@ -49,9 +47,8 @@ head(res)
 
 
 <pre class="output">
-[1] 0.5000 0.5004 0.5008 0.5012 0.5016 0.5020
+[1] 0.5000000 0.5003993 0.5007987 0.5011980 0.5015974 0.5019967
 </pre>
-
 
 Note that the C++ code, through its use via Rcpp attributes, will be augmented with 
 an automatic instantiation of a `RNGScope` object which ensures a proper state

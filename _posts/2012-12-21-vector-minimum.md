@@ -14,7 +14,6 @@ vector.
 
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -28,7 +27,6 @@ double vecmin(NumericVector x) {
 }
 {% endhighlight %}
 
-
 We can also use the iterator to compute the position, simply by
 taking the offset to the vector beginning.
 
@@ -41,7 +39,6 @@ int vecminInd(NumericVector x) {
   return it - x.begin();
 }
 {% endhighlight %}
-
 
 A quick illustration follows. Note that we pad the position by one to adjust for the 0-based versus 1-based indexing between C++ and R.
 
@@ -68,7 +65,6 @@ cat("Min is ", vecmin(x), " and at position ", vecminInd(x)+1, "\n")
 <pre class="output">
 Min is  11  and at position  5 
 </pre>
-
 
 Of course, we subsequently added `min` and `which_min` as sugar
 functions, but this example still illustrated how useful the STL

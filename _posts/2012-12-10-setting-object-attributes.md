@@ -14,7 +14,6 @@ attribute: `attr("names")`. The following code snippet illustrates these
 methods:
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -31,7 +30,6 @@ NumericVector attribs() {
 }
 {% endhighlight %}
 
-
 Here's what the object we created in C++ looks like in R:
 
 {% highlight r %}
@@ -43,9 +41,8 @@ attribs()
 <pre class="output">
 a b c 
 1 2 3 
-attr(,"my-attr")
-[1] "my-value"
-attr(,"class")
-[1] "my-class"
+attr(,&quot;my-attr&quot;)
+[1] &quot;my-value&quot;
+attr(,&quot;class&quot;)
+[1] &quot;my-class&quot;
 </pre>
-
