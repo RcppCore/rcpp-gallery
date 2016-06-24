@@ -1,9 +1,11 @@
 ---
-title: Working with Rcpp::StringVector
+title: Working with Rcpp&#58;&#58;StringVector
 author: Brian J. Knaus
 license: GPL (>= 2)
 tags: basics vector
-summary: Demonstrates creating and modifying Rcpp::StringVector
+summary: Demonstrates creating and modifying Rcpp&#58;&#58;StringVector
+layout: post
+src: 2016-06-23-working-with-Rcpp-StringVector.Rmd
 ---
 
 Vectors are fundamental containers in R.
@@ -25,23 +27,31 @@ The examples here can be copied and pasted into a text file named 'source.cpp' a
 Here we create a simple function which initializes an empty vector of three elements in size and returns it.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function() {
     Rcpp::StringVector myvector(3);
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 We can call this function from R as follows.
 
 
-```{r}
+
+{% highlight r %}
 x <- basic_function()
 x
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;&quot; &quot;&quot; &quot;&quot;
+</pre>
 
 
 The first two lines are pretty much mandatory and you should copy and paste them into all your code until you understand them.
@@ -66,7 +76,8 @@ We'll print the elements from within Rcpp.
 Then we'll return the vector to R.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function( Rcpp::StringVector myvector ) {
@@ -78,18 +89,49 @@ Rcpp::StringVector basic_function( Rcpp::StringVector myvector ) {
   
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 After we've compiled it we can call it from R.
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x1
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;banana&quot; &quot;orange&quot;
+</pre>
+
+
+
+{% highlight r %}
 x2 <- basic_function(x1)
+{% endhighlight %}
+
+
+
+<pre class="output">
+i is: 0, the element value is: apple
+i is: 1, the element value is: banana
+i is: 2, the element value is: orange
+</pre>
+
+
+
+{% highlight r %}
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;banana&quot; &quot;orange&quot;
+</pre>
 
 
 We see that the R vector contains the elements "apple", "banana" and "orange."
@@ -125,7 +167,8 @@ Accessing each element of a StringVector is similar to working with a std::strin
 Here we access each character of the second element of our StringVector.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 void basic_function(Rcpp::StringVector x) {
@@ -135,16 +178,28 @@ void basic_function(Rcpp::StringVector x) {
         Rcpp::Rcout << "\n";
     }
 }
-```
+{% endhighlight %}
 
 
 And call the code from R.
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+i is: 0, element is: b
+i is: 1, element is: a
+i is: 2, element is: n
+i is: 3, element is: a
+i is: 4, element is: n
+i is: 5, element is: a
+</pre>
 
 
 We see that we've accessed and printed the individual characters of the second element of the vector.
@@ -157,7 +212,8 @@ The modification of elements is fairly straight forward.
 We use the index (begining at zero) to modify the vector elements.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector x) {
@@ -166,15 +222,22 @@ Rcpp::StringVector basic_function(Rcpp::StringVector x) {
     myvector(2) = "kumquat";
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;      &quot;watermelon&quot; &quot;kumquat&quot;   
+</pre>
 
 
 We've successfully changed the second element from 'banana' to 'watermelon' and the third element from 'orange' to 'kumquat.'
@@ -189,20 +252,28 @@ If efficient use of memory is desired it is important to realize that pointers a
 This means we can create a function which returns void and modifies the elements we're interested in modifying without the overhead of copying the container.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 void basic_function(Rcpp::StringVector x) {
     x(1) = "watermelon";
 }
-```
+{% endhighlight %}
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 basic_function(x1)
 x1
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;      &quot;watermelon&quot; &quot;orange&quot;    
+</pre>
 
 
 ## Erasing elements
@@ -211,7 +282,8 @@ x1
 If we want to remove an element from a StringVector we can use the `.erase()` method.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector x) {
@@ -219,17 +291,24 @@ Rcpp::StringVector basic_function(Rcpp::StringVector x) {
     myvector.erase(1);
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 And see our changes with R code.
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;orange&quot;
+</pre>
 
 
 We see that we've erased the second element from the array.
@@ -245,7 +324,8 @@ Here I illustrate their use to remove an element and then add two elements.
 
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector x) {
@@ -260,17 +340,36 @@ Rcpp::StringVector basic_function(Rcpp::StringVector x) {
     x.push_back("kumquat");
     return x;
 }
-```
+{% endhighlight %}
 
 
 And implement our example in R.
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
+{% endhighlight %}
+
+
+
+<pre class="output">
+i is: 0, the element value is: apple
+i is: 1, the element value is: banana
+</pre>
+
+
+
+{% highlight r %}
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;   &quot;banana&quot;  &quot;avocado&quot; &quot;kumquat&quot;
+</pre>
 
 
 From the Rcpp output we see that we've removed the last element from the vector.
@@ -282,7 +381,8 @@ There does not appear to be 'push_front' or 'pop_front' methods, but we have the
 We use the erase and insert methods to push and pop to the front of our Rcpp::StringVector.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector x) {
@@ -293,18 +393,25 @@ Rcpp::StringVector basic_function(Rcpp::StringVector x) {
     x.insert(0, "kumquat");
     return x;
 }
-```
+{% endhighlight %}
 
 
 
 And implement our example in R.
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;kumquat&quot; &quot;avocado&quot; &quot;orange&quot; 
+</pre>
 
 
 In general, growing and shrinking data structures comes with a performance cost.
@@ -324,21 +431,29 @@ The Rcpp containers do support missing data to help make the interface between R
 We can see this by continuing our existing example, but use it to set the second element as missing.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector myvector) {
     myvector(1) = NA_STRING;
     return myvector;
 }
-```
+{% endhighlight %}
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  NA       &quot;orange&quot;
+</pre>
 
 
 ## Finding other methods
@@ -368,7 +483,8 @@ Conversion from an Rcpp:StringVector to a std::string is a compatible conversion
 This means we can accomplish this implicitly by simply setting the value of one container to the other.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector StringV_to_vstrings(Rcpp::StringVector StringV){
@@ -383,14 +499,21 @@ Rcpp::StringVector StringV_to_vstrings(Rcpp::StringVector StringV){
     return(StringV2);
 }
 
-```
+{% endhighlight %}
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- StringV_to_vstrings(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;banana&quot; &quot;orange&quot;
+</pre>
 
 Note that while we have to load each element of the std::vector<std::string> individually.
 However, the loading of the Rcpp::StringVector has been vectorized so that it works similar to R vectors.
@@ -403,7 +526,8 @@ In some instances we may need explicit type conversion.
 Rcpp provides an 'as' method to accomplish this.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector StringV_to_vstrings(Rcpp::StringVector StringV){
@@ -418,14 +542,21 @@ Rcpp::StringVector StringV_to_vstrings(Rcpp::StringVector StringV){
     return(StringV2);
 }
 
-```
+{% endhighlight %}
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 x2 <- StringV_to_vstrings(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;banana&quot; &quot;orange&quot;
+</pre>
 
 
 Type conversion is a lengthy topic and is frequently specific to the types which are being converted to and from.
@@ -440,7 +571,8 @@ This is another concept that is absent in C++.
 Again, the Rcpp objects implement attributes to help us and to maintain a behavior that is similar to R.
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector myvector) {
@@ -449,18 +581,37 @@ Rcpp::StringVector basic_function(Rcpp::StringVector myvector) {
     myvector.attr("names") = mystrings;
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 names(x1) <- c("pome", "berry", "hesperidium")
 x1
+{% endhighlight %}
 
+
+
+<pre class="output">
+       pome       berry hesperidium 
+    &quot;apple&quot;    &quot;banana&quot;    &quot;orange&quot; 
+</pre>
+
+
+
+{% highlight r %}
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+    pome    berry   citrus 
+ &quot;apple&quot; &quot;banana&quot; &quot;orange&quot; 
+</pre>
 
 
 Here we've stored the names of the Rcpp:StringVector in a std::vector of strings.
@@ -471,7 +622,8 @@ If we store the values of our vector in a vector of std::string we lose our attr
 
 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 // [[Rcpp::export]]
 Rcpp::StringVector basic_function(Rcpp::StringVector myvector) {
@@ -482,16 +634,23 @@ Rcpp::StringVector basic_function(Rcpp::StringVector myvector) {
     myvector = mystrings;
     return myvector;
 }
-```
+{% endhighlight %}
 
 
 
-```{r}
+
+{% highlight r %}
 x1 <- c("apple", "banana", "orange")
 names(x1) <- c("pome", "berry", "hesperidium")
 x2 <- basic_function(x1)
 x2
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;apple&quot;  &quot;banana&quot; &quot;orange&quot;
+</pre>
 
 
 Note that while we can assign a vector of strings to a Rcpp::StringVector we can not do the inverse.
