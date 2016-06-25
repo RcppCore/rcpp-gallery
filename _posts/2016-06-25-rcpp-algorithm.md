@@ -14,11 +14,11 @@ Obviously this doesn't work and it raised the question "Why doesn't something mo
 semantics that can be used on arbitrary data structures?"  As a result, I set out to create a set of such functions following
 the pattern of `std::algorithm` in `Rcpp::algorithm`.
 
-## `Rcpp::algorithm`
+## Rcpp::algorithm
 Currently `Rcpp::algorithm` contains only a few simple functions, but if they are found to be useful, more will be added.
 Examples of using the currently implemented iterator-based functions are below.
 
-### `sum`, `sum_nona`, `prod`, and `prod_nona`
+### sum, sum_nona, prod, and prod_nona
 ```c++
 #include <Rcpp.h>
 
@@ -32,7 +32,7 @@ double sum_of_matrix_row(NumericMatrix m, int row) {
 }
 ```
 
-### `min`, `max`, and `mean`
+### min, max, and mean
 ```c++
 #include <Rcpp.h>
 
@@ -46,7 +46,7 @@ double mean_of_matrix_row(NumericMatrix m, int row) {
 }
 ```
 
-### `log`, `exp`, and `sqrt`
+### log, exp, and sqrt
 ```c++
 #include <Rcpp.h>
 
