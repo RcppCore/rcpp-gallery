@@ -2,7 +2,7 @@
 title: Rcpp::algorithm
 author: Daniel C. Dillon
 license: GPL (>= 2)
-tags:
+tags: sugar
 summary: Provides an overview of iterator based algorithms for Rcpp
 ---
 
