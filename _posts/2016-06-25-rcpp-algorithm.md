@@ -14,7 +14,7 @@ Obviously this doesn't work and it raised the question "Why doesn't something mo
 semantics that can be used on arbitrary data structures?"  As a result, I set out to create a set of such functions following
 the pattern of `std::algorithm` in `Rcpp::algorithm`.
 
-## `Rcpp::algorithm`
+## Rcpp::algorithm
 Currently `Rcpp::algorithm` contains only a few simple functions, but if they are found to be useful, more will be added.
 Examples of using the currently implemented iterator-based functions are below.
 
