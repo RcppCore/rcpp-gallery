@@ -1,11 +1,9 @@
 ---
-title: Rcpp&#58;&#58;algorithm
+title: Rcpp::algorithm
 author: Daniel C. Dillon
 license: GPL (>= 2)
 tags:
 summary: Provides an overview of iterator based algorithms for Rcpp
-layout: post
-src: 2016-06-25-rcpp-algorithm.Rmd
 ---
 
 ## Introduction
@@ -19,8 +17,7 @@ Currently `Rcpp::algorithm` contains only a few simple functions, but if they ar
 Examples of using the currently implemented iterator-based functions are below.
 
 ### sum, sum\_nona, prod, and prod\_nona
-
-{% highlight cpp %}
+```{r, engine='Rcpp'}
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -31,11 +28,10 @@ double sum_of_matrix_row(NumericMatrix m, int row) {
 
     return algorithm::sum(r.begin(), r.end());
 }
-{% endhighlight %}
+```
 
 ### min, max, and mean
-
-{% highlight cpp %}
+```{r, engine='Rcpp'}
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -46,11 +42,10 @@ double mean_of_matrix_row(NumericMatrix m, int row) {
 
     return algorithm::mean(r.begin(), r.end());
 }
-{% endhighlight %}
+```
 
 ### log, exp, and sqrt
-
-{% highlight cpp %}
+```{r, engine='Rcpp'}
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -64,7 +59,7 @@ NumericVector log_of_matrix_row(NumericMatrix m, int row) {
 
     return retval;
 }
-{% endhighlight %}
+```
 
 ## Additional Benefits
 Through the coding of these simple "algorithms", a few needs arose.
@@ -77,8 +72,7 @@ type and which type that would be.
 Second, the need arose for more information about `R` types.  This gave birth to the `Rcpp::algorithm::helpers::rtype` traits.  These
 are defined as follows:
 
-
-{% highlight cpp %}
+```{r, engine='Rcpp', eval = FALSE}
 template< typename T >
 struct rtype_helper {};
 
@@ -109,7 +103,7 @@ struct rtype {
     static inline RCPP_CONSTEXPR T ZERO() { return helper_type::ZERO(); }
     static inline RCPP_CONSTEXPR T ONE() { return helper_type::ONE(); }
 };
-{% endhighlight %}
+```
 
 These additional benefits may actually prove more useful than the algorithms themselves.  Only time will tell.
 
