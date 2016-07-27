@@ -130,3 +130,8 @@ Rcpp::NumericVector example_manually_hooked() {
 `RcppHoney` is a powerful tool for allowing different container types to interoperate
 under `Rcpp`.  It can save development time as well as help the user generate faster
 and more readable code.
+
+`RcppHoney` is available via [CRAN](http://cran.r-project.org) though as it is still
+in an alpha state and changing rapidly, it is recommended that you install it from
+source.  Source code is available at
+[github.com/dcdillon/RcppHoney](https://github.com/dcdillon/RcppHoney).
