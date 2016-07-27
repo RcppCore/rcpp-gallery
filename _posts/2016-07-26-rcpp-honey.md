@@ -76,11 +76,11 @@ traits::true_type has_na(const std::list< T, A > &val);
 
 // Tell RcppHoney that it needs to create basic (e.g. std::list + std::list) operators
 template< typename T, typename A >
-RcppHoney::traits::true_type needs_basic_operators(const std::list< T, A > &val);
+traits::true_type needs_basic_operators(const std::list< T, A > &val);
 
 // Tell RcppHoney that it needs to create scalar (e.g. std::list + int/double) operators
 template< typename T, typename A >
-RcppHoney::traits::true_type needs_scalar_operators(const std::list< T, A > &val);
+traits::true_type needs_scalar_operators(const std::list< T, A > &val);
 
 // Tell RcppHoney that this set of types is part of the FAMILY_USER + 1 family.
 // This is used in conjunction with needs_basic_operators.  If you have
@@ -88,7 +88,7 @@ RcppHoney::traits::true_type needs_scalar_operators(const std::list< T, A > &val
 // that are not part of the same family will have binary operators created
 // between them.
 template< typename T, typename A >
-RcppHoney::traits::int_constant< FAMILY_USER + 1 > family(const std::list< T, A > &val);
+traits::int_constant< FAMILY_USER + 1 > family(const std::list< T, A > &val);
 
 } // namespace hooks
 } // namespace RcppHoney
