@@ -1,9 +1,11 @@
 ---
 title: Armadillo subsetting
-author: Dirk Eddelbuettel and James Joseph Balamuta
+author: Dirk Eddelbuettel 
 license: GPL (>= 2)
 tags: armadillo matrix vector featured
 mathjax: true
+updated: Nov 19, 2016
+updateauthor: James Joseph Balamuta
 summary: This example shows how to subset Armadillo vectors and matrices 
     non-contiguous views
 layout: post
@@ -13,9 +15,9 @@ src: 2013-01-02-armadillo-subsetting.Rmd
 ## Introduction
 
 Subsetting in armadillo is a popular topic that frequently appears
-on StackOverflow. Prinicipally, the occurrences are due to unique approach
-that armadillo takes on performing subset operation. Within this topic, light will
-be shed on the applicable use of armadillo's subsetting capabilities as it
+on StackOverflow. Prinicipally, the occurrences are due to the unique approach
+that armadillo takes on performing subset operations. Within this topic, light
+will be shed on the applicable use of armadillo's subsetting capabilities as it
 relates to non-contiguous 
 [submatrix views](http://arma.sourceforge.net/docs.html#submat). 
 
@@ -53,11 +55,10 @@ v                   # Observe updated vector
 
 Within `armadillo`, the [`submatrix views`](http://arma.sourceforge.net/docs.html#submat) 
 that we are most interested in to replicate this behavior is `.elem()`. 
-The main difference of subsetting with this functions is the need to use an 
+The main difference of subsetting with this function is the need to use an 
 `arma::uvec` containing the locations of elements to extract. 
 The `u` prepended to the `vec` object standards for `unsigned int`, which are
-only able to store positive integer numbers (e.g.
-0, 1, 2,..., 42, and so on.)
+only able to store positive integer numbers (e.g. 0, 1, 2,..., 42, and so on.)
 
 
 {% highlight cpp %}
@@ -189,9 +190,9 @@ arma_sub_cond(v, 0.5, 1)
 
 As was the case with vectors, elements can be extracted from a matrix using
 both the [`arma::find`](http://arma.sourceforge.net/docs.html#find) function
-to generate IDs and the [`.elem()` function in submatrix views](http://arma.sourceforge.net/docs.html#submat)
-to extract values. For example, to know the values of `M * M'` that are greater or
-equal to 100, one could do:
+to obtain indices and the [`.elem()` function in submatrix views](http://arma.sourceforge.net/docs.html#submat)
+to extract values. For example, to know the values of `M * M'` that are greater 
+or equal to 100, one could do:
 
 
 {% highlight cpp %}
@@ -297,7 +298,7 @@ supply multiple matrix notations to
 was added. However, it requires a different matrix format than *R*. Instead of
 supplying the row and column as one *row* in the matrix, one must supply 
 each observation as a *column* in the matrix. That is, the subscript matrix
-must be $2 \times n$, where $n$ is the number of matrix locations. The first
+must be $$2 \times n$$, where $$n$$ is the number of matrix locations. The first
 row is associated with row location of the element in the matrix and 
 the second row is requires the column location of the element. 
 
@@ -346,7 +347,7 @@ matrix_locs(M, cpp_locs)   # Subset the matrix
 [1,]    4    3    8
 </pre>
 
-## Converting between `unsigned int` matrix types to standard `arma` types.
+## Converting between `umat` matrix types to standard `arma` types.
 
 Awhile back, on [StackOverflow
 question](http://stackoverflow.com/questions/10212247/conversion-from-armaumat-to-armamat),
