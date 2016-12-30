@@ -1,6 +1,7 @@
 ---
 title: Using the Rcpp Timer
 author: Dirk Eddelbuettel
+updated: Dec 30, 2016
 license: GPL (>= 2)
 tags: benchmark rng featured
 summary: This post shows how to use the Timer class in Rcpp
@@ -18,7 +19,6 @@ random number generation.
 A slightly modified version of that example follows below.
 
 
-
 {% highlight cpp %}
 #include <Rcpp.h>
 #include <Rcpp/Benchmark/Timer.h>
@@ -31,25 +31,27 @@ NumericVector useTimer() {
 
     // start the timer
     Timer timer;
-    for(int i=0; i<n; i++) {
+    timer.step("start");        // record the starting point
+
+    for (int i=0; i<n; i++) {
         GetRNGstate();
         PutRNGstate();
     }
-    timer.step("get/put") ;
+    timer.step("get/put");      // record the first step
 
-    for(int i=0; i<n; i++) {
+    for (int i=0; i<n; i++) {
         GetRNGstate();
         rnorm(10, 0.0, 1.0);
         PutRNGstate();
     }
-    timer.step("g/p+rnorm()");
+    timer.step("g/p+rnorm()");  // record the second step
 
-    for(int i=0; i<n; i++) {
+    for (int i=0; i<n; i++) {
         // empty loop
     }
-    timer.step( "empty loop" ) ;
+    timer.step("empty loop");   // record the final step
 
-    NumericVector res(timer);
+    NumericVector res(timer);   // 
     for (int i=0; i<res.size(); i++) {
         res[i] = res[i] / n;
     }
@@ -57,20 +59,33 @@ NumericVector useTimer() {
 }
 {% endhighlight %}
 
-
-We get the following result, each expressing the cost per iteration in nanoseconds:
+We get the following result, each expressing the cost per iteration in nanoseconds, 
+both cumulative (default) and incrementally (by taking differences).
 
 {% highlight r %}
-useTimer()
+res <- useTimer()
+res          # normal results: cumulative
+{% endhighlight %}
+
+
+
+<pre class="output">
+      start     get/put g/p+rnorm()  empty loop 
+   0.000156 1571.057133 3920.082384 3920.085223 
+</pre>
+
+
+
+{% highlight r %}
+diff(res)    # simple difference
 {% endhighlight %}
 
 
 
 <pre class="output">
     get/put g/p+rnorm()  empty loop 
-  1.967e+03   3.288e+03   6.400e-04 
+1571.056977 2349.025251    0.002839 
 </pre>
-
 
 The interesting revelation is that *repeatedly* calling
 `GetRNGstate()` and `PutRNGstate()` can amount to about 60% of the
