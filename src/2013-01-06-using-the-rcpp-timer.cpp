@@ -2,6 +2,7 @@
 /**
  * @title Using the Rcpp Timer
  * @author Dirk Eddelbuettel
+ * @updated Dec 30, 2016
  * @license GPL (>= 2)
  * @tags benchmark rng featured
  * @summary This post shows how to use the Timer class in Rcpp
@@ -29,25 +30,27 @@ NumericVector useTimer() {
 
     // start the timer
     Timer timer;
-    for(int i=0; i<n; i++) {
+    timer.step("start");        // record the starting point
+
+    for (int i=0; i<n; i++) {
         GetRNGstate();
         PutRNGstate();
     }
-    timer.step("get/put") ;
+    timer.step("get/put");      // record the first step
 
-    for(int i=0; i<n; i++) {
+    for (int i=0; i<n; i++) {
         GetRNGstate();
         rnorm(10, 0.0, 1.0);
         PutRNGstate();
     }
-    timer.step("g/p+rnorm()");
+    timer.step("g/p+rnorm()");  // record the second step
 
-    for(int i=0; i<n; i++) {
+    for (int i=0; i<n; i++) {
         // empty loop
     }
-    timer.step( "empty loop" ) ;
+    timer.step("empty loop");   // record the final step
 
-    NumericVector res(timer);
+    NumericVector res(timer);   // 
     for (int i=0; i<res.size(); i++) {
         res[i] = res[i] / n;
     }
@@ -55,11 +58,14 @@ NumericVector useTimer() {
 }
 
 /**
- * We get the following result, each expressing the cost per iteration in nanoseconds:
+ * We get the following result, each expressing the cost per iteration in nanoseconds, 
+ * both cumulative (default) and incrementally (by taking differences).
  */
 
 /*** R
-useTimer()
+res <- useTimer()
+res          # normal results: cumulative
+diff(res)    # simple difference
 */
 
 /**
