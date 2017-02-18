@@ -8,12 +8,12 @@ summary: Using Armadillo with the SuperLU solver
 
 [Armadillo](http://arma.sourceforge.net/) is very versatile C++ library for linear algebra, brough
 to R via the [RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html) package.  It
-have proven to be very useful and popular, and is (as of February 2017) used by well over 300 CRAN
+has proven to be very useful and popular, and is (as of February 2017) used by well over 300 CRAN
 packages as indicated by the reverse depends / linking-to on its
 [CRAN page](https://cran.r-project.org/package=RcppArmadillo).  Several earlier posts here on the
-Rcpp Gallery also demonstrate its use.
+Rcpp Gallery also demonstrate different usage patterns.
 
-[Armadillo](http://arma.sourceforge.net/) has an initial focus on dense matrices, but continues to
+[Armadillo](http://arma.sourceforge.net/) has a core focus on dense matrices, but continues to
 expand its capabilities for sparse matrices.  Basic operation are supported directly via the
 templated header files, along with calls back into the default (dense) LAPACK and BLAS libraries we
 can access easily as R uses them.
@@ -22,31 +22,34 @@ can access easily as R uses them.
 [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) package.  _However_, this requires access to
 the [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) library.  Many Linux distributions ship
 it, see e.g. the [Debian package page](https://packages.debian.org/source/sid/armadillo) and the
-Ubuntu package page](http://packages.ubuntu.com/source/yakkety/superlu); there is also a
+[Ubuntu package page](http://packages.ubuntu.com/source/yakkety/superlu); there is also a
 [homebrew recipe](https://github.com/Homebrew/homebrew-science/blob/master/superlu.rb) for OS X /
-macOS (or other systems using `brew`).  (As of this writing, the version in the current Ubuntu
+macOS (or other systems using `brew`).  As of this writing, the version in the current Ubuntu
 release is behind the version Debian. But it is the 5.2.* version that is in Debian that is also
-required with current Armadillo versions 7.700.* so I prepared 'backports' via
-[my PPA repo](https://launchpad.net/~edd/+archive/ubuntu/misc/+packages).)
+required with current Armadillo versions 7.700.* so we prepared 'backports' via
+[Dirk's PPA repo](https://launchpad.net/~edd/+archive/ubuntu/misc/+packages).)
 
 Recently, a [GitHub issue ticket](https://github.com/RcppCore/RcppArmadillo/issues/120) asked how to
 use [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) along with
 [RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html).  This post essentially
-repeats the main answer which was spread out over multiple posts in a single article.
+repeats the main answer, which was spread out over multiple posts, in a single article.
 
 In a nutshell, two things need to happen:
 
-1. Define required variable `ARMA_USE_SUPERLU` which has to be done before the Armadillo headers are
-included.  One possibility (shown below) is a `#define` statement right in the code file.
+1. One needs to define the required variable `ARMA_USE_SUPERLU` which has to be done before the
+Armadillo headers are included.  One possibility (shown below) is a `#define` statement right in the
+code file.
 
-2. Tell the linker to use the [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) library. This
-step is of course not perfectly portable, and does require that the library be installed.
+2. One needs to tell the linker to use the [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/)
+library. This step is of course not perfectly portable, and does require that the library be
+installed. (A genuinely portable solution would either need to test for presence of SuperLU, or include its
+sources.  Both aspects are beyond the scope of this post._
 
 ```{r}
 Sys.setenv("PKG_LIBS"="-lsuperlu")
 ```
 
-Now that R knows add this library, we can present the code requiring it:
+Now that R knows about this library, we can present the code requiring it:
 
 
 ```{r, engine="Rcpp"}
@@ -78,8 +81,7 @@ void superLuDemo() {
 }
 ```
 
-This code snippet defines a function `superLuDemo()`
-which we can calling from R:
+This code snippet defines a function `superLuDemo()` which we can call from R:
 
 ```{r}
 superLuDemo()
