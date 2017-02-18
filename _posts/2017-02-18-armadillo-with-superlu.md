@@ -1,0 +1,100 @@
+---
+title: "Using Armadillo with SuperLU"
+author: "Qiang Kou and Dirk Eddelbuettel"
+license: GPL (>= 2)
+tags: armadillo sparse
+summary: Using Armadillo with the SuperLU solver
+layout: post
+src: 2017-02-18-armadillo-with-superlu.Rmd
+---
+
+[Armadillo](http://arma.sourceforge.net/) is very versatile C++ library for linear algebra, brough
+to R via the [RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html) package.  It
+have proven to be very useful and popular, and is (as of February 2017) used by well over 300 CRAN
+packages as indicated by the reverse depends / linking-to on its
+[CRAN page](https://cran.r-project.org/package=RcppArmadillo).  Several earlier posts here on the
+Rcpp Gallery also demonstrate its use.
+
+[Armadillo](http://arma.sourceforge.net/) has an initial focus on dense matrices, but continues to
+expand its capabilities for sparse matrices.  Basic operation are supported directly via the
+templated header files, along with calls back into the default (dense) LAPACK and BLAS libraries we
+can access easily as R uses them.
+
+[Armadillo](http://arma.sourceforge.net/) also supports dedicated sparse solvers via the
+[SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) package.  _However_, this requires access to
+the [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) library.  Many Linux distributions ship
+it, see e.g. the [Debian package page](https://packages.debian.org/source/sid/armadillo) and the
+Ubuntu package page](http://packages.ubuntu.com/source/yakkety/superlu); there is also a
+[homebrew recipe](https://github.com/Homebrew/homebrew-science/blob/master/superlu.rb) for OS X /
+macOS (or other systems using `brew`).  (As of this writing, the version in the current Ubuntu
+release is behind the version Debian. But it is the 5.2.* version that is in Debian that is also
+required with current Armadillo versions 7.700.* so I prepared 'backports' via
+[my PPA repo](https://launchpad.net/~edd/+archive/ubuntu/misc/+packages).)
+
+Recently, a [GitHub issue ticket](https://github.com/RcppCore/RcppArmadillo/issues/120) asked how to
+use [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) along with
+[RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html).  This post essentially
+repeats the main answer which was spread out over multiple posts in a single article.
+
+In a nutshell, two things need to happen:
+
+1. Define required variable `ARMA_USE_SUPERLU` which has to be done before the Armadillo headers are
+included.  One possibility (shown below) is a `#define` statement right in the code file.
+
+2. Tell the linker to use the [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/) library. This
+step is of course not perfectly portable, and does require that the library be installed.
+
+
+{% highlight r %}
+Sys.setenv("PKG_LIBS"="-lsuperlu")
+{% endhighlight %}
+
+Now that R knows add this library, we can present the code requiring it:
+
+
+
+{% highlight cpp %}
+// Important: this definition ensures Armadillo enables SuperLU
+#define ARMA_USE_SUPERLU 1
+
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+
+using namespace arma;
+
+// [[Rcpp::export]]
+void superLuDemo() {
+    sp_mat A = sprandu<sp_mat>(1000, 1000, 0.1);
+
+    vec b = randu<vec>(1000);
+    mat B = randu<mat>(1000, 5);
+
+    vec x = spsolve(A, b);  // solve one system
+    mat X = spsolve(A, B);  // solve several systems
+
+    bool status = spsolve(x, A, b);  // use default solver
+    if (status == false)  { Rcpp::Rcout << "no solution" << endl; }
+
+    spsolve(x, A, b, "lapack");   // use LAPACK  solver
+    spsolve(x, A, b, "superlu");  // use SuperLU solver
+
+    Rcpp::Rcout << "Done.\n";
+}
+{% endhighlight %}
+
+This code snippet defines a function `superLuDemo()`
+which we can calling from R:
+
+
+{% highlight r %}
+superLuDemo()
+{% endhighlight %}
+
+
+
+<pre class="output">
+Done.
+</pre>
+
+As the data generated here is random, we did not bother printing the (dense) result vector of
+length 1000.
