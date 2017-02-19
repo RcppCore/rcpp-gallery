@@ -1,0 +1,183 @@
+---
+title: "Using Rcpp with C++11, C++14 and C++17"
+author: "Dirk Eddelbuettel"
+license: GPL (>= 2)
+tags: c++11 c++14 c++17 featured
+summary: "Rcpp supports any C++ variant: from C++98 to C++11, C++14 and now C++17"
+---
+
+### Background
+
+When we started the Rcpp Gallery in late 2012, a few of us spent the next four weeks diligently
+writing articles ensuring that at least one new article would be posted per day. Two early articles
+covered the then-budding support for C++11.  Both
+[First steps in using C++11 with Rcpp](http://gallery.rcpp.org/articles/first-steps-with-C++11/) and
+[A first lambda function with C++11 and Rcpp](http://gallery.rcpp.org/articles/simple-lambda-func-c++11/)
+started by actually showing how to set the compiler directive via the `PKG_CXXFLAGS` environment
+variable.
+
+Both posts were updated a few months later to demonstrate the C++11 plugin that was added in Rcpp
+release 0.10.3 in March of 2013, or almost four years ago.  Many posts here, on
+[StackOverflow](http://stackoverflow.com/questions/tagged/rcpp) and of course on the mailing list
+make use of the plugin to tell the compiler to turn on C++11 support.  In the early days, this often
+meant partial support via (in the case of `g++`) the `-std=c++0x` switch. This is still
+[supported by Rcpp](https://github.com/RcppCore/Rcpp/blob/f99737edbbe699c0128a735518af91a7f1d986da/R/Attributes.R#L464)
+as in particular the Windows side of things was relying on older compilers like g++ version 4.6.*
+until more recently (see below).
+
+But some things got a lot better with R 3.1.0.  As the
+[NEWS announcement](https://stat.ethz.ch/pipermail/r-announce/2014/000572.html) dryly noted: _There
+is support for compiling C++11 code in packages on suitable platforms: see ‘Writing R Extensions’._
+which was coupled with support for selecting the C++11 language standard via either `CXX_STD` in
+`src/Makevars`, or the `SystemRequirements` line in `DESCRIPTION`. In late 2011, Martyn Plummer also
+wrote a helpful
+[R Journal article](https://journal.r-project.org/archive/2011-2/RJournal_2011-2_Plummer.pdf) on
+best practices for portable C++ packages.
+
+And as we alluded to above, Rcpp has supported C++11 since the dawn of time (because, as we detail
+below, it ultimately comes down what your compiler supports, and what R facilitates).  Many CRAN
+packages have by now taken advantage of this increased support for C++11 in particular.  As of
+today, we see 88 CRAN packages declaring this via `DESCRIPTION` and 127 CRAN package via
+`src/Makevars`.  And of course, almost all use Rcpp along with C++ to take advantage of the R and
+C++ integration it offers.
+
+### Rcpp: Sitting between your Compiler and R
+
+So what are the defining parameters for support by Rcpp?  In essence, Rcpp is guided by just two
+(external) factors:
+
+- the support in the provided compiler, and 
+
+- the support offered by R for package building,
+
+and both are worth detailing as we do in the next two sections.. 
+
+### Compiler Support
+
+First, the choice of compiler matters. Rcpp operates on top of R, and (like any R package) it is
+driven entirely by the build instructions from R.  It can therefore be dependent on the compiler
+choices offered by R.  This meant g++ version 4.6.3 for Windows for years.  And this got a lot
+better when Rtools switched to g++ version 4.9.3 with R 3.3.0 not quite a year ago.  It now means
+that support for C++11 is almost universal.  (Some small things are still missing in `g++-4.9.3`;
+notably complete support for the C++ Standard Library leading us recently to
+[backport `get_time` from LLVM into RcppCCTZ](https://github.com/eddelbuettel/rcppcctz/pull/11). Also
+note that macOS / OS X has its own dependency chain due to compiler, and release, choices made by
+the R package build system for that platform.)
+
+Now, that is just the minimum available compiler for a particular platform, albeit a very important
+one as it defines what _binary_ CRAN packages on Windows can support.  Other platforms, however,
+have a faster release cadence.  `g++-5` and `clang++-3.3` are now fairly common and have
+(near-)complete C++11 support.  The most recent Ubuntu release 16.10 even defaults to g++ version
+6.2.0, and Debian already has version 6.3.0 (and binaries of version 7.* in its experimental
+branch). Similarly, recent version of clang are available both directly in the distributoin and via
+nightly builds from dedicated PPAs.
+
+And for these '6.*' version of `g++`, the default C++ standard++ is already C++14, the follow-up
+standard release to C++11.  For example, C++14 extends support for `auto` to return values so that
+we can compile a simple program such as
+
+```{r, engine="Rcpp"}
+#include <iostream>
+
+auto doubleMe(const int & x) {
+    return x+x;
+}
+
+int main(void) {
+    std::cout << "1.0         -> " << doubleMe(1.0) << "\n"
+              << "1           -> " << doubleMe(1)   << "\n"
+              << std::endl;
+}
+```
+
+withour _any_ additional switches or flags if the compiler is as recent as g++ version 6. A plain
+`g++ -o demoprog demoprog.cpp` will do (provided the snippet was saved as file demoprogr.cpp) as
+C++14 is the default for this compiler.  Otherwise, adding `-std=c++14` explicitly instruct the
+compiler to compile as C++14.
+
+Moreover, it also works for R:
+
+```{r}
+Rcpp::cppFunction("auto doubleMe(const int &x) { return x + x; }")
+doubleMe(1L)
+doubleMe(1)
+```
+
+(on a machine such as the one used to write this piece) without requiring any additional plugins.
+As a reminder, `cppFunction()` supports these via the `plugin=` argument. On another machine, we
+might use `Rcpp::cppFunction("auto doubleMe(const int &x) { return x + x; }", plugin="cpp14")`.
+Similarly, in code sourced via `sourceCpp()` we would use an attribute; see the
+[Rcpp Attributes](https://cloud.r-project.org/package=Rcpp/vignettes/Rcpp-attributes.pdf) vignette
+for details.
+
+
+### Support by R for Packages: C++14 coming soon via R-devel
+
+As noted above, the R 3.1.0 release started to add support for modern C++ by enabling packages to
+select C++11.
+
+The next release will be R 3.4.0. While as of now without an announced release date, it is likely to
+be shipped this April. It will bring support for C++14.  The current draft of its version of
+_Writing R Extenions_ shows that `CXX_STD = CXX14` can be used to select this language standard in a
+package. Several build variables extend support to `CXX1Y` beyond the existing `CXX1X`, see the
+_Writing R Extenions_ manual for full details.
+
+To illustrate, on a machine with `g++` version 6.*, nothing has to be turned on for C++14 in what
+will be R 3.4.0.
+
+```{sh, eval=FALSE}
+edd@max:~$ grep "^CXX/*STD" /usr/local/lib/R-devel/lib/R/etc/Makeconf 
+CXX98STD = -std=gnu++98
+CXX1XSTD = -std=gnu++11
+CXX1YSTD = 
+edd@max:~$ 
+```
+
+On a machine where `g++-5` is the default, the `CXX1XSTD` value may be empty as this compiler
+defaults to C++11; we would expect `CXX1YSTD = -std=c++14` there (or the 'gnu' variant).
+
+As we noted above, well over one-hundred packages on CRAN already use C++11.  We expect to see C++14
+being used once R 3.4.0 is released later this spring
+
+### Extensions on the Rcpp side: C++17
+
+As we wrote in the opening paragraph, a plugin for C++11 has been part of Rcpp for several years.
+And a plugin for C++14 was added by Dan in Rcpp 0.12.4 about a year ago.  
+
+The current development sources of Rcpp, corresponding to interim GitHub release 0.12.9.3, added a
+plugin for C++17 as experimental support exists in g++ and clang++ right now.  With that, a suitably
+recent compiler, and a version of Rcpp that is at least release 0.12.9.3, the following example
+(motivated by this example section of the
+[C++ Standard post](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html#any)) also
+builds:
+
+```{r, engine="Rcpp"}
+#include <experimental/any>
+
+// [[Rcpp::plugins(cpp17)]]                                        
+
+// [[Rcpp::export]]
+void useAny() {
+    std::experimental::any x(5);
+    // some more here ...
+    x = "cat";
+}
+```
+
+### Summary
+
+This note discussed where Rcpp stands with respect to "modern C++". As a brief summary:
+
+- Rcpp supports any C++ language standard the underlying compiler supports: C++98, C++11, C++14, 
+  C++17;
+
+- Packages using Rcpp can deploy every language standard suppported by R: currently C++, C++11 and
+  very soon C++14;
+  
+- Package distribution may need to reflect the build infracture; on Windows this means `g++-4.9.3`
+  with near-complete C++11 support;
+
+- Local developement can be more experimental and even C++17 is now supported by Rcpp as well;
+
+- Portable packages should specify the C++ language standard they expect (unless it is C++98).
+
