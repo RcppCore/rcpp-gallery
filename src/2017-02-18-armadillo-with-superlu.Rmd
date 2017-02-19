@@ -6,12 +6,13 @@ tags: armadillo sparse
 summary: Using Armadillo with the SuperLU solver
 ---
 
-[Armadillo](http://arma.sourceforge.net/) is very versatile C++ library for linear algebra, brough
-to R via the [RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html) package.  It
-has proven to be very useful and popular, and is (as of February 2017) used by well over 300 CRAN
+[Armadillo](http://arma.sourceforge.net/) is a very versatile C++ library for linear algebra,
+brought to R via the [RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html) package.
+It has proven to be very useful and popular, and is (as of February 2017) used by well over 300 CRAN
 packages as indicated by the reverse depends / linking-to on its
-[CRAN page](https://cran.r-project.org/package=RcppArmadillo).  Several earlier posts here on the
-Rcpp Gallery also demonstrate different usage patterns.
+[CRAN page](https://cran.r-project.org/package=RcppArmadillo).
+[Well over a dozen earlier posts](http://gallery.rcpp.org/tags/armadillo/) on this Rcpp Gallery site
+also demonstrate the popularity of the package as well as different usage patterns.
 
 [Armadillo](http://arma.sourceforge.net/) has a core focus on dense matrices, but continues to
 expand its capabilities for sparse matrices.  Basic operation are supported directly via the
