@@ -1,0 +1,220 @@
+---
+title: "RcppMLPACK2 and the MLPACK Machine Learning Library"
+author: "Dirk Eddelbuettel"
+license: GPL (>= 2)
+tags: machine_learning armadillo mlpack
+summary: "RcppMLPACK2 bring access to MLPACK to R"
+---
+
+### mlpack 
+
+[mlpack](http://www.mlpack.org/) is, to quote, _a scalable machine learning library, written in C++,
+that aims to provide fast, extensible implementations of cutting-edge machine learning
+algorithms_. It has been written by [Ryan Curtin](http://www.ratml.org/) and others, and is
+described in two papers in [BigLearning (2011)](http://www.mlpack.org/papers/mlpack2011.pdf) and
+[JMLR (2013)](http://www.mlpack.org/papers/mlpack2013.pdf). [mlpack](http://www.mlpack.org/) uses
+[Armadillo](http://arma.sf.net) as the underlying linear algebra library, which, thanks to
+[RcppArmadillo](http://dirk.eddelbuettel.com/code/rcpp.armadillo.html), is already a rather
+well-known library in the R ecosystem.
+
+### RcppMLPACK1
+
+[Qiang Kou](https://github.com/thirdwing) has created the
+[RcppMLPACK package on CRAN](https://cran.r-project.org/package=RcppMLPACK) for easy-to-use
+integration of [mlpack](http://www.mlpack.org/) with R. It integrates the
+[mlpack](http://www.mlpack.org/) sources, and is, as a CRAN package, widely available on all
+platforms. 
+
+However, this [RcppMLPACK](https://cran.r-project.org/package=RcppMLPACK) package is also based on a
+by-now dated version of [mlpack](http://www.mlpack.org/).  Quoting again: _mlpack provides these
+algorithms as simple command-line programs and C++ classes which can then be integrated into
+larger-scale machine learning solutions._ Version 2 of the [mlpack](http://www.mlpack.org/) sources
+switched to a slightly more encompassing build also requiring the [Boost](https://www.boost.org)
+libraries 'program_options', 'unit_test_framework' and 'serialization'.  Within the context of an R
+package, we could condition out the first two as R provides both the direct interface (hence no need
+to parse command-line options) and also the testing framework.  However, it would be both difficult
+and potentially undesirable to condition out the serialization which allows
+[mlpack](http://www.mlpack.org/) to store and resume machine learning tasks.
+
+We refer to this version now as [RcppMLPACK1](https://github.com/thirdwing/RcppMLPACK1).
+
+### RcppMLPACK2
+
+As of February 2017, the current version of [mlpack](http://www.mlpack.org/) is 2.1.1.  As it
+requires external linking with (some) [Boost](https://www.boost.org) libraries as well as with
+[Armadillo](http://arma.sf.net), we have created a new package
+[RcppMLPACK2](https://github.com/rcppmlpack/rcppmlpack2) inside a new
+[GitHub organization RcppMLPACK](https://github.com/rcppmlpack).
+
+#### Linux 
+This package works fine on Linux provided [mlpack](http://www.mlpack.org/),
+[Armadillo](http://arma.sf.net) and [Boost](https://www.boost.org) are installed.
+
+#### OS X / macOS
+
+For maxOS / OS X, [James Balamuta](http://thecoatlessprofessor.com/) has tried to set up a homebrew
+recipe but there are some tricky interaction with the compiler suites used by both brew and R on
+macOS.
+
+#### Windows
+
+For Windows, one could do what [Jeroen Ooms](https://github.com/jeroenooms) has done and build
+(external) libraries.  Volunteers are encouraged to get in touch via the issue tickets at GitHub.
+
+#### Installation from source
+
+Release are available from a [drat](http://dirk.eddelbuettel.com/code/drat.html) repository hosted
+in the GitHub orgranization RcppMLPACK.  So
+
+```{r, eval=FALSE}
+drat:::add("RcppMLPACK")         # first add the repo
+install.package("RcppMLPACK2")   # install the pacage
+update.packages()                # or update to newer one (if one exists)
+```
+
+will use this. If you prefer to rather pick a random commit state, 
+
+```{r, eval=FALSE}
+remotes::install_github("rcppmlpack/rcppmlpack2")
+```
+
+will work as well.
+
+### Example: Logistic Regression
+
+To illustrate [mlpack](http://www.mlpack.org/) we show a first simple example also included in the
+package.  As the rest of the Rcpp Gallery, these are "live" code examples.
+
+
+```{r, engine="Rcpp"}
+
+#include <RcppMLPACK.h>				// MLPACK, Rcpp and RcppArmadillo
+
+#include <mlpack/methods/logistic_regression/logistic_regression.hpp> 	// particular algorithm used here
+
+// [[Rcpp::depends(RcppMLPACK)]]
+
+// [[Rcpp::export]]
+Rcpp::List logisticRegression(const arma::mat& train,
+                              const arma::irowvec& labels,
+                              const Rcpp::Nullable<Rcpp::NumericMatrix>& test = R_NilValue) {
+    
+    // MLPACK wants Row<size_t> which is an unsigned representation
+    // that R does not have
+    arma::Row<size_t> labelsur, resultsur;
+
+    // TODO: check that all values are non-negative
+    labelsur = arma::conv_to<arma::Row<size_t>>::from(labels);
+
+    // Initialize with the default arguments.
+    // TODO: support more arguments>
+    mlpack::regression::LogisticRegression<> lrc(train, labelsur);
+    
+    arma::vec parameters = lrc.Parameters();
+
+    Rcpp::List return_val;
+    
+    if (test.isNotNull()) {
+        arma::mat test2 = Rcpp::as<arma::mat>(test);
+        lrc.Classify(test2, resultsur);
+        arma::vec results = arma::conv_to<arma::vec>::from(resultsur);
+        return_val = Rcpp::List::create(Rcpp::Named("parameters") = parameters,
+                                        Rcpp::Named("results") = results);
+    } else {
+        return_val = Rcpp::List::create(Rcpp::Named("parameters") = parameters);
+    }
+
+    return return_val;
+
+}
+```
+
+We can then call this function with the same (trivial) data set as used in the first unit test for
+it:
+
+```{r}
+logisticRegression(matrix(c(1, 2, 3, 1, 2, 3), nrow=2, byrow=TRUE), c(1L, 1L, 0L))
+```
+
+
+### Example: Naive Bayes Classifier
+
+A second examples shows the `NaiveBayesClassifier` class.
+
+
+```{r, engine="Rcpp"}
+#include <RcppMLPACK.h>				// MLPACK, Rcpp and RcppArmadillo
+
+#include <mlpack/methods/naive_bayes/naive_bayes_classifier.hpp> 	// particular algorithm used here
+
+// [[Rcpp::depends(RcppMLPACK)]]
+
+// [[Rcpp::export]]
+arma::irowvec naiveBayesClassifier(const arma::mat& train,
+                                   const arma::mat& test,
+                                   const arma::irowvec& labels,
+                                   const int& classes) {
+    
+    // MLPACK wants Row<size_t> which is an unsigned representation
+    // that R does not have
+    arma::Row<size_t> labelsur, resultsur;
+
+    // TODO: check that all values are non-negative
+    labelsur = arma::conv_to<arma::Row<size_t>>::from(labels);
+
+    // Initialize with the default arguments.
+    // TODO: support more arguments>
+    mlpack::naive_bayes::NaiveBayesClassifier<> nbc(train, labelsur, classes);
+    
+    nbc.Classify(test, resultsur);
+    
+    arma::irowvec results = arma::conv_to<arma::irowvec>::from(resultsur);
+    
+    return results;
+}
+```
+
+We need a quick helper function to get test data, again mimicking the unit tests:
+
+```{r, engine="Rcpp"}
+#include <RcppMLPACK.h>				// MLPACK, Rcpp and RcppArmadillo
+
+#include <mlpack/methods/naive_bayes/naive_bayes_classifier.hpp> 	// particular algorithm used here
+
+// [[Rcpp::depends(RcppMLPACK)]]
+
+
+// [[Rcpp::export]]
+Rcpp::List getData(const char* trainFilename, const char* testFilename) {
+    arma::mat trainData, testData;
+    mlpack::data::Load(trainFilename, trainData, true); // note implicit transpose
+    mlpack::data::Load(testFilename, testData, true);
+
+    // Get the labels, then remove them from data
+    arma::rowvec trainlabels = trainData.row(trainData.n_rows -1);
+    arma::rowvec testlabels = testData.row(testData.n_rows -1);
+    trainData.shed_row(trainData.n_rows - 1);
+    testData.shed_row(trainData.n_rows - 1);
+    return(Rcpp::List::create(Rcpp::Named("trainData")   = Rcpp::wrap(trainData),
+                              Rcpp::Named("testData")    = Rcpp::wrap(testData),
+                              Rcpp::Named("trainlabels") = trainlabels,
+                              Rcpp::Named("testlabels")  = testlabels));
+}
+```
+
+Now that we can fetch the data from R, and use it to call the classifier:
+
+```{r}
+rl <- getData("/home/edd/git/mlpack/src/mlpack/tests/data/trainSet.csv", # should add to RcppMLACK2
+              "/home/edd/git/mlpack/src/mlpack/tests/data/testSet.csv")
+trainData <- rl[["trainData"]]
+testData <- rl[["testData"]]
+trainlabels <- rl[["trainlabels"]]
+testlabels <- rl[["testlabels"]]
+res <- naiveBayesClassifier(trainData, testData, trainlabels, 2)
+## res was a rowvector but comes back as 1-row matrix                                       
+all.equal(res[1,],  testlabels)
+```
+
+As we can see, the computed classification on the test set corresponds to the expected
+classification in `testlabels`.
