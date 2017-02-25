@@ -164,11 +164,11 @@ A second examples shows the `NaiveBayesClassifier` class.
 // [[Rcpp::depends(RcppMLPACK)]]
 
 // [[Rcpp::export]]
-arma::irowvec naiveBayesClassifier(const arma::mat& train,
-                                   const arma::mat& test,
-                                   const arma::irowvec& labels,
-                                   const int& classes) {
-    
+Rcpp::List naiveBayesClassifier(const arma::mat& train,
+                                const arma::irowvec& labels,
+                                const int& classes,
+                                const Rcpp::Nullable<Rcpp::NumericMatrix>& test = R_NilValue) {
+
     // MLPACK wants Row<size_t> which is an unsigned representation
     // that R does not have
     arma::Row<size_t> labelsur, resultsur;
@@ -179,57 +179,79 @@ arma::irowvec naiveBayesClassifier(const arma::mat& train,
     // Initialize with the default arguments.
     // TODO: support more arguments>
     mlpack::naive_bayes::NaiveBayesClassifier<> nbc(train, labelsur, classes);
+
+    Rcpp::List return_val;
+    if (test.isNotNull()) {
+        arma::mat armatest = Rcpp::as<arma::mat>(test);
+        nbc.Classify(armatest, resultsur);
     
-    nbc.Classify(test, resultsur);
-    
-    arma::irowvec results = arma::conv_to<arma::irowvec>::from(resultsur);
-    
-    return results;
+        arma::irowvec results = arma::conv_to<arma::irowvec>::from(resultsur);
+        return Rcpp::List::create(Rcpp::Named("means") = nbc.Means(),
+                                  Rcpp::Named("variances") = nbc.Variances(),
+                                  Rcpp::Named("probabilities") = nbc.Probabilities(),
+                                  Rcpp::Named("classification") = results);
+    } else {
+        return Rcpp::List::create(Rcpp::Named("means") = nbc.Means(),
+                                  Rcpp::Named("variances") = nbc.Variances(),
+                                  Rcpp::Named("probabilities") = nbc.Probabilities());
+    }
 }
 {% endhighlight %}
 
-We need a quick helper function to get test data, again mimicking the unit tests:
-
-
-{% highlight cpp %}
-#include <RcppMLPACK.h>				// MLPACK, Rcpp and RcppArmadillo
-
-#include <mlpack/methods/naive_bayes/naive_bayes_classifier.hpp> 	// particular algorithm used here
-
-// [[Rcpp::depends(RcppMLPACK)]]
-
-
-// [[Rcpp::export]]
-Rcpp::List getData(const char* trainFilename, const char* testFilename) {
-    arma::mat trainData, testData;
-    mlpack::data::Load(trainFilename, trainData, true); // note implicit transpose
-    mlpack::data::Load(testFilename, testData, true);
-
-    // Get the labels, then remove them from data
-    arma::rowvec trainlabels = trainData.row(trainData.n_rows -1);
-    arma::rowvec testlabels = testData.row(testData.n_rows -1);
-    trainData.shed_row(trainData.n_rows - 1);
-    testData.shed_row(trainData.n_rows - 1);
-    return(Rcpp::List::create(Rcpp::Named("trainData")   = Rcpp::wrap(trainData),
-                              Rcpp::Named("testData")    = Rcpp::wrap(testData),
-                              Rcpp::Named("trainlabels") = trainlabels,
-                              Rcpp::Named("testlabels")  = testlabels));
-}
-{% endhighlight %}
-
-Now that we can fetch the data from R, and use it to call the classifier:
+We can use the sample data included in recent-enough version of the RcppMLPACK package:
 
 
 {% highlight r %}
-rl <- getData("/home/edd/git/mlpack/src/mlpack/tests/data/trainSet.csv", # should add to RcppMLACK2
-              "/home/edd/git/mlpack/src/mlpack/tests/data/testSet.csv")
-trainData <- rl[["trainData"]]
-testData <- rl[["testData"]]
-trainlabels <- rl[["trainlabels"]]
-testlabels <- rl[["testlabels"]]
-res <- naiveBayesClassifier(trainData, testData, trainlabels, 2)
-## res was a rowvector but comes back as 1-row matrix                                       
-all.equal(res[1,],  testlabels)
+library(RcppMLPACK)
+data(trainSet)                ## data part of RcppMLPACK package (when using RcppMLPACK2 source)
+trainmat <- t(trainSet[, -5]) ## train data
+trainlab <- trainSet[, 5]     ## labels
+naiveBayesClassifier(trainmat, trainlab, 2L)                   ## just model
+{% endhighlight %}
+
+
+
+<pre class="output">
+$means
+[1] 2.75000 4.00000 3.68750 2.37500 8.33333 4.66667 3.66667 2.40000
+
+$variances
+[1] 0.333333 0.800000 0.629167 0.383333 0.809524 3.380952 0.666667 0.400000
+
+$probabilities
+[1] 0.516129 0.483871
+</pre>
+
+
+
+{% highlight r %}
+testmat <- t(testSet[, -5])   ## test data
+testlab <- testSet[, 5]             
+res <- naiveBayesClassifier(trainmat, trainlab, 2L, testmat)   ## also classify
+res
+{% endhighlight %}
+
+
+
+<pre class="output">
+$means
+[1] 2.75000 4.00000 3.68750 2.37500 8.33333 4.66667 3.66667 2.40000
+
+$variances
+[1] 0.333333 0.800000 0.629167 0.383333 0.809524 3.380952 0.666667 0.400000
+
+$probabilities
+[1] 0.516129 0.483871
+
+$classification
+[1] 0 0 0 1 1 1 1
+</pre>
+
+
+
+{% highlight r %}
+## res was a rowvector but comes back as 1-row matrix
+all.equal(res[[4]],  testlab)
 {% endhighlight %}
 
 
@@ -237,6 +259,7 @@ all.equal(res[1,],  testlabels)
 <pre class="output">
 [1] TRUE
 </pre>
+
 
 As we can see, the computed classification on the test set corresponds to the expected
 classification in `testlabels`.
