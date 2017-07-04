@@ -12,7 +12,7 @@
  * for other CRAN packages. JJ and Romain chipped in as well, and Jay finally took the lead by first creating a 
  * [repo on R-Forge](http://boostheaders.r-forge.r-project.org/). And now the package is out, so what follows is a little demo.
  *
- * This example borrows something already implemented in my [RcppBDT]((http://cran.r-project.org/package=RcppBDT) package which wraps
+ * This example borrows something already implemented in my [RcppBDT](http://cran.r-project.org/package=RcppBDT) package which wraps
  * code from [Boost Date_Time](http://www.boost.org/doc/libs/1_52_0/doc/html/date_time.html) for R.  
  * Here, we compute the so-called [IMM Date](http://en.wikipedia.org/wiki/IMM_dates) -- generally the
  * the third Wednesday of the month (in the last month of the quarter).  Boost has a function computing the _Nth day of the Mth week_ 
