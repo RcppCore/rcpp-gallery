@@ -3,6 +3,8 @@ title: Using RcppProgress to control the long computations in C++
 author: Karl Forner
 license: GPL (>= 2)
 tags: interrupt openmp
+updated: Jul 09, 2017
+updateauthor: Matt Dziubinski
 summary: Demonstrates how to display a progress bar and interrupt C++ code.
 ---
 
@@ -92,6 +94,7 @@ it at a place called at least every second.
 ```{r long_computation3, engine="Rcpp"}
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
+#include <progress_bar.hpp>
 // [[Rcpp::export]]
 double long_computation3(int nb, bool display_progress=true) {
     double sum = 0;
@@ -115,14 +118,15 @@ double long_computation3(int nb, bool display_progress=true) {
 
 ## OpenMP support
 
-First we need this to enable OpenMP support for gcc:
+First we need this to enable OpenMP support for `gcc`. In the early days we used
 
 ```{r}
 Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
 Sys.setenv("PKG_LIBS"="-fopenmp")
 ```
 
-Future Rcpp versions should have a plugin which does this for us.
+and more recent version of Rcpp have a plugin
+Recent Rcpp versions should have a plugin which does this for us.
 
 Here is an OpenMP version of our function:
 
@@ -130,6 +134,7 @@ Here is an OpenMP version of our function:
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 // [[Rcpp::export]]
@@ -163,12 +168,14 @@ Now check that it is parallelized:
 
 ## adding progress monitoring to the openMP function
 
-```{r long_computation_omp2, engine="Rcpp"}
+```{r long_computation_omp2, engine="Rcpp", eval=FALSE}
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
+#include <progress_bar.hpp>
 // [[Rcpp::export]]
 double long_computation_omp2(const int nb, int threads=1) {
 #ifdef _OPENMP
@@ -192,8 +199,8 @@ double long_computation_omp2(const int nb, int threads=1) {
 }
 ```
 
-```{r long_computation_omp2_call}
-    system.time(s <- long_computation_omp2(5000, 4))
+```{r long_computation_omp2_call, eval=FALSE}
+system.time(s <- long_computation_omp2(5000, 4))
 ```
 
 ## Test it now
@@ -203,17 +210,14 @@ If you want to test it now in your R console, just paste the following code
 [RcppProgress](http://cran.r-project.org/web/packages/RcppProgress/index.html)
 package, of course):
 
-{% highlight r %}
-library(Rcpp)
-Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
-Sys.setenv("PKG_LIBS"="-fopenmp")
-
-code='
+```{r final_example, eval=FALSE, engine="Rcpp"}
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
+#include <progress_bar.hpp>
 
 // [[Rcpp::export]]
 double long_computation_omp2(int nb, int threads=1) {
@@ -238,11 +242,14 @@ double long_computation_omp2(int nb, int threads=1) {
   
     return sum + nb;
 }
-'
+```
 
-sourceCpp(code=code)
+and run
+
+```{r final_example_call, eval=FALSE}
+Rcpp::sourceCpp(code=code)
 s <- long_computation_omp2(10000, 4)
-{% endhighlight %}
+```
 
 
 
