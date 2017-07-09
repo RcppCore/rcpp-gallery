@@ -13,7 +13,7 @@ and I had numerous discussions about a basic [Boost](http://www.boost.org) infra
 for other CRAN packages. JJ and Romain chipped in as well, and Jay finally took the lead by first creating a 
 [repo on R-Forge](http://boostheaders.r-forge.r-project.org/). And now the package is out, so what follows is a little demo.
 
-This example borrows something already implemented in my [RcppBDT]((http://cran.r-project.org/package=RcppBDT) package which wraps
+This example borrows something already implemented in my [RcppBDT](http://cran.r-project.org/package=RcppBDT) package which wraps
 code from [Boost Date_Time](http://www.boost.org/doc/libs/1_52_0/doc/html/date_time.html) for R.  
 Here, we compute the so-called [IMM Date](http://en.wikipedia.org/wiki/IMM_dates) -- generally the
 the third Wednesday of the month (in the last month of the quarter).  Boost has a function computing the _Nth day of the Mth week_ 
@@ -22,7 +22,6 @@ for a given month in a given year: we use that here with _Wednesday_ and the _th
 The kicker is that Boost uses templates almost exclusively. So by declaring an _depends attribute_ on BH, we ensure that 
 the compilation will see the headers files provided by BH.  Which happen to be the Boost headers, as that is what the package does. 
 And that is all it takes.
-
 
 
 {% highlight cpp %}
@@ -46,7 +45,6 @@ Rcpp::Date getIMMDate(int mon, int year) {
 }
 {% endhighlight %}
 
-
 We can test this from R for 2013 by computing the first two:
 
 {% highlight r %}
@@ -56,7 +54,7 @@ getIMMDate(3, 2013)
 
 
 <pre class="output">
-[1] "2013-03-20"
+[1] &quot;2013-03-20&quot;
 </pre>
 
 
@@ -68,9 +66,8 @@ getIMMDate(6, 2013)
 
 
 <pre class="output">
-[1] "2013-06-19"
+[1] &quot;2013-06-19&quot;
 </pre>
-
 
 And for kicks, the same for 2033:
 
@@ -81,7 +78,7 @@ getIMMDate(3, 2033)
 
 
 <pre class="output">
-[1] "2033-03-16"
+[1] &quot;2033-03-16&quot;
 </pre>
 
 
@@ -93,9 +90,8 @@ getIMMDate(6, 2033)
 
 
 <pre class="output">
-[1] "2033-06-15"
+[1] &quot;2033-06-15&quot;
 </pre>
-
 
 The BH package is still pretty raw. For example, [yesterday's Rcpp
 Gallery post on Boost foreach](../boost-foreach)] does not build as
