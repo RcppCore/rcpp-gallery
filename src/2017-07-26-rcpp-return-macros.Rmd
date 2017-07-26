@@ -1,0 +1,764 @@
+---
+title: "Cleaner Generic Function with RCPP_RETURN Macros"
+author: "Nathan Russell"
+license: GPL (>= 2)
+tags: c++98 c++11 macros
+summary: "This post demonstrates usage of the RCPP_RETURN macros."
+---
+
+### TL;DR 
+> * C++ templates and function overloading are incompatible with R's C API, so 
+>   polymorphism must be achieved via run-time dispatch, handled explicitly by 
+>   the programmer.
+> * The traditional technique for operating on `SEXP` objects in a generic 
+>   manner entails a great deal of boilerplate code, which can be unsightly, 
+>   unmaintainable, and error-prone.
+> * The desire to provide polymorphic functions which operate on vectors 
+>   and matrices is common enough that Rcpp provides the utility macros 
+>   `RCPP_RETURN_VECTOR` and `RCPP_RETURN_MATRIX` to simplify the process. 
+> * Subsequently, these macros were extended to handle an (essentially) 
+>   arbitrary number of arguments, provided that a C++11 compiler is used. 
+
+---
+
+### Background
+To motivate a discussion of polymorphic functions, imagine that we desire a 
+function (`ends`) which, given an input vector `x` and an integer `n`, returns 
+a vector containing the first and last `n` elements of `x` concatenated. 
+Furthermore, we require `ends` to be a single interface which is capable of 
+handling multiple types of input vectors (integers, floating point values, 
+strings, etc.), rather than having a separate function for each case. How can 
+this be achieved? 
+
+#### R Implementation 
+A naïve implementation in R might look something like this: 
+
+```{r}
+ends <- function(x, n = 6L) 
+{
+    n <- min(n, length(x) %/% 2)
+    c(head(x, n), tail(x, n))
+}
+
+ends(1:9)
+
+ends(letters, 3)
+
+ends(rnorm(20), 2)
+```
+
+The simple function above demonstates a key feature of many dynamically-typed 
+programming languages, one which has undoubtably been a significant factor in their 
+rise to popularity: the ability to write generic code with little-to-no 
+additional effort on the part of the developer. Without getting into a discussion 
+of the pros and cons of static vs. dynamic typing, it is evident that being able 
+to dispatch a single function generically on multiple object types, as opposed to, 
+e.g. having to manage separate impementations of `ends` for each vector type, 
+helps us to write more concise, expressive code. Being an article about Rcpp, 
+however, the story does not end here, and we consider how this problem might 
+be approached in C++, which has a *much* more strict type system than R. 
+
+#### C++ Implementation(s)
+For simplicity, we begin by considering solutions in the context of a "pure" 
+(re: not called from R) C++ program. Eschewing more complicated tactics 
+involving run-time dispatch (`virtual` functions, etc.), the C++ language 
+provides us with two straightforward methods of achieving this at compile time: 
+
+1. Function Overloading ([ad hoc polymorphism](https://en.wikipedia.org/wiki/Ad_hoc_polymorphism)) 
+2. Templates ([parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism))
+
+The first case can be demonstrated as follows: 
+
+```{r, engine='Rcpp', eval=FALSE}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+typedef std::vector<int> ivec;
+
+ivec ends(const ivec& x, std::size_t n = 6) 
+{
+    n = std::min(n, x.size() / 2);
+    ivec res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+
+typedef std::vector<double> dvec;
+
+dvec ends(const dvec& x, std::size_t n = 6) 
+{
+    n = std::min(n, x.size() / 2);
+    dvec res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+
+typedef std::vector<std::string> svec;
+// and so on...
+
+int main()
+{
+    ivec x, xres;
+    dvec y, yres;
+
+    for (int i = 0; i < 20; i++) {
+        x.push_back(i);
+        y.push_back(i + 0.5);
+    }
+
+    xres = ends(x, 4);
+    yres = ends(y);
+
+    for (std::size_t i = 0; i < xres.size(); i++) {
+        std::cout << xres[i] << "\n";
+    }
+
+    for (std::size_t i = 0; i < yres.size(); i++) {
+        std::cout << yres[i] << "\n";
+    }
+}
+```
+
+Although the above program meets our criteria, the code duplication is profound. 
+Being seasoned C++ programmers, we recognize this 
+as a textbook use case for templates and refactor accordingly: 
+
+```{r, engine='Rcpp', eval=FALSE}
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+template <typename T>
+T ends(const T& x, std::size_t n = 6) 
+{
+    n = std::min(n, x.size() / 2);
+    T res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+
+typedef std::vector<int> ivec;
+typedef std::vector<double> dvec;
+typedef std::vector<std::string> svec;
+// and so on...
+
+int main()
+{
+    // as before
+}
+```
+
+This approach is much more maintainable as we have a single implementation 
+of `ends` rather than one implementation per `typedef`. With this in hand, we 
+now look to make our C++ version of `ends` callable from R via Rcpp. 
+
+#### Rcpp Implementation (First Attempt)
+
+Many people, myself included, have attempted some variation of the following at 
+one point or another: 
+
+```{r, engine='Rcpp', eval=FALSE}
+#include <Rcpp.h>
+
+// [[Rcpp::export]]
+template <typename T>
+T ends(const T& x, std::size_t n = 6) 
+{
+    n = std::min(n, x.size() / 2);
+    T res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+```
+
+Sadly this does not work: magical as Rcpp attributes may be, there are limits 
+to what they can do, and at least for the time being, translating C++ template 
+functions into something compatible with R's C API is out of the question. Similarly, 
+the first C++ approach from earlier is also not viable, as the C programming 
+language does not support function overloading. In fact, C does not 
+support *any* flavor of type-safe static polymorphism, meaning that our generic 
+function must be implemented through run-time polymorphism, as touched on in 
+Kevin Ushey's Gallery article [Dynamic Wrapping and Recursion with Rcpp](
+http://gallery.rcpp.org/articles/rcpp-wrap-and-recurse/).
+
+#### Rcpp Implementation (Second Attempt)
+
+Armed with the almighty `TYPEOF` macro and a [SEXPTYPE cheatsheat](
+https://cran.r-project.org/doc/manuals/r-release/R-ints.html#SEXPTYPEs), we 
+modify the template code like so: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+namespace impl {
+
+template <int RTYPE>
+Vector<RTYPE> ends(const Vector<RTYPE>& x, int n)
+{
+    n = std::min((R_xlen_t)n, x.size() / 2);
+    Vector<RTYPE> res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+
+} // impl
+
+// [[Rcpp::export]]
+SEXP ends(SEXP x, int n = 6) {
+    switch (TYPEOF(x)) {
+        case INTSXP: {
+            return impl::ends(as<IntegerVector>(x), n);
+        }
+        case REALSXP: {
+            return impl::ends(as<NumericVector>(x), n);
+        }
+        case STRSXP: {
+            return impl::ends(as<CharacterVector>(x), n);
+        }
+        case LGLSXP: {
+            return impl::ends(as<LogicalVector>(x), n);
+        }
+        case CPLXSXP: {
+            return impl::ends(as<ComplexVector>(x), n);
+        }
+        default: {
+            warning(
+                "Invalid SEXPTYPE %d (%s).\n",
+                TYPEOF(x), type2name(x)
+            );
+            return R_NilValue;
+        }
+    }
+}
+```
+
+```{r}
+ends(1:9)
+
+ends(letters, 3)
+
+ends(rnorm(20), 2)
+
+ends(list())
+```
+
+Some key remarks: 
+
+1. Following the ubiquitous Rcpp idiom, we have converted our `ends` template to use 
+an integer parameter instead of a type parameter. This is a crucial point, and 
+later on, we will exploit it to our benefit. 
+2. The template implementation is wrapped in a namespace in order to avoid a 
+naming conflict; this is a personal preference but not strictly necessary. 
+Alternatively, we could get rid of the namespace and rename either the template 
+function or the exported function (or both). 
+3. We use the opaque type `SEXP` for our input / output vector since we need a 
+single input / output type. In this particular situation, replacing `SEXP` with 
+the Rcpp type `RObject` would also be suitable as it is a generic class capable 
+of representing any `SEXP` type. 
+4. Since we have used an opaque type for our input vector, we must cast it 
+to the appropriate `Rcpp::Vector` type accordingly within each case label. (For 
+further reference, the list of vector aliases can be found [here](
+https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/vector/instantiation.h#L27-L50)). Finally, we *could* dress each return value in `Rcpp::wrap` to convert 
+the `Rcpp::Vector` to a `SEXP`, but it isn't necessary because Rcpp attributes 
+will do this automatically (if possible). 
+
+At this point we have a polymorphic function, written in C++, and callable from 
+R. But that `switch` statement sure is an eyesore, and it will need to be 
+implemented every time we wish to export a generic function to R. Aesthetics 
+aside, a more pressing concern is that boilerplate such as this increases the 
+likelihood of introducing bugs into our codebase -- and since we are leveraging 
+run-time dispatch, these bugs will not be caught by the compiler. For example, 
+there is nothing to prevent this from compiling: 
+
+```c++
+// ...
+case INTSXP: {
+    return impl::ends(as<CharacterVector>(x), n);
+} 
+// ...
+```
+
+In our particular case, such mistakes likely would not be too disastrous, but 
+it should not be difficult to see how situations like this can put you (or a 
+user of your library!) on the fast track to segfault. 
+
+---
+
+### Obligatory Remark on Macro Safety
+
+The C preprocessor is undeniably one of the more controversial aspects of the 
+C++ programming language, as its utility as a metaprogramming tool is rivaled 
+only by its potential for abuse. A proper discussion of the various pitfalls 
+associated with C-style macros is well beyond the scope of this article, so 
+the reader is encouraged explore this topic on their own. On the bright side, 
+the particular macros that we will be discussing are sufficiently complex 
+and limited in scope that misuse is much more likely to result in a compiler 
+error than a silent bug, so practically speaking, one can expect a fair bit of 
+return for relatively little risk.
+
+---
+
+### Synopsis 
+
+At a high level, we summarize the `RCPP_RETURN` macros as follows: 
+
+* There are two separate macros for dealing with vectors and matrices, 
+  `RCPP_RETURN_VECTOR` and `RCPP_RETURN_MATRIX`, respectively. 
+* In either case, code is generated for the following `SEXPTYPE`s:
+    * `INTSXP` (integers)
+    * `REALSXP` (numerics)
+    * `RAWSXP` (raw bits)
+    * `LGLSXP` (logicals)
+    * `CPLXSXP` (complex numbers)
+    * `STRSXP` (characters / strings)
+    * `VECSXP` (lists)
+    * `EXPRSXP` (expressions) 
+
+* In C++98 mode, each macro accepts two arguments:
+    1. A template function
+    2. A `SEXP` object 
+
+* In C++11 mode (or higher), each macro additionally accepts zero or more 
+  arguments which are forwarded to the template function.
+
+Finally, the template function must meet the following criteria: 
+
+* It is templated on a single, integer parameter.
+* In the C++98 case, it accepts a single `SEXP` (or something convertible to 
+  `SEXP`) argument. 
+* In the C++11 case, it may accept more than one argument, but the first 
+  argument is subject to the previous constraint. 
+
+Examining our templated `impl::ends` function from the previous section, we see 
+that it meets the first requirement, but fails the second, due to its second 
+parameter `n`. Before exploring how `ends` might be adapted to meet the (C++98) 
+template requirements, it will be helpful demonstrate correct usage with a few 
+simple examples. 
+
+---
+
+### Fixed Return Type
+
+We consider two situations where our input type is generic, but our output 
+type is fixed:
+
+1. Determining the length (number of elements) of 
+  a vector, in which an `int` is always returned.
+2. Determining the dimensions (number of rows and number of columns) 
+  of a matrix, in which a length-two `IntegerVector` is always returned. 
+  
+First, our `len` function: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+namespace impl {
+
+template <int RTYPE>
+int len(const Vector<RTYPE>& x) 
+{
+    return static_cast<int>(x.size());
+}
+
+} // impl
+
+// [[Rcpp::export]]
+int len(RObject x) 
+{
+    RCPP_RETURN_VECTOR(impl::len, x);
+}
+```
+
+(Note that we omit the `return` keyword, as it is part of the macro definition.) 
+Testing this out on the various supported vector types: 
+
+```{r}
+classes <- c(
+    "integer", "numeric", "raw", "logical",
+    "complex", "character", "list", "expression"
+)
+sapply(seq_along(classes), function(i) {
+    x <- vector(mode = classes[i], length = i)
+    all.equal(len(x), length(x))
+})
+```
+
+Similarly, creating a generic function that determines the dimensions of an 
+input matrix is trivial: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+namespace impl {
+
+template <int RTYPE>
+Vector<INTSXP> dims(const Matrix<RTYPE>& x) 
+{
+    return Vector<INTSXP>::create(x.nrow(), x.ncol());
+}
+
+} // impl
+
+// [[Rcpp::export]]
+IntegerVector dims(RObject x) 
+{
+    RCPP_RETURN_MATRIX(impl::dims, x);
+}
+```
+
+And checking this against `base::dim`, 
+
+```{r}
+classes <- c(
+    "integer", "numeric", "raw", "logical",
+    "complex", "character", "list", "expression"
+)
+sapply(seq_along(classes), function(i) {
+    x <- matrix(
+        vector(mode = classes[i], length = i ^ 2), 
+        nrow = i
+    )
+    all.equal(dims(x), dim(x))
+})
+```
+
+everything seems to be in order. 
+
+It's worth pointing out that, for various reasons, it is possible to pass a 
+matrix object to an Rcpp function which calls `RCPP_RETURN_VECTOR`: 
+
+```{r}
+len(1:9)
+
+len(matrix(1:9, 3))
+```
+
+Although this is sensible in the case of `len` -- and even saves us from 
+implementing a matrix-specific version -- there may be situations where 
+this behavior is undesirable. To distinguish between the two object types we 
+can rely on the API function `Rf_isMatrix`: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+namespace impl {
+
+template <int RTYPE>
+int len(const Vector<RTYPE>& x) 
+{
+    return static_cast<int>(x.size());
+}
+
+} // impl
+
+// [[Rcpp::export]]
+int len2(RObject x) 
+{
+    if (Rf_isMatrix(x)) {
+        stop("matrix objects not supported.");
+    }
+    RCPP_RETURN_VECTOR(impl::len, x);
+}
+```
+
+```{r}
+len2(1:9)
+
+tryCatch(
+    len2(matrix(1:9, 3)),
+    error = function(e) print(e)
+)
+```
+
+We don't have to worry about the opposite scenario, as this is already handled 
+within Rcpp library code: 
+
+```{r}
+tryCatch(
+    dims(1:5),
+    error = function(e) print(e)
+)
+```
+
+---
+
+### Generic Return Type
+
+In many cases our return type will correspond to our input type. For example, 
+exposing the Rcpp sugar function `rev` is trivial: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+template <int RTYPE>
+Vector<RTYPE> Rev(const Vector<RTYPE>& x)
+{
+    return rev(x);
+}
+
+// [[Rcpp::export]]
+RObject rev2(RObject x)
+{
+    RCPP_RETURN_VECTOR(Rev, x);
+}
+```
+
+```{r}
+rev2(1:5)
+
+rev2(as.list(1:5 + 2i))
+
+rawToChar(rev2(charToRaw("abcde")))
+```
+
+As a slightly more complex example, suppose we would like to write a function 
+to sort matrices which preserves the dimensions of the input, since 
+`base::sort` falls short of the latter stipulation: 
+
+```{r}
+sort(matrix(c(1, 3, 5, 7, 9, 2, 4, 6, 8), 3))
+```
+
+There are two obstacles we need to overcome:
+
+1. The `Matrix` class does not implement its own `sort` method. However, 
+  since [`Matrix` inherits from `Vector`](
+  https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/vector/Matrix.h#L28), 
+  we *can* sort the matrix *as a `Vector`* and construct the result from this 
+  sorted data with the appropriate dimensions. 
+2. As noted previously, the `RCPP_RETURN` macros will generate code to handle 
+  exactly 8 `SEXPTYPE`s; no less, no more. Some functions, like `Vector::sort`, 
+  are not implemented for all eight of these types, so in order to avoid a 
+  compilation error, we need to add template specializations. 
+
+With this in mind, we have the following implementation of `msort`: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// primary template
+template <int RTYPE>
+Matrix<RTYPE> Msort(const Matrix<RTYPE>& x)
+{
+    return Matrix<RTYPE>(
+        x.nrow(),
+        x.ncol(),
+        clone(x).sort().begin()
+    );
+}
+
+// template specializations for raw vectors, 
+// lists, and expression vectors
+//
+// we can just throw an exception, as base::sort 
+// does the same
+template <>
+Matrix<RAWSXP> Msort(const Matrix<RAWSXP>& x)
+{ stop("sort not allowed for raw vectors."); }
+
+template <>
+Matrix<VECSXP> Msort(const Matrix<VECSXP>& x)
+{ stop("sort not allowed for lists."); }
+
+template <>
+Matrix<EXPRSXP> Msort(const Matrix<EXPRSXP>& x)
+{ stop("sort not allowed for expression vectors."); }
+
+// [[Rcpp::export]]
+RObject msort(RObject x)
+{
+    RCPP_RETURN_MATRIX(Msort, x);
+}
+```
+
+Note that elements will be sorted in column-major order since we filled our 
+result using [this constructor](
+https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/vector/Matrix.h#L63-L69). We can verify that `msort` works as intended by checking a few test cases: 
+
+```{r}
+(x <- matrix(c(1, 3, 5, 7, 9, 2, 4, 6, 8), 3))
+msort(x)
+sort(x)
+
+(x <- matrix(c("a", "c", "z", "y", "b", "x"), 3))
+msort(x)
+sort(x)
+
+x <- matrix(as.list(1:9), 3); str(x)
+tryCatch(
+    msort(x),
+    error = function(e) print(e)
+)
+tryCatch(
+    sort(x),
+    error = function(e) print(e)
+)
+```
+
+---
+
+### Revisiting the 'ends' Function
+
+Having familiarized ourselves with basic usage of the `RCPP_RETURN` macros, we 
+can return to the problem of implementing our `ends` function with 
+`RCPP_RETURN_VECTOR`. Just to recap the situation, the template function 
+passed to the macro must meet the following two criteria in C++98 mode:
+
+1. It is templated on a single, integer parameter (representing the 
+  `Vector` type).
+2. It accepts a **single** `SEXP` (or convertible to `SEXP`) **argument**. 
+
+Currently `ends` has the signature 
+
+```{r, engine='Rcpp', eval=FALSE}
+template <int RTYPE>
+Vector<RTYPE> ends(const Vector<RTYPE>&, int);
+```
+
+meaning that the first criterion is met, but the second is not. In order 
+preserve the functionality provided by the `int` parameter, we effectively 
+need to generate a new template function which has access to the user-provided 
+value at run-time, but without passing it as a function parameter. 
+
+The technique we are looking for is called [partial function application](
+https://en.wikipedia.org/wiki/Partial_application), and it can be implemented 
+using one of my favorite C++ tools: the [functor](
+https://en.wikipedia.org/wiki/Function_object). Contrary to typical functor 
+usage, however, our implementation features a slight twist: rather than 
+using a template class with a non-template function call operator, as is the 
+case with [`std::greater`](
+http://en.cppreference.com/w/cpp/utility/functional/greater), etc., we are 
+going to make `operator()` a template itself: 
+
+```{r, engine='Rcpp'}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+class Ends {
+private:
+    int n;
+
+public:
+    Ends(int n)
+        : n(n)
+    {}
+
+    template <int RTYPE>
+    Vector<RTYPE> operator()(const Vector<RTYPE>& x)
+    {
+        n = std::min((R_xlen_t)n, x.size() / 2);
+        Vector<RTYPE> res(2 * n);
+
+        std::copy(x.begin(), x.begin() + n, res.begin());
+        std::copy(x.end() - n, x.end(), res.begin() + n);
+
+        return res;
+    }
+};
+
+// [[Rcpp::export]]
+RObject ends(RObject x, int n = 6)
+{
+    RCPP_RETURN_VECTOR(Ends(n), x);
+}
+```
+
+Not bad, right? All in all, the changes are fairly minor: 
+
+* The function body of `Ends::operator()` is identical to that of 
+  `impl::ends`. 
+* `n` is now a private data member rather than a function parameter, which 
+  gets initialized in the constructor. 
+* Instead of passing a free-standing template function to `RCPP_RETURN_VECTOR`, 
+  we pass the expression `Ends(n)`, where `n` is supplied at run-time from the 
+  R session. In turn, the macro will invoke `Ends::operator()` on the `SEXP` 
+  (`RObject`, in our case), using the specified `n` value. 
+
+We can demonstrate this on various test cases: 
+
+```{r}
+ends(1:9)
+
+ends(letters, 3)
+
+ends(rnorm(20), 2)
+```
+
+---
+
+### A Modern Alternative 
+
+As alluded to earlier, a more modern compiler (supporting C++11 or later) 
+will free us from the "single `SEXP` argument" restriction, which means 
+that we no longer have to move additional parameters into a function 
+object. Here is `ends` re-implemented using the C++11 version of 
+`RCPP_RETURN_VECTOR` (note the `// [[Rcpp::plugins(cpp11)]]` 
+attribute declaration): 
+
+```{r, engine='Rcpp'}
+// [[Rcpp::plugins(cpp11)]]
+#include <Rcpp.h>
+using namespace Rcpp;
+
+namespace impl {
+
+template <int RTYPE>
+Vector<RTYPE> ends(const Vector<RTYPE>& x, int n)
+{
+    n = std::min((R_xlen_t)n, x.size() / 2);
+    Vector<RTYPE> res(2 * n);
+
+    std::copy(x.begin(), x.begin() + n, res.begin());
+    std::copy(x.end() - n, x.end(), res.begin() + n);
+
+    return res;
+}
+
+} // impl
+
+// [[Rcpp::export]]
+RObject ends(RObject x, int n = 6)
+{
+    RCPP_RETURN_VECTOR(impl::ends, x, n);
+}
+```
+
+```{r}
+ends(1:9)
+
+ends(letters, 3)
+
+ends(rnorm(20), 2)
+```
+
+The [current definition](
+https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/macros/dispatch.h#L33-L78) of `RCPP_RETURN_VECTOR` and `RCPP_RETURN_MATRIX` allows for up 
+to 24 arguments to be passed; although in principal, the true upper bound 
+depends on your compiler's implementation of the `__VA_ARGS__` macro, which 
+is likely greater than 24. Having said this, if you find yourself trying 
+to pass around more than 3 or 4 parameters at once, it's probably time 
+to do some refactoring. 
