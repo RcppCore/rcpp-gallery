@@ -1,5 +1,5 @@
 ---
-title: "Cleaner Generic Function with RCPP_RETURN Macros"
+title: "Cleaner Generic Functions with RCPP_RETURN Macros"
 author: "Nathan Russell"
 license: GPL (>= 2)
 tags: c++98 c++11 macros
