@@ -4,6 +4,8 @@ author: "Nathan Russell"
 license: GPL (>= 2)
 tags: c++11 macros
 summary: "This post demonstrates usage of the RCPP_RETURN macros."
+layout: post
+src: 2017-07-26-rcpp-return-macros.Rmd
 ---
 
 ### TL;DR 
@@ -33,7 +35,8 @@ this be achieved?
 #### R Implementation 
 A naïve implementation in R might look something like this: 
 
-```{r}
+
+{% highlight r %}
 ends <- function(x, n = 6L) 
 {
     n <- min(n, length(x) %/% 2)
@@ -41,11 +44,37 @@ ends <- function(x, n = 6L)
 }
 
 ends(1:9)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 1 2 3 4 6 7 8 9
+</pre>
+
+
+
+{% highlight r %}
 ends(letters, 3)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot;
+</pre>
+
+
+
+{% highlight r %}
 ends(rnorm(20), 2)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] -0.560476 -0.230177  0.701356 -0.472791
+</pre>
 
 The simple function above demonstates a key feature of many dynamically-typed 
 programming languages, one which has undoubtably been a significant factor in their 
@@ -69,7 +98,8 @@ provides us with two straightforward methods of achieving this at compile time:
 
 The first case can be demonstrated as follows: 
 
-```{r, engine='Rcpp', eval=FALSE}
+
+{% highlight cpp %}
 #include <iostream>
 #include <vector>
 #include <string>
@@ -125,13 +155,14 @@ int main()
         std::cout << yres[i] << "\n";
     }
 }
-```
+{% endhighlight %}
 
 Although the above program meets our criteria, the code duplication is profound. 
 Being seasoned C++ programmers, we recognize this 
 as a textbook use case for templates and refactor accordingly: 
 
-```{r, engine='Rcpp', eval=FALSE}
+
+{% highlight cpp %}
 #include <iostream>
 #include <vector>
 #include <string>
@@ -158,7 +189,7 @@ int main()
 {
     // as before
 }
-```
+{% endhighlight %}
 
 This approach is much more maintainable as we have a single implementation 
 of `ends` rather than one implementation per `typedef`. With this in hand, we 
@@ -169,7 +200,8 @@ now look to make our C++ version of `ends` callable from R via Rcpp.
 Many people, myself included, have attempted some variation of the following at 
 one point or another: 
 
-```{r, engine='Rcpp', eval=FALSE}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
@@ -184,7 +216,7 @@ T ends(const T& x, std::size_t n = 6)
 
     return res;
 }
-```
+{% endhighlight %}
 
 Sadly this does not work: magical as Rcpp attributes may be, there are limits 
 to what they can do, and at least for the time being, translating C++ template 
@@ -202,7 +234,8 @@ Armed with the almighty `TYPEOF` macro and a [SEXPTYPE cheatsheat](
 https://cran.r-project.org/doc/manuals/r-release/R-ints.html#SEXPTYPEs), we 
 modify the template code like so: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -249,17 +282,60 @@ SEXP ends(SEXP x, int n = 6) {
         }
     }
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 ends(1:9)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 1 2 3 4 6 7 8 9
+</pre>
+
+
+
+{% highlight r %}
 ends(letters, 3)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot;
+</pre>
+
+
+
+{% highlight r %}
 ends(rnorm(20), 2)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] -1.067824 -0.217975 -0.305963 -0.380471
+</pre>
+
+
+
+{% highlight r %}
 ends(list())
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Warning in ends(list()): Invalid SEXPTYPE 19 (VECSXP).
+</pre>
+
+
+
+<pre class="output">
+NULL
+</pre>
 
 Some key remarks: 
 
@@ -368,7 +444,8 @@ type is fixed:
   
 First, our `len` function: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -387,12 +464,13 @@ int len(RObject x)
 {
     RCPP_RETURN_VECTOR(impl::len, x);
 }
-```
+{% endhighlight %}
 
 (Note that we omit the `return` keyword, as it is part of the macro definition.) 
 Testing this out on the various supported vector types: 
 
-```{r}
+
+{% highlight r %}
 classes <- c(
     "integer", "numeric", "raw", "logical",
     "complex", "character", "list", "expression"
@@ -401,12 +479,19 @@ sapply(seq_along(classes), function(i) {
     x <- vector(mode = classes[i], length = i)
     all.equal(len(x), length(x))
 })
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+</pre>
 
 Similarly, creating a generic function that determines the dimensions of an 
 input matrix is trivial: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -425,11 +510,12 @@ IntegerVector dims(RObject x)
 {
     RCPP_RETURN_MATRIX(impl::dims, x);
 }
-```
+{% endhighlight %}
 
 And checking this against `base::dim`, 
 
-```{r}
+
+{% highlight r %}
 classes <- c(
     "integer", "numeric", "raw", "logical",
     "complex", "character", "list", "expression"
@@ -441,25 +527,49 @@ sapply(seq_along(classes), function(i) {
     )
     all.equal(dims(x), dim(x))
 })
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+</pre>
 
 everything seems to be in order. 
 
 It's worth pointing out that, for various reasons, it is possible to pass a 
 matrix object to an Rcpp function which calls `RCPP_RETURN_VECTOR`: 
 
-```{r}
-len(1:9)
 
+{% highlight r %}
+len(1:9)
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 9
+</pre>
+
+
+
+{% highlight r %}
 len(matrix(1:9, 3))
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 9
+</pre>
 
 Although this is sensible in the case of `len` -- and even saves us from 
 implementing a matrix-specific version -- there may be situations where 
 this behavior is undesirable. To distinguish between the two object types we 
 can rely on the API function `Rf_isMatrix`: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -481,26 +591,50 @@ int len2(RObject x)
     }
     RCPP_RETURN_VECTOR(impl::len, x);
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 len2(1:9)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 9
+</pre>
+
+
+
+{% highlight r %}
 tryCatch(
     len2(matrix(1:9, 3)),
     error = function(e) print(e)
 )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;Rcpp::exception in len2(matrix(1:9, 3)): matrix objects not supported.&gt;
+</pre>
 
 We don't have to worry about the opposite scenario, as this is already handled 
 within Rcpp library code: 
 
-```{r}
+
+{% highlight r %}
 tryCatch(
     dims(1:5),
     error = function(e) print(e)
 )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;Rcpp::not_a_matrix in dims(1:5): Not a matrix.&gt;
+</pre>
 
 ---
 
@@ -509,7 +643,8 @@ tryCatch(
 In many cases our return type will correspond to our input type. For example, 
 exposing the Rcpp sugar function `rev` is trivial: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -524,23 +659,70 @@ RObject rev2(RObject x)
 {
     RCPP_RETURN_VECTOR(Rev, x);
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 rev2(1:5)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 5 4 3 2 1
+</pre>
+
+
+
+{% highlight r %}
 rev2(as.list(1:5 + 2i))
+{% endhighlight %}
 
+
+
+<pre class="output">
+[[1]]
+[1] 5+2i
+
+[[2]]
+[1] 4+2i
+
+[[3]]
+[1] 3+2i
+
+[[4]]
+[1] 2+2i
+
+[[5]]
+[1] 1+2i
+</pre>
+
+
+
+{% highlight r %}
 rawToChar(rev2(charToRaw("abcde")))
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;edcba&quot;
+</pre>
 
 As a slightly more complex example, suppose we would like to write a function 
 to sort matrices which preserves the dimensions of the input, since 
 `base::sort` falls short of the latter stipulation: 
 
-```{r}
+
+{% highlight r %}
 sort(matrix(c(1, 3, 5, 7, 9, 2, 4, 6, 8), 3))
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 1 2 3 4 5 6 7 8 9
+</pre>
 
 There are two obstacles we need to overcome:
 
@@ -556,7 +738,8 @@ There are two obstacles we need to overcome:
 
 With this in mind, we have the following implementation of `msort`: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -593,31 +776,146 @@ RObject msort(RObject x)
 {
     RCPP_RETURN_MATRIX(Msort, x);
 }
-```
+{% endhighlight %}
 
 Note that elements will be sorted in column-major order since we filled our 
 result using [this constructor](
 https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/vector/Matrix.h#L63-L69). We can verify that `msort` works as intended by checking a few test cases: 
 
-```{r}
+
+{% highlight r %}
 (x <- matrix(c(1, 3, 5, 7, 9, 2, 4, 6, 8), 3))
-msort(x)
-sort(x)
+{% endhighlight %}
 
+
+
+<pre class="output">
+     [,1] [,2] [,3]
+[1,]    1    7    4
+[2,]    3    9    6
+[3,]    5    2    8
+</pre>
+
+
+
+{% highlight r %}
+msort(x)
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1] [,2] [,3]
+[1,]    1    4    7
+[2,]    2    5    8
+[3,]    3    6    9
+</pre>
+
+
+
+{% highlight r %}
+sort(x)
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 1 2 3 4 5 6 7 8 9
+</pre>
+
+
+
+{% highlight r %}
 (x <- matrix(c("a", "c", "z", "y", "b", "x"), 3))
-msort(x)
-sort(x)
+{% endhighlight %}
 
+
+
+<pre class="output">
+     [,1] [,2]
+[1,] &quot;a&quot;  &quot;y&quot; 
+[2,] &quot;c&quot;  &quot;b&quot; 
+[3,] &quot;z&quot;  &quot;x&quot; 
+</pre>
+
+
+
+{% highlight r %}
+msort(x)
+{% endhighlight %}
+
+
+
+<pre class="output">
+     [,1] [,2]
+[1,] &quot;a&quot;  &quot;x&quot; 
+[2,] &quot;b&quot;  &quot;y&quot; 
+[3,] &quot;c&quot;  &quot;z&quot; 
+</pre>
+
+
+
+{% highlight r %}
+sort(x)
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot;
+</pre>
+
+
+
+{% highlight r %}
 x <- matrix(as.list(1:9), 3); str(x)
+{% endhighlight %}
+
+
+
+<pre class="output">
+List of 9
+ $ : int 1
+ $ : int 2
+ $ : int 3
+ $ : int 4
+ $ : int 5
+ $ : int 6
+ $ : int 7
+ $ : int 8
+ $ : int 9
+ - attr(*, &quot;dim&quot;)= int [1:2] 3 3
+</pre>
+
+
+
+{% highlight r %}
 tryCatch(
     msort(x),
     error = function(e) print(e)
 )
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;Rcpp::exception in msort(x): sort not allowed for lists.&gt;
+</pre>
+
+
+
+{% highlight r %}
 tryCatch(
     sort(x),
     error = function(e) print(e)
 )
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;simpleError in sort.int(x, na.last = na.last, decreasing = decreasing, ...): 'x' must be atomic&gt;
+</pre>
 
 ---
 
@@ -634,10 +932,11 @@ passed to the macro must meet the following two criteria in C++98 mode:
 
 Currently `ends` has the signature 
 
-```{r, engine='Rcpp', eval=FALSE}
+
+{% highlight cpp %}
 template <int RTYPE>
 Vector<RTYPE> ends(const Vector<RTYPE>&, int);
-```
+{% endhighlight %}
 
 meaning that the first criterion is met, but the second is not. In order 
 preserve the functionality provided by the `int` parameter, we effectively 
@@ -654,7 +953,8 @@ case with [`std::greater`](
 http://en.cppreference.com/w/cpp/utility/functional/greater), etc., we are 
 going to make `operator()` a template itself: 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -685,7 +985,7 @@ RObject ends(RObject x, int n = 6)
 {
     RCPP_RETURN_VECTOR(Ends(n), x);
 }
-```
+{% endhighlight %}
 
 Not bad, right? All in all, the changes are fairly minor: 
 
@@ -700,13 +1000,40 @@ Not bad, right? All in all, the changes are fairly minor:
 
 We can demonstrate this on various test cases: 
 
-```{r}
+
+{% highlight r %}
 ends(1:9)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 1 2 3 4 6 7 8 9
+</pre>
+
+
+
+{% highlight r %}
 ends(letters, 3)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot;
+</pre>
+
+
+
+{% highlight r %}
 ends(rnorm(20), 2)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] -0.694707 -0.207917  0.123854  0.215942
+</pre>
 
 ---
 
@@ -719,7 +1046,8 @@ object. Here is `ends` re-implemented using the C++11 version of
 `RCPP_RETURN_VECTOR` (note the `// [[Rcpp::plugins(cpp11)]]` 
 attribute declaration): 
 
-```{r, engine='Rcpp'}
+
+{% highlight cpp %}
 // [[Rcpp::plugins(cpp11)]]
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -745,15 +1073,42 @@ RObject ends(RObject x, int n = 6)
 {
     RCPP_RETURN_VECTOR(impl::ends, x, n);
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 ends(1:9)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] 1 2 3 4 6 7 8 9
+</pre>
+
+
+
+{% highlight r %}
 ends(letters, 3)
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;x&quot; &quot;y&quot; &quot;z&quot;
+</pre>
+
+
+
+{% highlight r %}
 ends(rnorm(20), 2)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1]  0.379639 -0.502323  0.181303 -0.138891
+</pre>
 
 The [current definition](
 https://github.com/RcppCore/Rcpp/blob/master/inst/include/Rcpp/macros/dispatch.h#L33-L78) of `RCPP_RETURN_VECTOR` and `RCPP_RETURN_MATRIX` allows for up 
