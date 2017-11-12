@@ -14,20 +14,20 @@ its representation of fractional seconds since the January 1, 1970 "epoch" as
 well as to the broken-out list representation in `POSIXlt`.  Many add-on
 packages use these facilities. 
 
-`POSIXct` uses a double to provide 53 bits of resolution.  That is generally
+`POSIXct` uses a `double` type to provide 53 bits of resolution.  That is generally
 good enough for timestamps down to just above a microsecond, and has served
 the R community rather well.
 
-But increasingly, time increments are measure in nanoseconds.  Other languages uses a (signed)
-64-bit integer to represent (integer) nanoseconds since the epoch.  A bit over a year I realized
-that we have this in R too---by combining the `integer64` type in the
+But increasingly, time increments are measured in nanoseconds.  Other languages uses a (signed)
+64-bit integer to represent (integer) nanoseconds since the epoch.  A bit over a year ago I realized
+that we have this in R too---by combining the `integer64` type in the very nice
 [bit64](https://cran.r-project.org/package=bit64) package by Jens Oehlschlaegel with the
-[CCTZ](https://github.com/google/cctz)-based parser and formatter in my
+[CCTZ](https://github.com/google/cctz)-based parser and formatter in my own
 [RcppCCTZ](http://dirk.eddelbuettel.com/code/rcpp.cctz.html) package.  And thus the 
 [nanotime](http://dirk.eddelbuettel.com/code/nanotime.html) package was created.
 
-[Leonardo Silvestri](https://gitlab.com/lsilvest) then significantly enhanced
-[nanotime](http://dirk.eddelbuettel.com/code/nanotime.html) by redoing it as an S4 class.
+Since then, [Leonardo Silvestri](https://gitlab.com/lsilvest) joined in and significantly enhanced
+[nanotime](http://dirk.eddelbuettel.com/code/nanotime.html) by redoing it as a S4 class.
 
 A simple example:
 
@@ -38,16 +38,19 @@ n
 ```
 
 Here we used a single element with value 42, and created a `nanotime` vector from it---which is
-taken to me 42 nanoseconds since the epoch, or basically almost at January 1, 1970.
+taken to me 42 nanoseconds since the epoch, or basically almost at January 1, 1970. See the 
+[nanotime](http://dirk.eddelbuettel.com/code/nanotime.html) page and package for more.
 
 
 ### Step 1: Large Integer Types
 
-So more recently I had a need to _efficiently_ generate such integer vector from `int64_t` data.
-Both [Leonardo](https://gitlab.com/lsilvest) and [Dan](https://github.com/dcdillon) helped with
-initial discussion and tests.  One can either use a `reinterpret_cast<>` or a straight `memcpy` as
-the key trick in [bit64](https://cran.r-project.org/package=bit64) is to use the underlying 64-bit
-`double`.  So we have the space, we just need to ensure we copy _the bits_ rather than their values.
+So more recently I had a need to _efficiently_ generate such (many such) integer vectors from
+`int64_t` data.  Both [Leonardo](https://gitlab.com/lsilvest) and [Dan](https://github.com/dcdillon)
+helped with initial discussions and tests.  One can either use a `reinterpret_cast<>`, or a straight
+`memcpy` as the key trick in [bit64](https://cran.r-project.org/package=bit64) is to (re-)use the
+underlying `int64_t` representation (which we do not have in R) via the 64-bit `double`
+representative. Just never access it as a `double`.  So we have the space, we just need to ensure we
+copy _the bits_ (_i.e._ actual binary content) rather than their value (when "mapped" to a type).
 This leads to the following function to create an `integer64` vector for use in R at the C++ level:
 
 ```{r, engine="Rcpp"}
@@ -71,12 +74,16 @@ This uses the standard trick of setting a `class` attribute to set an S3 class. 
 `v` will return to R (exactly how is treated below), and R will treat the vector as `integer64`
 object (provided the [bit64](https://cran.r-project.org/package=bit64) package has been loaded).
 
+As mentioned, `reinterpret_cast<>()` can be used too, but leads to a compiler warning (under
+`g++-6`). Per [Matt's](https://xania.org/) excellent [compiler explorer](https://godbolt.org/), both
+approaches lead to the same `mov` semantics, so we prefer the variant that does not yell at us.
+
 
 ### Step 2: Nanotime
 
-A `nanotime` vector is creating using an internal `integer64` vector.  So the previous functions
-almost gets us there. But we need to set the S4 type correctly.  So that needed some extra work.
-The following function does it:
+A `nanotime` vector is creating using an internal `integer64` vector.  So the previous function
+almost gets us there. But we need to set the S4 type correctly.  So that needed some extra
+work---and the following function seems to do it right:
 
 ```{r, engine="Rcpp"}
 #include <Rcpp.h>
@@ -101,17 +108,20 @@ Rcpp::S4 makeNanotime(std::vector<int64_t> v) {
 }
 ```
 
-This creates a `nanotime` vector as a proper S4 object.
+This creates a `nanotime` vector as a proper S4 object. As before, we set some class attributes
+(though in a nested fashion as S4 is that fancy) and also invoke one R macro.
 
 ### Step 3: Returning them R via data.table
 
-The astute reader will have noticed that neither function had an `Rcpp::export` tag.  This is
-because of the function argument: `int64_t` is not representable natively by R, which is why we
-need a workaround.  [Matt Dowle](https://github.com/mattdowle)  has been very helpful in providing
-excellent support for `nanotime` in [data.table](https://github.com/Rdatatable/data.table/wiki)
-(even after we, ahem, borked it by switching from S3 to S4).  This support was of course relatively
-straightforward because [data.table](https://github.com/Rdatatable/data.table/wiki) already had
-support for the underlying `integer64`, and we had the additional formatters etc.
+The astute reader will have noticed that neither one of the functions presented so far had an
+`Rcpp::export` tag.  This is because of their function argument: `int64_t` is not representable
+natively by R, which is why we need a workaround.  
+
+[Matt Dowle](https://github.com/mattdowle) has been very helpful in providing excellent support for
+`nanotime` in [data.table](https://github.com/Rdatatable/data.table/wiki) (even after we, ahem,
+borked it by switching from S3 to S4).  This support was of course relatively straightforward
+because [data.table](https://github.com/Rdatatable/data.table/wiki) already had support for the
+underlying `integer64`, and we had the additional formatters etc.
 
 ```{r, engine="Rcpp"}
 #include <Rcpp.h>
@@ -175,3 +185,5 @@ dt[[1]]
 dt[[2]]
 diff(dt[[2]]) # here 1e9 nanoseconds between them
 ```
+
+With that we're done for this piece.  Happy `nanotime`-ing from C++!
