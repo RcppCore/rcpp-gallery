@@ -45,7 +45,7 @@ double long_computation(int nb, bool display_progress=true) {
 ```
 
 ```{r long_computation_call}
-long_computation(1000)
+long_computation(10000)
 ```
 
 You can now create your own implementation of a progress bar.
@@ -238,19 +238,19 @@ class ETAProgressBar: public ProgressBar{
 double long_computation_eta(int nb, bool display_progress=true) {
     ETAProgressBar pb;
     double sum = 0;
-    Progress p(nb*nb, display_progress, pb);
+    Progress p(nb, display_progress, pb);
     for (int i = 0; i < nb; ++i) {
         if (Progress::check_abort() )
             return -1.0;
         for (int j = 0; j < nb; ++j) {
-            p.increment(); 
             sum += R::dlnorm(i+j, 0.0, 1.0, 0);
         }
+        p.increment(); 
     }
     return sum + nb;
 }
 ```
 
 ```{r long_computation_2_call}
-long_computation_eta(1000)
+long_computation_eta(10000)
 ```
