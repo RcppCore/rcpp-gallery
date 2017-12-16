@@ -15,16 +15,14 @@ it is compatible with multithreaded code, for example using OpenMP.
 basic setup.
 
 Since version 0.4 it became more simple to create custom progress bars. We will 
-showcase an example implementation here by setting up a progress bar that also
-displays an estimate of the remaining time. You can find a complete package setup 
-with this code [here](https://github.com/kforner/rcpp_progress/tree/master/inst/examples/RcppProgressETA). 
+show here how to do this. Our final example implementation displays an estimate of the remaining time (ETA). You can find a complete package setup with the code for this ETA progress bar [here](https://github.com/kforner/rcpp_progress/tree/master/inst/examples/RcppProgressETA). 
 
-### ETAProgressBar
+### A minimal example
 
-Imagine you added a progress bar with RcppProgress to your function `long_computation()` 
-following the example from the first article mentioned above.
- 
-```{r long_computation, engine="Rcpp"}
+Imagine you added a progress bar with RcppProgress to your function
+`long_computation()` following the example from the first article mentioned above.
+
+```{Rcpp long_computation}
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <progress_bar.hpp>
@@ -45,12 +43,93 @@ double long_computation(int nb, bool display_progress=true) {
 ```
 
 ```{r long_computation_call}
-long_computation(10000)
+long_computation(10)
 ```
 
-You can now create your own implementation of a progress bar.
+You can now create your own implementation of a progress bar class. It has to be
+derived from the abstract class `ProgressBar` that defines some basic virtual
+methods:
 
-```{r eta, engine="Rcpp"}
+```{Rcpp ProgressBar, eval=FALSE}
+class ProgressBar {
+  public:
+    virtual ~ProgressBar() = 0;
+    virtual void display() = 0;
+    virtual void update(float progress) = 0;
+    virtual void end_display() = 0;
+};
+```
+
+`display()` starts the display, that will be updated by subsequent calls of
+`update()`. `end_display` finalizes it. Your progress bar implementation should
+not rely on the destructor to finalize the display.
+
+A minimal setup could look something like this: 
+
+```{Rcpp minbar, eval = TRUE}
+#include <R_ext/Print.h>
+
+// [[Rcpp::depends(RcppProgress)]]
+#include <progress.hpp>
+#include "progress_bar.hpp"
+
+class MinimalProgressBar: public ProgressBar{
+  public:
+    
+    MinimalProgressBar()  {
+      _finalized = false;
+    }
+    
+    ~MinimalProgressBar() {
+    }
+    
+    void display() {
+      REprintf("Progress:");
+    }
+    
+    void update(float progress) {
+      if (_finalized) return;
+      REprintf("+");
+    }
+    
+    void end_display() {
+      if (_finalized) return;
+      REprintf("\n");
+      _finalized = true;
+    }
+    
+    private:
+  
+      bool _finalized;
+          
+};
+
+// [[Rcpp::export]]
+double long_computation_minimal(int nb, bool display_progress=true) {
+    MinimalProgressBar pb;
+    double sum = 0;
+    Progress p(nb, display_progress, pb);
+    for (int i = 0; i < nb; ++i) {
+        if (Progress::check_abort() )
+            return -1.0;
+        for (int j = 0; j < nb; ++j) {
+            sum += R::dlnorm(i+j, 0.0, 1.0, 0);
+        }
+        p.increment(); 
+    }
+    return sum + nb;
+}
+```
+
+```{r long_computation_minbar_call, eval = FALSE}
+long_computation_minimal(10)
+```    
+
+### Remaining time estimation
+
+The possibility to setup own progress bar displays allows for more sophisticated implementations. Here's an example of a progress bar, that looks exactly like the default `SimpleProgressBar`, but adds an estimation of the remaining time for the process to finish.
+
+```{Rcpp eta}
 #ifndef _RcppProgress_ETA_PROGRESS_BAR_HPP
 #define _RcppProgress_ETA_PROGRESS_BAR_HPP
 
@@ -78,7 +157,6 @@ class ETAProgressBar: public ProgressBar{
       _max_ticks = 50;
       _ticks_displayed = 0;
       _finalized = false;
-      _mode_flag = 1;
       _timer_flag = true;
     }
     
@@ -222,7 +300,6 @@ class ETAProgressBar: public ProgressBar{
           int _max_ticks;   		// the total number of ticks to print
           int _ticks_displayed; 	// the nb of ticks already displayed
           bool _finalized;
-          int _mode_flag;
           bool _timer_flag;
           time_t start,end;
           
@@ -230,10 +307,10 @@ class ETAProgressBar: public ProgressBar{
 
 #endif
 
-
-
+ 
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
+
 // [[Rcpp::export]]
 double long_computation_eta(int nb, bool display_progress=true) {
     ETAProgressBar pb;
@@ -251,6 +328,6 @@ double long_computation_eta(int nb, bool display_progress=true) {
 }
 ```
 
-```{r long_computation_2_call}
-long_computation_eta(10000)
+```{r long_computation_eta_call}
+long_computation_eta(10000) 
 ```
