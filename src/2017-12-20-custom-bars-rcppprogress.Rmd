@@ -1,6 +1,6 @@
 ---
 title: Custom progress bars for RcppProgress
-author: Karl Forner and Clemens Schmid
+author: Clemens Schmid and Karl Forner
 license: GPL (>= 2)
 tags: progress bar
 summary: Demonstrates how to implement custom progress bars for long computations in C++.
@@ -11,18 +11,19 @@ is a tool to help you monitor the execution time of your C++ code, by
 providing a way to interrupt the execution inside the C++ code, and also to
 display a progress bar indicative of the state of your computation. Additionally, 
 it is compatible with multi threaded code, for example using OpenMP. 
-[This article](http://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
+[This old article](http://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
 basic setup.
 
-Since version 0.4 it became more simple to create custom progress bars. We will 
-show here how to do this. Our final example implementation displays an estimate of the remaining time (ETA).
+Since version 0.4 it became more simple to create custom progress bars. In this new
+article we will show how to do this. Our final example displays a progress bar which 
+provides an estimation of the remaining time (ETA) to finish a computation.
 
 ### A minimal example
 
 Imagine you added a progress bar with RcppProgress to your function
 `long_computation()` following the example from the first article mentioned above.
 
-```{Rcpp long_computation}
+```{Rcpp}
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <progress_bar.hpp>
@@ -42,7 +43,7 @@ double long_computation(int nb, bool display_progress=true) {
 }
 ```
 
-```{r long_computation_call}
+```{r}
 long_computation(10)
 ```
 
@@ -67,7 +68,7 @@ RcppProgress makes it now very easy to create your own implementation of a progr
 bar class. Your own class has to be derived from the abstract class `ProgressBar` that 
 defines some basic virtual methods:
 
-```{Rcpp ProgressBar, eval=FALSE}
+```{Rcpp, eval=FALSE}
 class ProgressBar {
   public:
     virtual ~ProgressBar() = 0;
@@ -77,13 +78,13 @@ class ProgressBar {
 };
 ```
 
-`display()` starts the display, that will be updated by subsequent calls of
+`display()` starts the display that will be updated by subsequent calls of
 `update()`. `end_display` finalizes it. Your progress bar implementation should
 not rely on the destructor to finalize the display.
 
 A very minimal setup could look something like this: 
 
-```{Rcpp minbar, eval = TRUE}
+```{Rcpp, eval = TRUE}
 #include <R_ext/Print.h>
 
 // [[Rcpp::depends(RcppProgress)]]
@@ -138,7 +139,7 @@ double long_computation_minimal(int nb, bool display_progress=true) {
 }
 ```
 
-```{r long_computation_minbar_call}
+```{r}
 long_computation_minimal(10)
 ```    
 
@@ -162,27 +163,48 @@ progress bars. Here's an example of one that looks exactly like the default
 `SimpleProgressBar`, but adds an estimation of the remaining time for the process to finish. 
 You can find a complete package setup with the code for this ETAProgressBar 
 [here](https://github.com/kforner/rcpp_progress/tree/master/inst/examples/RcppProgressETA). 
-Here we only highlight some crucial aspects of the implementation.  
-Unfortunately the [Rinterfaces.h header is only available for Unix-like systems](https://stackoverflow.com/questions/47623478/creating-a-progress-update-by-replacing-output-in-the-r-console-from-c-c/47624175?noredirect=1#comment82228757_47624175). 
-Therefore this only works for Unix-like systems -- a less cool version for windows can be found [here]().
+In this article we only highlight some crucial aspects of the implementation.  
 
-The ETAProgressBar requires some methods from the standard library:
+We use the [Rinterface.h](https://stat.ethz.ch/R-manual/R-devel/RHOME/doc/manual/R-exts.html#Setting-R-callbacks) header to update the display dynamically. Unfortunately this [header is only available for Unix-like systems](https://stackoverflow.com/questions/47623478/creating-a-progress-update-by-replacing-output-in-the-r-console-from-c-c/47624175?noredirect=1#comment82228757_47624175). 
+A less cool version of an ETA progress bar for windows can be found [here](). 
+The following preprocessor statements load Rinterface.h if the code is compiled 
+on a non-windows computer.  
 
-```{Rcpp eta2, eval = FALSE}
+```{Rcpp, eval = FALSE}
 #if !defined(WIN32) && !defined(__WIN32) && !defined(__WIN32__)
 #include <Rinterface.h>
 #endif
 ```
 
-```{Rcpp eta3, eval = FALSE}
-private: 
-  int _max_ticks;
-  bool _finalized;
-  bool _timer_flag;
-  time_t start,end;
+The class `ETAProgressBar` inherits from the abstract class `ProgressBar`. 
+It has an integer variable `_max_ticks` that controls the amount of individual
+tick symbols necessary to reach the 100% mark of the progress bar. That depends
+on the display you want to craft. `ETAProgressBar` also has a boolean flag variable 
+`_timer_flag` that acts as a switch to separate the initial starting turn where 
+the time measurement starts and the following turns where the time is picked off.
+The measured time values are stored in two variables `start` and `end` of class
+`time_t` (from [ctime](http://www.cplusplus.com/reference/ctime/)).
+
+```{Rcpp, eval = FALSE}
+class ETAProgressBar: public ProgressBar{
+
+  // ...
+  
+  private: 
+    int _max_ticks;
+    bool _finalized;
+    bool _timer_flag;
+    time_t start,end;
+    
+  // ...  
+    
+}
 ```
 
-```{Rcpp eta13, eval = FALSE}    
+The `display()` function initializes the progress bar visualization. The first two lines
+are hard coded text.
+
+```{Rcpp, eval = FALSE}    
 void display() {
   REprintf("0%%   10   20   30   40   50   60   70   80   90   100%%\n");
   REprintf("[----|----|----|----|----|----|----|----|----|----|\n");
@@ -190,7 +212,18 @@ void display() {
 }
 ```
 
-```{Rcpp eta23, eval = FALSE}          
+`update()` is the most important function for the progress bar mechanism. The if clause
+allows to separate the initial call of `update()` from the following ones to start the time
+counter. Afterwards the time passed is calculated and transformed to a human readable string
+by the custom function `_time_to_string()`. `_current_ticks_display()` is another custom 
+function to transform the progress information to a string with the correct amount of `*`
+symbols and filling whitespaces. The progress string and the time string are concatenated
+to create the additional third line below the initial two lines drawn by `display()`. 
+A string with sufficient whitespaces is also added to ensure that this dynamically updated 
+line is overwritten completely from turn to turn. `REprintf("\r");` triggers a carriage return
+to make this continuous overwriting possible.
+
+```{Rcpp, eval = FALSE}          
 void update(float progress) {
   
   // stop if already finalized
@@ -226,7 +259,7 @@ void update(float progress) {
     std::string temp_str = strs.str();
     char const* char_type = temp_str.c_str();
     
-    // print: remove old and replace with new
+    // print: remove old display and replace with new
     REprintf("\r");
     REprintf("%s", char_type);
     
@@ -238,7 +271,11 @@ void update(float progress) {
 }
 ```
 
-```{Rcpp eta4, eval = FALSE}
+`_time_to_string()` parses time information given in form of a floating point number of 
+seconds to a humanly readable string. The basic algorithm is based on an example from 
+[programmingnotes.org](http://www.programmingnotes.org/?p=2062). 
+
+```{Rcpp, eval = FALSE}
 std::string _time_to_string(double seconds) {
   
   int time = (int) seconds;
@@ -261,21 +298,26 @@ std::string _time_to_string(double seconds) {
   
   return time_str;
 }
-        
 ```
 
-```{Rcpp eta5, eval = FALSE}
+`_current_ticks_display()` relies on `_compute_nb_ticks()` to first of all transform
+the progress information (floating point number between 0 and 1) to a natural number
+that expresses the correct fraction of `_max_ticks`. `_construct_ticks_display_string()`
+takes this value and parses a string with `*` symbols and whitespaces that can be plotted
+as a visual progress indication.
+
+```{Rcpp, eval = FALSE}
 std::string _current_ticks_display(float progress) {
-  
   int nb_ticks = _compute_nb_ticks(progress);
-  
   std::string cur_display = _construct_ticks_display_string(nb_ticks);
-  
   return cur_display;
 }
 
+int _compute_nb_ticks(float progress) {
+  return int(progress * _max_ticks);
+}
+
 std::string _construct_ticks_display_string(int nb) {
-  
   std::stringstream ticks_strs;
   for (int i = 0; i < (_max_ticks - 1); ++i) {
     if (i < nb) {
@@ -285,20 +327,26 @@ std::string _construct_ticks_display_string(int nb) {
     }
   }
   std::string tick_space_string = ticks_strs.str();
-  
   return tick_space_string;
 }
-
-int _compute_nb_ticks(float progress) {
-  return int(progress * _max_ticks);
-}
-        
 ```
 
-```{Rcpp eta7, eval = FALSE}   
+`flush_console()` is a wrapper around [`R_FlushConsole()`](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Setting-R-callbacks) which is called to flush any 
+pending output to the system console. It's necessary to do this when the display is started
+in `display()` and when it's closed in `_finalize_display()`.
+
+```{Rcpp, eval = FALSE}   
 void flush_console() {
 #if !defined(WIN32) && !defined(__WIN32) && !defined(__WIN32__)
           R_FlushConsole();
 #endif
 }
+```
+
+The output of an `ETAProgressBar` looks like this:
+
+```
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+|*******                                          | 49s
 ```
