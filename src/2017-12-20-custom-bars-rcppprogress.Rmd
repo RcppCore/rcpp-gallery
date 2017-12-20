@@ -47,7 +47,7 @@ double long_computation(int nb, bool display_progress=true) {
 long_computation(10)
 ```
 
-What you get is a basic and useful console visualization that looks somehow like this: 
+What you get is a basic and useful console visualization that looks like this: 
 
 ```
 0%   10   20   30   40   50   60   70   80   90   100%
@@ -56,17 +56,17 @@ What you get is a basic and useful console visualization that looks somehow like
 ```
 
 That's the default, platform independent display in RcppProgress defined in 
-[SimpleProgressBar.hpp](https://github.com/kforner/rcpp_progress/blob/master/inst/include/simple_progress_bar.hpp). It's OK for most purposes to give you an idea how much work 
-is done and it also allows you to make a very intuitive estimation about how long 
-it's going to take to finish. But of course that's not everything a progress bar 
-*could* show you. A progress bar could give you information about the running 
-progress or about performance parameters of your system. It could contain calculated 
-estimates of passed and remaining time. After all it could just look much more fancy 
-to impress your colleagues.
+[SimpleProgressBar.hpp](https://github.com/kforner/rcpp_progress/blob/master/inst/include/simple_progress_bar.hpp). 
+It's OK for most purposes to give you an idea how much work is done and it also allows
+you to make a very intuitive estimation about how long it's going to take to finish.
+But of course that's not everything a progress bar *could* show you. A progress bar 
+could give you information about the running progress or about performance parameters 
+of your system. It could contain calculated estimates of passed and remaining time. 
+After all it could just look much more fancy to impress your colleagues.
 
-RcppProgress makes it now very easy to create your own implementation of a progress 
-bar class. Your own class has to be derived from the abstract class `ProgressBar` that 
-defines some basic virtual methods:
+RcppProgress makes it now easy to create your own implementation of a progress bar class. 
+Your own class has to be derived from the abstract class `ProgressBar` that defines some 
+basic virtual methods:
 
 ```{Rcpp, eval=FALSE}
 class ProgressBar {
@@ -82,7 +82,7 @@ class ProgressBar {
 `update()`. `end_display` finalizes it. Your progress bar implementation should
 not rely on the destructor to finalize the display.
 
-A very minimal setup could look something like this: 
+A very **minimal setup** could look something like this: 
 
 ```{Rcpp, eval = TRUE}
 #include <R_ext/Print.h>
@@ -158,7 +158,7 @@ the amount of console output at bay. `update()` also checks if the display is `_
 
 ### Remaining time estimation
 
-Based on the minimal template described above, you can implement more sophisticated 
+Based on the minimal setup above, you can implement more sophisticated 
 progress bars. Here's an example of one that looks exactly like the default 
 `SimpleProgressBar`, but adds an estimation of the remaining time for the process to finish. 
 You can find a complete package setup with the code for this ETAProgressBar 
@@ -202,7 +202,7 @@ class ETAProgressBar: public ProgressBar{
 ```
 
 The `display()` function initializes the progress bar visualization. The first two lines
-are hard coded text.
+are hard coded ASCII art.
 
 ```{Rcpp, eval = FALSE}    
 void display() {
@@ -272,7 +272,7 @@ void update(float progress) {
 ```
 
 `_time_to_string()` parses time information given in form of a floating point number of 
-seconds to a humanly readable string. The basic algorithm is based on an example from 
+seconds to a human-readable string. The basic algorithm is based on an example from 
 [programmingnotes.org](http://www.programmingnotes.org/?p=2062). 
 
 ```{Rcpp, eval = FALSE}
