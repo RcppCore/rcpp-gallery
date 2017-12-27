@@ -166,7 +166,8 @@ You can find a complete package setup with the code for this ETAProgressBar
 In this article we only highlight some crucial aspects of the implementation.  
 
 We use the [Rinterface.h](https://stat.ethz.ch/R-manual/R-devel/RHOME/doc/manual/R-exts.html#Setting-R-callbacks) header to update the display dynamically. Unfortunately this [header is only available for Unix-like systems](https://stackoverflow.com/questions/47623478/creating-a-progress-update-by-replacing-output-in-the-r-console-from-c-c/47624175?noredirect=1#comment82228757_47624175). 
-A less cool version of an ETA progress bar for windows can be found [here](). 
+A less cool, old version of an ETA progress bar that also works on windows can be 
+found [here](https://github.com/kforner/rcpp_progress/blob/5b0ec0d672c7758cf4c4134e97dfa9921ac668e0/inst/examples/RcppProgressETA/src/eta_progress_bar.hpp). 
 The following preprocessor statements load Rinterface.h if the code is compiled 
 on a non-windows computer.  
 
