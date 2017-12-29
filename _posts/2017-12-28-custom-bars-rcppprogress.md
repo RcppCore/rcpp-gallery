@@ -2,16 +2,18 @@
 title: Custom progress bars for RcppProgress
 author: Clemens Schmid and Karl Forner
 license: GPL (>= 2)
-tags: progress bar
+tags: openmp
 summary: Demonstrates how to implement custom progress bars for long computations in C++.
+layout: post
+src: 2017-12-28-custom-bars-rcppprogress.Rmd
 ---
 
 [RcppProgress](http://cran.r-project.org/web/packages/RcppProgress/index.html) 
 is a tool to help you monitor the execution time of your C++ code, by
 providing a way to interrupt the execution inside the C++ code, and also to
 display a progress bar indicative of the state of your computation. Additionally, 
-it is compatible with multi threaded code, for example using OpenMP. 
-[This old article](http://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
+it is compatible with multi-threaded code, for example using OpenMP. 
+[The initial (yet updated) article](http://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
 basic setup.
 
 Since version 0.4 it became more simple to create custom progress bars. In this new
@@ -23,29 +25,37 @@ provides an estimation of the remaining time (ETA) to finish a computation.
 Imagine you added a progress bar with RcppProgress to your function
 `long_computation()` following the example from the first article mentioned above.
 
-```{Rcpp}
+
+{% highlight cpp %}
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <progress_bar.hpp>
 // [[Rcpp::export]]
 double long_computation(int nb, bool display_progress=true) {
-  double sum = 0;
-  Progress p(nb*nb, display_progress);
-  for (int i = 0; i < nb; ++i) {
-      if (Progress::check_abort() )
-          return -1.0;
-      for (int j = 0; j < nb; ++j) {
-          p.increment(); 
-          sum += R::dlnorm(i+j, 0.0, 1.0, 0);
-      }
-  }
-  return sum + nb;
+    double sum = 0;
+    Progress p(nb*nb, display_progress);
+    for (int i = 0; i < nb; ++i) {
+        if (Progress::check_abort() )
+            return -1.0;
+        for (int j = 0; j < nb; ++j) {
+            p.increment(); 
+            sum += R::dlnorm(i+j, 0.0, 1.0, 0);
+        }
+    }
+    return sum + nb;
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 long_computation(10)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 12.20382
+</pre>
 
 What you get is a basic and useful console visualization that looks like this: 
 
@@ -68,7 +78,8 @@ RcppProgress makes it now easy to create your own implementation of a progress b
 Your own class has to be derived from the abstract class `ProgressBar` that defines some 
 basic virtual methods:
 
-```{Rcpp, eval=FALSE}
+
+{% highlight cpp %}
 class ProgressBar {
   public:
     virtual ~ProgressBar() = 0;
@@ -76,7 +87,7 @@ class ProgressBar {
     virtual void update(float progress) = 0;
     virtual void end_display() = 0;
 };
-```
+{% endhighlight %}
 
 `display()` starts the display that will be updated by subsequent calls of
 `update()`. `end_display` finalizes it. Your progress bar implementation should
@@ -84,7 +95,8 @@ not rely on the destructor to finalize the display.
 
 A very **minimal setup** could look something like this: 
 
-```{Rcpp, eval = TRUE}
+
+{% highlight cpp %}
 #include <R_ext/Print.h>
 
 // [[Rcpp::depends(RcppProgress)]]
@@ -93,13 +105,11 @@ A very **minimal setup** could look something like this:
 
 class MinimalProgressBar: public ProgressBar{
   public:
-    
     MinimalProgressBar()  {
-      _finalized = false;
+        _finalized = false;
     }
     
-    ~MinimalProgressBar() {
-    }
+    ~MinimalProgressBar() {}
     
     void display() {
       REprintf("Progress: ");
@@ -116,9 +126,9 @@ class MinimalProgressBar: public ProgressBar{
       _finalized = true;
     }
     
-    private:
+  private:
   
-      bool _finalized;
+    bool _finalized;
           
 };
 
@@ -137,11 +147,18 @@ double long_computation_minimal(int nb, bool display_progress=true) {
     }
     return sum + nb;
 }
-```
+{% endhighlight %}
 
-```{r}
+
+{% highlight r %}
 long_computation_minimal(10)
-```    
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] 12.20382
+</pre>
 
 The `display()` method in this example does nothing more than printing the word 
 `Progress`. `update()` concatenates a `+` symbol every time `Progress::increment()` is 
@@ -171,11 +188,12 @@ found [here](https://github.com/kforner/rcpp_progress/blob/5b0ec0d672c7758cf4c41
 The following preprocessor statements load Rinterface.h if the code is compiled 
 on a non-windows computer.  
 
-```{Rcpp, eval = FALSE}
+
+{% highlight cpp %}
 #if !defined(WIN32) && !defined(__WIN32) && !defined(__WIN32__)
 #include <Rinterface.h>
 #endif
-```
+{% endhighlight %}
 
 The class `ETAProgressBar` inherits from the abstract class `ProgressBar`. 
 It has an integer variable `_max_ticks` that controls the amount of individual
@@ -186,7 +204,8 @@ the time measurement starts and the following turns where the time is picked off
 The measured time values are stored in two variables `start` and `end` of class
 `time_t` (from [ctime](http://www.cplusplus.com/reference/ctime/)).
 
-```{Rcpp, eval = FALSE}
+
+{% highlight cpp %}
 class ETAProgressBar: public ProgressBar{
 
   // ...
@@ -200,18 +219,19 @@ class ETAProgressBar: public ProgressBar{
   // ...  
     
 }
-```
+{% endhighlight %}
 
 The `display()` function initializes the progress bar visualization. The first two lines
 are hard coded ASCII art.
 
-```{Rcpp, eval = FALSE}    
+
+{% highlight cpp %}
 void display() {
   REprintf("0%%   10   20   30   40   50   60   70   80   90   100%%\n");
   REprintf("[----|----|----|----|----|----|----|----|----|----|\n");
   flush_console();
 }
-```
+{% endhighlight %}
 
 `update()` is the most important function for the progress bar mechanism. The if clause
 allows to separate the initial call of `update()` from the following ones to start the time
@@ -224,82 +244,84 @@ A string with sufficient whitespaces is also added to ensure that this dynamical
 line is overwritten completely from turn to turn. `REprintf("\r");` triggers a carriage return
 to make this continuous overwriting possible.
 
-```{Rcpp, eval = FALSE}          
+
+{% highlight cpp %}
 void update(float progress) {
   
-  // stop if already finalized
-  if (_finalized) return;
+    // stop if already finalized
+    if (_finalized) return;
   
-  // start time measurement when update() is called the first time
-  if (_timer_flag) {
-    _timer_flag = false;
-    // measure start time
-    time(&start);
-  } else {
+    // start time measurement when update() is called the first time
+    if (_timer_flag) {
+        _timer_flag = false;
+        // measure start time
+        time(&start);
+    } else {
     
-    // measure current time
-    time(&end);
+        // measure current time
+        time(&end);
     
-    // calculate passed time and remaining time (in seconds)
-    double pas_time = std::difftime(end, start);
-    double rem_time = (pas_time / progress) * (1 - progress);
+        // calculate passed time and remaining time (in seconds)
+        double pas_time = std::difftime(end, start);
+        double rem_time = (pas_time / progress) * (1 - progress);
     
-    // convert seconds to time string
-    std::string time_string = _time_to_string(rem_time);
+        // convert seconds to time string
+        std::string time_string = _time_to_string(rem_time);
     
-    // create progress bar string 
-    std::string progress_bar_string = _current_ticks_display(progress);
+        // create progress bar string 
+        std::string progress_bar_string = _current_ticks_display(progress);
     
-    // ensure overwriting of old time info
-    int empty_length = time_string.length();
-    std::string empty_space = std::string(empty_length, ' ');
+        // ensure overwriting of old time info
+        int empty_length = time_string.length();
+        std::string empty_space = std::string(empty_length, ' ');
     
-    // merge progress bar and time string
-    std::stringstream strs;
-    strs << "|" << progress_bar_string << "| " << time_string << empty_space;
-    std::string temp_str = strs.str();
-    char const* char_type = temp_str.c_str();
+        // merge progress bar and time string
+        std::stringstream strs;
+        strs << "|" << progress_bar_string << "| " << time_string << empty_space;
+        std::string temp_str = strs.str();
+        char const* char_type = temp_str.c_str();
     
-    // print: remove old display and replace with new
-    REprintf("\r");
-    REprintf("%s", char_type);
+        // print: remove old display and replace with new
+        REprintf("\r");
+        REprintf("%s", char_type);
     
-    // finalize display when ready
-    if(progress == 1) {
-      _finalize_display();
-    }  
-  }
+        // finalize display when ready
+        if(progress == 1) {
+           _finalize_display();
+        }  
+    }
 }
-```
+{% endhighlight %}
 
 `_time_to_string()` parses time information given in form of a floating point number of 
 seconds to a human-readable string. The basic algorithm is based on an example from 
 [programmingnotes.org](http://www.programmingnotes.org/?p=2062). 
 
-```{Rcpp, eval = FALSE}
+
+{% highlight cpp %}
 std::string _time_to_string(double seconds) {
   
-  int time = (int) seconds;
+    int time = (int) seconds;
   
-  int hour = 0;
-  int min = 0;
-  int sec = 0;
+    int hour = 0;
+    int min = 0;
+    int sec = 0;
   
-  hour = time / 3600;
-  time = time % 3600;
-  min = time / 60;
-  time = time % 60;
-  sec = time;
+    hour = time / 3600;
+    time = time % 3600;
+    min = time / 60;
+    time = time % 60;
+    sec = time;
   
-  std::stringstream time_strs;
-  if (hour != 0) time_strs << hour << "h ";
-  if (min != 0) time_strs << min << "min ";
-  if (sec != 0) time_strs << sec << "s ";
-  std::string time_str = time_strs.str();
+    std::stringstream time_strs;
+    if (hour != 0) time_strs << hour << "h ";
+    if (min != 0) time_strs << min << "min ";
+    if (sec != 0) time_strs << sec << "s ";
+    std::string time_str = time_strs.str();
   
-  return time_str;
+    return time_str;
 }
-```
+{% endhighlight %}
 
 `_current_ticks_display()` relies on `_compute_nb_ticks()` to first of all transform
 the progress information (floating point number between 0 and 1) to a natural number
@@ -307,42 +329,44 @@ that expresses the correct fraction of `_max_ticks`. `_construct_ticks_display_s
 takes this value and parses a string with `*` symbols and whitespaces that can be plotted
 as a visual progress indication.
 
-```{Rcpp, eval = FALSE}
+
+{% highlight cpp %}
 std::string _current_ticks_display(float progress) {
-  int nb_ticks = _compute_nb_ticks(progress);
-  std::string cur_display = _construct_ticks_display_string(nb_ticks);
-  return cur_display;
+    int nb_ticks = _compute_nb_ticks(progress);
+    std::string cur_display = _construct_ticks_display_string(nb_ticks);
+    return cur_display;
 }
 
 int _compute_nb_ticks(float progress) {
-  return int(progress * _max_ticks);
+    return int(progress * _max_ticks);
 }
 
 std::string _construct_ticks_display_string(int nb) {
-  std::stringstream ticks_strs;
-  for (int i = 0; i < (_max_ticks - 1); ++i) {
-    if (i < nb) {
-      ticks_strs << "*";
-    } else {
-      ticks_strs << " ";
+    std::stringstream ticks_strs;
+    for (int i = 0; i < (_max_ticks - 1); ++i) {
+        if (i < nb) {
+            ticks_strs << "*";
+        } else {
+            ticks_strs << " ";
+        }
     }
-  }
-  std::string tick_space_string = ticks_strs.str();
-  return tick_space_string;
+    std::string tick_space_string = ticks_strs.str();
+    return tick_space_string;
 }
-```
+{% endhighlight %}
 
 `flush_console()` is a wrapper around [`R_FlushConsole()`](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Setting-R-callbacks) which is called to flush any 
 pending output to the system console. It's necessary to do this when the display is started
 in `display()` and when it's closed in `_finalize_display()`.
 
-```{Rcpp, eval = FALSE}   
+
+{% highlight cpp %}
 void flush_console() {
 #if !defined(WIN32) && !defined(__WIN32) && !defined(__WIN32__)
           R_FlushConsole();
 #endif
 }
-```
+{% endhighlight %}
 
 The output of an `ETAProgressBar` looks like this:
 
