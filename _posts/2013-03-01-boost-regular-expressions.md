@@ -3,23 +3,33 @@ title: Using Rcpp with Boost.Regex for regular expression
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: boost basics 
+updated: Mar 4, 2018
 summary: This post provides a simple example of regular expression use via Boost
 layout: post
 src: 2013-03-01-boost-regular-expressions.Rmd
 ---                                                                                                                                                          
-Gabor [asked](http://thread.gmane.org/gmane.comp.lang.r.rcpp/5019/focus=5023) 
-about Rcpp use with regular expression libraries.  This post shows a very simple example, based on  
-[one of the Boost.RegEx examples](http://www.boost.org/doc/libs/1_53_0/libs/regex/example/snippets/credit_card_example.cpp).
 
-We need to set linker options. This can be as simple as
+Gabor [asked](http://thread.gmane.org/gmane.comp.lang.r.rcpp/5019/focus=5023) 
+about Rcpp use with regular expression libraries.  This post shows a very simple example, based on
+[one of the Boost.Regex examples](http://www.boost.org/doc/libs/1_53_0/libs/regex/example/snippets/credit_card_example.cpp).
+
+There is one big difference between this example, and other [Boost](http://www.boost.org/) examples,
+possibly using the [BH](https://cran.r-project.org/package=BH) package. Here, we need to set linker
+options as _Boost regex requires its library_. Similar restrictions apply for
+[Boost System Library](http://www.boost.org/doc/libs/1_66_0/libs/system/doc/index.html),
+[Boost Filesystem](http://www.boost.org/doc/libs/1_66_0/libs/filesystem/doc/index.htm) and a few
+other Boost libraries.
+
+Now, if you computer has them (as would be common under Linux or on macOS), then this _can_ be as simple as
 
 
 {% highlight r %}
 Sys.setenv("PKG_LIBS"="-lboost_regex")
 {% endhighlight %}
 
+provided the corresponding library `libboost_regex` is indeed in one of the system library directories.
 
-With that, the following example can be built:
+If so, the following example can be built:
 
 
 {% highlight cpp %}
@@ -66,8 +76,8 @@ Rcpp::DataFrame regexDemo(std::vector<std::string> s) {
                                    Rcpp::Named("machine") = machine,
                                    Rcpp::Named("human") = human);
 }
-{% endhighlight %}
 
+{% endhighlight %}
 
 We can test the function using the same input as the Boost example:
 
@@ -86,5 +96,4 @@ regexDemo(s)
 3 0000-1111-2222-3333  TRUE 0000111122223333 0000-1111-2222-3333
 4  000-1111-2222-3333 FALSE  000111122223333  000-1111-2222-3333
 </pre>
-
 
