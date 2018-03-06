@@ -105,8 +105,42 @@ fewer computations.
 
 Up to now we have only considered simple types like `double` or `int` as function
 parameters and return values.  However, we can also use arrays. Consider the case
-of a European put option that was recently handled with [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/). Porting
-this code to RcppArrayFire is straight forward:
+of an European put option that was recently handled with [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/).
+The Armadillo based function from this post reads:
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(cpp11)]]
+
+using arma::colvec;
+using arma::log;
+using arma::normcdf;
+using std::sqrt;
+using std::exp;
+
+
+// [[Rcpp::export]]
+colvec put_option_pricer_arma(colvec s, double k, double r, double y, double t, double sigma) {
+  
+  colvec d1 = (log(s / k) + (r - y + sigma * sigma / 2.0) * t) / (sigma * sqrt(t));
+  colvec d2 = d1 - sigma * sqrt(t);
+  
+  // Notice the use of % to represent element wise multiplication
+  colvec V = normcdf(-d2) * k * exp(-r * t) - s * exp(-y * t) % normcdf(-d1); 
+  
+  return V;
+}
+```
+
+This function can be applied to a range of spot prices:
+
+```{r}
+put_option_pricer_arma(s = 55:60, 60, .01, .02, 1, .05)
+```
+
+Porting this code to RcppArrayFire is straight forward:
 
 ```{Rcpp}
 #include <RcppArrayFire.h>
@@ -152,50 +186,31 @@ put_option_pricer_af(s = 55:60, 60, .01, .02, 1, .05)
 ### Performance
 
 The reason to use hardware accelerators is of course the quest for increased performance.
-How does ArrayFire fare in this respect? Even without a high performance GPU 
-the performance boost from using ArrayFire can be quite impressive. Using the same
+How does ArrayFire fare in this respect? Using the same
 benchmark as in the [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/)
 comparison:
 
-```{r, eval = FALSE}
-RcppArrayFire::arrayfire_info()
-#> ArrayFire v3.5.1 (OpenCL, 64-bit Linux, build 0a675e8)
-#> [0] BEIGNET: Intel(R) HD Graphics Skylake ULT GT2, 4096 MB
-#> -1- POCL: pthread-Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz, 17510 MB
-
+```{r}
 s <- matrix(seq(0, 100, by = .0001), ncol = 1)
-rbenchmark::benchmark(R = put_option_pricer(s, 60, .01, .02, 1, .05),
-                      Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
-                      Rcpp = put_option_pricer_rcpp(s, 60, .01, .02, 1, .05), 
+rbenchmark::benchmark(Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
                       AF = put_option_pricer_af(s, 60, .01, .02, 1, .05),
                       order = "relative", 
                       replications = 100)[,1:4]
-#>   test replications elapsed relative
-#> 4   AF          100   0.846    1.000
-#> 2 Arma          100   5.650    6.678
-#> 3 Rcpp          100  10.440   12.340
-#> 1    R          100  15.494   18.314
 ```
 
-Here `RcppArrayFire::arrayfire_info()` tells us about the installed GPU and CPU,
-since OpenCL drivers for both GPU and CPU are installed.
+Here a Nvidia GeForce GT 1030 is used together with ArrayFire's CUDA backend. With
+a build-in Intel HD Graphics 520 using the OpenCL backend the ArrayFire solution
+is about 6 times faster. Even without a high performance GPU the performance boost
+from using ArrayFire can be quite impressive. However, the results change dramatically,
+if fewer options are evaluated:
 
-However, the results change dramatically, if fewer options are evaluated:
-
-```{r, eval = FALSE}
+```{r}
 s <- matrix(seq(0, 100, by = 1), ncol = 1)
 # use more replications to get run times of more than 10 ms
-rbenchmark::benchmark(R = put_option_pricer(s, 60, .01, .02, 1, .05),
-                      Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
-                      Rcpp = put_option_pricer_rcpp(s, 60, .01, .02, 1, .05), 
+rbenchmark::benchmark(Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
                       AF = put_option_pricer_af(s, 60, .01, .02, 1, .05),
                       order = "relative", 
                       replications = 1000)[,1:4]
-#>   test replications elapsed relative
-#> 2 Arma         1000   0.017    1.000
-#> 3 Rcpp         1000   0.021    1.235
-#> 1    R         1000   0.033    1.941
-#> 4   AF         1000   0.207   12.176
 ```
 
 But is it realistic to process $$10^6$$ options at once? Probably not in the way used
