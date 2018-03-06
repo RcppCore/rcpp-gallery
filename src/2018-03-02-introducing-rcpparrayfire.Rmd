@@ -49,9 +49,9 @@ install.packages("RcppArrayFire", configure.args = "--with-arrayfire=/opt/arrayf
 
 ### A first example
 
-Let's look at the classical example of [calculating $\pi$](http://gallery.rcpp.org/articles/simulating-pi/)
+Let's look at the classical example of [calculating $$\pi$$](http://gallery.rcpp.org/articles/simulating-pi/)
 via simulation. The basic idea is to generate a large number of random points within
-the unit square. An approximation for $\pi$ can then be calculated from the ratio
+the unit square. An approximation for $$\pi$$ can then be calculated from the ratio
 of points within the unit circle to the total number of points. A vectorized 
 implementation in R might look like this:
 
@@ -142,7 +142,7 @@ is available.
 Since an object of type `af::array` can contain different [data types](http://arrayfire.org/docs/defines_8h.htm#a023d8ac325fb14f1712a52fb0940b1d5),
 the templated wrapper class `RcppArrayFire::typed_array<>` is used to indicate the
 desired data type when converting from R to C++. Again single precision floats are
-used with ArrayFire, which leads to differences of the order $10^{-6}$ compared to the 
+used with ArrayFire, which leads to differences of the order $$10^{-6}$$ compared to the 
 results from [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/):
 
 ```{r}
@@ -198,7 +198,7 @@ rbenchmark::benchmark(R = put_option_pricer(s, 60, .01, .02, 1, .05),
 #> 4   AF         1000   0.207   12.176
 ```
 
-But is it realistic to process $10^6$ options at once? Probably not in the way used
+But is it realistic to process $$10^6$$ options at once? Probably not in the way used
 in the benchmark where only the spot price is allowed to vary. However, one can alter
 the function to process not only arrays of spot prices but also arrays of strikes,
 risk free rates etc.:
