@@ -1,6 +1,6 @@
 ---
 title: Using iterators for sparse vectors and matrices
-author: Soren Hojsgaard and Doug Bates
+author: Søren Højsgaard and Doug Bates
 license: GPL (>= 2)
 tags: eigen sparse modeling
 summary: We illustrate the user of iterators for sparse vectors and matrices and implement a function which determines if a set of nodes in an undirected graph is complete.

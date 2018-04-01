@@ -1,6 +1,6 @@
 ---
 title: Using iterators for sparse vectors and matrices
-author: Soren Hojsgaard and Doug Bates
+author: Søren Højsgaard and Doug Bates
 license: GPL (>= 2)
 tags: eigen sparse modeling
 summary: We illustrate the user of iterators for sparse vectors and matrices and implement a function which determines if a set of nodes in an undirected graph is complete.
@@ -15,7 +15,6 @@ Consider the following vector:
 {% highlight r %}
 idx1 <- c(2L, 0L, 4L, 0L, 7L)
 {% endhighlight %}
-
 
 A sparse representation of this vector will tell that at entries 1,3,5
 (or at entries 0,2,4 if we are 0-based) we will find the values 2,4,7.
@@ -43,7 +42,6 @@ void vec_loop1 (Eigen::VectorXi idx){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 vec_loop1( idx1 )
 {% endhighlight %}
@@ -58,7 +56,6 @@ Standard looping over a sparse vector
  i=3 value=0
  i=4 value=7
 </pre>
-
 
 To iterate only over the non-zero elements we can do:
 
@@ -80,7 +77,6 @@ void vec_loop2 (Eigen::VectorXi idx){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 vec_loop2( idx1 )
 {% endhighlight %}
@@ -94,23 +90,12 @@ Looping over a sparse vector using iterators
  i=4 value=7
 </pre>
 
-
 ## Iterating over a sparse matrix
 
 
 {% highlight r %}
+library(methods)
 library(Matrix)
-{% endhighlight %}
-
-
-
-<pre class="output">
-Loading required package: methods
-</pre>
-
-
-
-{% highlight r %}
 M1<- new("dgCMatrix"
     , i = c(1L, 2L, 3L, 0L, 2L, 3L, 0L, 1L, 3L, 0L, 
             1L, 2L, 4L, 5L, 3L, 5L, 3L, 4L)
@@ -135,7 +120,6 @@ e . . . 3 . 3
 f . . . 4 1 .
 </pre>
 
-
 To iterate over all values in a column of this matrix we can do:
 
 
@@ -155,7 +139,6 @@ void mat_loop1 (MSpMat X, int j){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 mat_loop1( M1, 1 );
 {% endhighlight %}
@@ -171,7 +154,6 @@ Standard looping over a sparse matrix
  i,j=4,1 value=0
  i,j=5,1 value=0
 </pre>
-
 
 To iterate over only the non-zero elements in a column we can do:
 
@@ -195,7 +177,6 @@ void mat_loop2 (MSpMat X, int j){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 mat_loop2( M1, 2 );
 {% endhighlight %}
@@ -208,7 +189,6 @@ Standard looping over a sparse matrix
  i,j=1,2 value=3
  i,j=3,2 value=4
 </pre>
-
 
 # Example from graph theory
 
@@ -249,14 +229,12 @@ e . . . 1 . 1
 f . . . 1 1 .
 </pre>
 
-
 Define two subsets of nodes
 
 {% highlight r %}
 idx1 <- c(2L, 3L)
 idx2 <- c(3L, 4L, 5L)
 {% endhighlight %}
-
 
 With an extensive use of sparse matrix and vector iterators we can solve the task as follows:
 
@@ -303,7 +281,6 @@ bool is_complete2 (const MSpMat X, const Eigen::VectorXi idx){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 c( is_complete2( M1, idx1 ), is_complete2( M1, idx2 ) )
 {% endhighlight %}
@@ -313,7 +290,6 @@ c( is_complete2( M1, idx1 ), is_complete2( M1, idx2 ) )
 <pre class="output">
 [1]  TRUE FALSE
 </pre>
-
 
 For comparison we implement the same function using the .coeff()
 method for looking up values in the adjacency matrix directly:
@@ -351,7 +327,6 @@ bool is_complete0 (const MSpMat X, const Eigen::VectorXi idx){
 {% endhighlight %}
 
 
-
 {% highlight r %}
 c( is_complete0( M1, idx1 ), is_complete0( M1, idx2 ) )
 {% endhighlight %}
@@ -361,7 +336,6 @@ c( is_complete0( M1, idx1 ), is_complete0( M1, idx2 ) )
 <pre class="output">
 [1]  TRUE FALSE
 </pre>
-
 
 NOTICE: For large sets U (and hence for large graphs) the first
 implementation is considerably faster than the second.
