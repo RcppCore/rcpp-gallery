@@ -13,10 +13,10 @@ src: 2018-04-18-armadillo-sparse-matrix-performance.Rmd
 
 
 
-The Armadillo library provides a great way to manipulate sparse matrices in C++. However, the
-performance characteristics of dealing with sparse matrices may be surprising if one is only
-familiar with dense matrices. This is a collection of observations on getting best performance with
-sparse matrices in Armadillo.
+Besides outstanding support for dense matrices, the Armadillo library also provides a great way to
+manipulate sparse matrices in C++. However, the performance characteristics of dealing with sparse
+matrices may be surprising if one is only familiar with dense matrices. This is a collection of
+observations on getting best performance with sparse matrices in Armadillo.
 
 All the timings in this article were generated using Armadillo version 8.500. This version adds a
 number of substantial optimisations for sparse matrix operations, in some cases speeding things up
@@ -105,7 +105,7 @@ system.time(m0 <- a %*% b)
 
 <pre class="output">
    user  system elapsed 
-  0.221   0.089   0.310 
+  0.230   0.091   0.322 
 </pre>
 
 
@@ -118,7 +118,7 @@ system.time(m1 <- mult_sp_sp_to_sp(a, b))
 
 <pre class="output">
    user  system elapsed 
-  0.368   0.063   0.431 
+  0.407   0.036   0.442 
 </pre>
 
 
@@ -131,7 +131,7 @@ system.time(m2 <- mult_sp_den_to_sp(a, b_den))
 
 <pre class="output">
    user  system elapsed 
- 15.511   0.089  15.600 
+  1.081   0.100   1.181 
 </pre>
 
 
@@ -144,7 +144,7 @@ system.time(m3 <- mult_den_sp_to_sp(a_den, b))
 
 <pre class="output">
    user  system elapsed 
-  0.910   0.092   1.002 
+  0.826   0.087   0.913 
 </pre>
 
 
@@ -195,7 +195,7 @@ system.time(m4 <- mult_sp_den_to_sp2(a, b_den))
 
 <pre class="output">
    user  system elapsed 
-  0.442   0.040   0.483 
+  0.401   0.047   0.448 
 </pre>
 
 
@@ -256,7 +256,7 @@ system.time({
 
 <pre class="output">
    user  system elapsed 
-  1.873   0.004   1.878 
+  1.708   0.000   1.707 
 </pre>
 
 For a large matrix, this takes a not-insignificant amount of time, even on a fast machine. To speed
@@ -304,7 +304,7 @@ system.time({
 
 <pre class="output">
    user  system elapsed 
-  0.818   0.000   0.817 
+  0.766   0.000   0.766 
 </pre>
 
 The time taken has come down by quite a substantial margin. This reflects the ease of obtaining
@@ -353,7 +353,7 @@ system.time(print(sum_by_row(a)))
 
 <pre class="output">
    user  system elapsed 
-  0.926   0.000   0.926 
+  0.933   0.000   0.935 
 </pre>
 
 This is again a large improvement. But what if we do the same with column slicing?
@@ -391,7 +391,7 @@ system.time(print(sum_by_col(a_t)))
 
 <pre class="output">
    user  system elapsed 
-  0.006   0.000   0.006 
+  0.005   0.000   0.006 
 </pre>
 
 Now the time is less than a tenth of a second, which is faster than the original code by roughly
@@ -445,7 +445,7 @@ system.time(print(sum_by_element(a)))
 
 <pre class="output">
    user  system elapsed 
-  0.388   0.000   0.388 
+  0.176   0.000   0.176 
 </pre>
 
 However, we can still do better. In Armadillo, the iterators for sparse matrix classes iterate only
@@ -502,9 +502,9 @@ microbenchmark(col=sum_by_col(a_t),
 <pre class="output">
 Unit: milliseconds
  expr       min        lq      mean    median        uq       max neval
-  col   5.02286   5.17710   5.34210   5.33575   5.39444   6.02304    20
- elem 389.33550 393.98013 402.67589 403.13064 411.42497 420.33654    20
- iter   1.01472   1.07613   1.19713   1.18075   1.22931   1.74711    20
+  col   4.78921   4.88444   5.05229   4.99184   5.18450   5.50579    20
+ elem 172.84830 177.20431 179.87007 179.06447 182.08075 188.11256    20
+ iter   1.02268   1.05447   1.12611   1.12627   1.16482   1.30800    20
 </pre>
 
 Thus, using iterators represents a greater than three-order-of-magnitude speedup over the original
