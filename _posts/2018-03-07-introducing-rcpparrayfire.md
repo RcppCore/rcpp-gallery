@@ -26,7 +26,7 @@ communication between R and ArrayFire at the C++ level.
 ### Installation
 
 Please note that RcppArrayFire is developed and tested on Linux systems. There is
-preliminary support for [Mac OS X](https://github.com/RInstitute/rcpparrayfire/tree/macos).
+preliminary support for [Mac OS X](https://github.com/daqana/rcpparrayfire/tree/macos).
 
 In order to use RcppArrayFire you will need the ArrayFire library and header files. 
 While ArrayFire has been packaged for Debian, I currently prefer using upstream's
@@ -39,7 +39,7 @@ RcppArrayFire is not on CRAN, but you can install the current version via
 
 {% highlight r %}
 #install.packages("drat")
-drat::addRepo("RInstitute")
+drat::addRepo("daqana")
 install.packages("RcppArrayFire")
 {% endhighlight %}
 
