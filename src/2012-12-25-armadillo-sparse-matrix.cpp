@@ -2,16 +2,17 @@
 /**
  * @title Sparse matrix in Armadillo
  * @author Dirk Eddelbuettel and Binxiang Ni
+ * @updated Oct 18, 2018
  * @license GPL (>= 2)
  * @tags armadillo matrix featured sparse
  * @summary This example shows how to create a sparse matrix in Armadillo
  *
- * The Matrix package in R supports sparse matrices, and we can use
- * the S4 class in Rcpp to attach the different component row indices,
+ * The [Matrix package](https://cloud.r-project.org/package=Matrix) in R supports sparse matrices, 
+ * and we can use the S4 class support in Rcpp to attach the different component row indices,
  * column pointers and value which can then be used to initialize an
  * Armadillo sparse matrix.
  *
- * Let's start with creating a sparse matrix.
+ * Let's start by creating a sparse matrix.
  *
  */
 
@@ -28,7 +29,7 @@ print(A)
 */
 
 /**
- * The following C++ function access the corresponding slots of the
+ * The following C++ function accesses the corresponding slots of the
  * `sparseMatrix` object, and creates a `sp_mat` Armadillo object.
  */
 
@@ -66,11 +67,15 @@ convertSparse(A)
 
 
 /**
- * Now 11 types of sparse matrix are supported to be converted into RcppArmadillo.
- * You can just pass a certain type of sparse matrix from R to RcppArmadillo.
- * It will automatically convert the matrix to a `sp_mat` object.
- * By the way, back in 2012, we used the below way to create a `sp_mat` Armadillo object.
- * But now `arma::memory::acquire_chunked` is deprecated. Please avoid using it.
+ * By now a full eleven types of sparse matrices are supported for automatic conversion
+ * by RcppArmadillo.
+ * You can just pass one of these eleven types of sparse matrices from R to RcppArmadillo.
+ * It will be converted  automatically to a `sp_mat` object.
+ *
+ * By the way, back in 2012 when this page was first written, we used the method below 
+ * to create a `sp_mat` Armadillo object.
+ * But these days `arma::memory::acquire_chunked` is deprecated and should *not* be used,
+ * we are just showing this to illustrate access to elements of a S4 object. 
  */
 
 #include <RcppArmadillo.h>
@@ -79,7 +84,7 @@ convertSparse(A)
 using namespace Rcpp ;
 
 // [[Rcpp::export]]
-void convertSparse(S4 mat) {         // slight improvement with two non-nested loops
+void convertSparse2(S4 mat) {         // slight improvement with two non-nested loops
 
     IntegerVector dims = mat.slot("Dim");
     arma::urowvec i = Rcpp::as<arma::urowvec>(mat.slot("i"));

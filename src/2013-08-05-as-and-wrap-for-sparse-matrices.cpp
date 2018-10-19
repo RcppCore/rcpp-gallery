@@ -2,6 +2,7 @@
 /**
  * @title Creating as and wrap for sparse matrices
  * @author Dirk Eddelbuettel and Binxiang Ni
+ * @updated Oct 18, 2018
  * @license GPL (>= 2)
  * @tags armadillo matrix sparse
  * @summary This post shows an example of simple as and wrap methods
@@ -32,9 +33,11 @@
  * there is also a new constructor taking vectors `rowind`, `colptr` and `values`._
  *
  * _Nota bene 3:
- * From `RcppArmadillo` release 0.7.960.1.1 on, 11 types of sparse matrix on the side of
- * R language are supported. You can directly pass a certain type to RcppArmadillo.
- * You can refer to the [doc](https://cran.r-project.org/web/packages/RcppArmadillo/vignettes/RcppArmadillo-sparseMatrix.pdf).
+ * Since `RcppArmadillo` release 0.7.960.1.1, a fulle eleven types of sparse matrices on 
+ * the R side are supported. You can pass these directly to RcppArmadillo, and each will be
+ * converted to an `arma::sp_mat` by a corresponding function. More details are in 
+ * the [sparse Matrix vignette](https://cran.r-project.org/web/packages/RcppArmadillo/vignettes/RcppArmadillo-sparseMatrix.pdf)._
+ *
  * First, we look at the `as` method.
  */
 
