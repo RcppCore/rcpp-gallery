@@ -73,11 +73,11 @@
        // create sp_mat object of appropriate size
        arma::SpMat<T> res(dims[0], dims[1]);
 
-       // Making space for the elements
-       res.mem_resize(static_cast<unsigned>(x.size()));
-
        // In order to access the internal arrays of the SpMat class
        res.sync();
+
+       // Making space for the elements
+       res.mem_resize(static_cast<unsigned>(x.size()));
 
        // Copying elements
        std::copy(i.begin(), i.end(), arma::access::rwp(res.row_indices));
