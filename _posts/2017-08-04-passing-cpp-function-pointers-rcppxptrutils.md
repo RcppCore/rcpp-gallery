@@ -62,7 +62,7 @@ ptr
 
 
 <pre class="output">
-'double foo(int a, double b)' &lt;pointer: 0x55c64060de40&gt;
+'double foo(int a, double b)' &lt;pointer: 0x55e176e4c3f0&gt;
 </pre>
 
 The `checkXptr` function checks the object against a given
@@ -78,7 +78,7 @@ checkXPtr(ptr, "int", c("int", "double"))
 
 <pre class="output">
 Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;int&quot;, &quot;double&quot;)): Bad XPtr signature:
-  Wrong return type 'double', should be 'int'.
+  Wrong return type 'int', should be 'double'.
 </pre>
 
 
@@ -91,8 +91,8 @@ checkXPtr(ptr, "int", c("int"))
 
 <pre class="output">
 Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;int&quot;)): Bad XPtr signature:
-  Wrong return type 'double', should be 'int'.
-  Wrong number of arguments, should be 1'.
+  Wrong return type 'int', should be 'double'.
+  Wrong number of arguments, should be 2'.
 </pre>
 
 
@@ -105,9 +105,9 @@ checkXPtr(ptr, "int", c("double", "std::string"))
 
 <pre class="output">
 Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;double&quot;, &quot;std::string&quot;)): Bad XPtr signature:
-  Wrong return type 'double', should be 'int'.
-  Wrong argument type 'int', should be 'double'.
-  Wrong argument type 'double', should be 'std::string'.
+  Wrong return type 'int', should be 'double'.
+  Wrong argument type 'double', should be 'int'.
+  Wrong argument type 'std::string', should be 'double'.
 </pre>
 
 ## Complete use case
@@ -182,11 +182,11 @@ microbenchmark::microbenchmark(
 <pre class="output">
 Unit: microseconds
                      expr       min        lq       mean     median
-     execute(func_r, 1.5) 13812.742 15287.713 16429.4728 16017.6470
- execute(func_r_cpp, 1.5) 12150.643 13347.326 14482.0998 14145.5830
-   execute(func_cpp, 1.5)   288.156   369.646   440.1885   400.6895
-        uq       max neval cld
- 16818.716 53182.418   100   c
- 15078.917 22634.887   100  b 
-   445.511  1525.653   100 a  
+     execute(func_r, 1.5) 14364.442 14539.147 15269.3730 14679.8990
+ execute(func_r_cpp, 1.5) 13738.891 13981.898 14783.3359 14290.0630
+   execute(func_cpp, 1.5)   273.006   289.839   377.2792   356.6705
+         uq       max neval
+ 16158.6100 19749.851   100
+ 15710.1205 18902.110   100
+   421.6235  2095.696   100
 </pre>
