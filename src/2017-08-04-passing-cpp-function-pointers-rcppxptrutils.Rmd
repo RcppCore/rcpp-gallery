@@ -9,7 +9,7 @@ summary: Demonstrates how to build and check user-supplied C++ functions
 
 Sitting on top of R's external pointers, the `RcppXPtr` class provides
 a powerful and generic framework for
-[Passing user-supplied C++ functions](http://gallery.rcpp.org/articles/passing-cpp-function-pointers/)
+[Passing user-supplied C++ functions](https://gallery.rcpp.org/articles/passing-cpp-function-pointers/)
 to a C++ backend. This technique is exploited in the
 [RcppDE](https://cran.r-project.org/package=RcppDE) package, an
 efficient C++ based implementation of the

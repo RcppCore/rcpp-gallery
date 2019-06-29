@@ -2,7 +2,7 @@
 title: Gibbs Sampler in C++
 author: Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: rng sugar 
+tags: rng sugar
 summary: This example illustrate a popular MCMC sampler
 layout: post
 src: 2013-08-03-gibbs-sampler.cpp
@@ -13,14 +13,13 @@ different implementations or algorithms.
 
 One particular algorithm has been compared a number of times, starting
 [with an article by Darren Wilkinson](http://darrenjw.wordpress.com/2010/04/28/mcmc-programming-in-r-python-java-and-c/),
-and [Darren's follow--up article](http://darrenjw.wordpress.com/2011/07/16/gibbs-sampler-in-various-languages-revisited/) 
-which in turns responded in part to 
+and [Darren's follow--up article](http://darrenjw.wordpress.com/2011/07/16/gibbs-sampler-in-various-languages-revisited/)
+which in turns responded in part to
 [our article](http://dirk.eddelbuettel.com/blog/2011/07/14/).
 
 This post simply refreshes the implementation using Rcpp attributes.
 
 First we look at the R version, and its byte-compiled variant.
-
 
 
 {% highlight r %}
@@ -44,7 +43,6 @@ Rgibbs <- function(N,thin) {
 library(compiler)
 RCgibbs <- cmpfun(Rgibbs)
 {% endhighlight %}
-
 
 Creating a version in C++ is very straightforward thanks to Rcpp and
 Rcpp Attributes. It transfers the integer arguments `n` (number of
@@ -85,7 +83,6 @@ NumericMatrix RcppGibbs(int n, int thn) {
 }
 {% endhighlight %}
 
-
 With the functions in place, we can re-run the benchmark.
 
 {% highlight r %}
@@ -104,16 +101,15 @@ benchmark(Rgibbs(n, thn),
 
 <pre class="output">
                test replications elapsed relative
-3 RcppGibbs(n, thn)           10   1.161     1.00
-2   RCgibbs(n, thn)           10  45.763    39.42
-1    Rgibbs(n, thn)           10  57.995    49.95
+3 RcppGibbs(n, thn)           10   0.371    1.000
+2   RCgibbs(n, thn)           10  13.677   36.865
+1    Rgibbs(n, thn)           10  13.843   37.313
 </pre>
 
-
 As we have seen before, the C++ version is about 50 times faster,
-and around 40 times faster than the byte-compiled version. 
+and around 40 times faster than the byte-compiled version.
 
-A [related article here on the Rcpp Gallery](http://gallery.rcpp.org/articles/timing-rngs/)
+A [related article here on the Rcpp Gallery](https://gallery.rcpp.org/articles/timing-rngs/)
 looks into timing different RNG implementation as this study revealed
 that the generator for Gamma-distributed random number in R is not
-particularly fast.  
+particularly fast.

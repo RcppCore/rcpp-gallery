@@ -3,8 +3,8 @@ title: Summing a Vector in Parallel with RcppParallel
 author: JJ Allaire
 license: GPL (>= 2)
 tags: parallel featured
-summary: Demonstrates computing the sum of a vector in parallel using 
-  the RcppParallel package. 
+summary: Demonstrates computing the sum of a vector in parallel using
+  the RcppParallel package.
 layout: post
 src: 2014-06-29-parallel-vector-sum.cpp
 ---
@@ -34,29 +34,29 @@ double vectorSum(NumericVector x) {
 
 ### Parallel Version
 
-Now we adapt our code to run in parallel. We'll use the `parallelReduce` 
+Now we adapt our code to run in parallel. We'll use the `parallelReduce`
 function to do this. As with the
-[previous article](http://gallery.rcpp.org/articles/parallel-matrix-transform/)
-describing `parallelFor`, 
+[previous article](https://gallery.rcpp.org/articles/parallel-matrix-transform/)
+describing `parallelFor`,
 we implement a "Worker" function object with our logic and RcppParallel takes
 care of scheduling work on threads and calling our function when required. For
 parallelReduce the function object has three jobs:
 
 1. Implement a standard and "splitting" constructor. The standard constructor
-takes a pointer to the array that will be traversed and sets it's sum 
-variable to 0. The splitting constructor is called when work needs to be 
-split onto other threads---it takes a reference to the instance it is being 
-split from and simply copies the pointer to the input array and sets it's 
+takes a pointer to the array that will be traversed and sets it's sum
+variable to 0. The splitting constructor is called when work needs to be
+split onto other threads---it takes a reference to the instance it is being
+split from and simply copies the pointer to the input array and sets it's
 internal sum to 0.
 
-2. Implement `operator()` to perform the summing. Here we just call 
+2. Implement `operator()` to perform the summing. Here we just call
 `std::accumulate` as we did in the serial version, but limit the accumulation
-to the items specified by the `begin` and `end` arguments (note that other 
-threads will have been given the task of processing other items in the input 
+to the items specified by the `begin` and `end` arguments (note that other
+threads will have been given the task of processing other items in the input
 array). We save the accumulated value in our `value` member variable.
 
 3. Finally, we implement a `join` method which composes the operations of two
-Sum instances that were previously split. Here we simply add the accumulated 
+Sum instances that were previously split. Here we simply add the accumulated
 sum of the instance we are being joined with to our own.
 
 Here's the definition of the `Sum` function object:
@@ -68,25 +68,25 @@ Here's the definition of the `Sum` function object:
 using namespace RcppParallel;
 
 struct Sum : public Worker
-{   
+{
    // source vector
    const RVector<double> input;
-   
+
    // accumulated value
    double value;
-   
+
    // constructors
    Sum(const NumericVector input) : input(input), value(0) {}
    Sum(const Sum& sum, Split) : input(sum.input), value(0) {}
-   
+
    // accumulate just the element of the range I've been asked to
    void operator()(std::size_t begin, std::size_t end) {
       value += std::accumulate(input.begin() + begin, input.begin() + end, 0.0);
    }
-     
+
    // join my value with that of another Sum
-   void join(const Sum& rhs) { 
-      value += rhs.value; 
+   void join(const Sum& rhs) {
+      value += rhs.value;
    }
 };
 {% endhighlight %}
@@ -94,26 +94,26 @@ struct Sum : public Worker
 Note that `Sum` derives from the `RcppParallel::Worker` class. This is
 required for function objects passed to `parallelReduce`.
 
-Note also that we use the `RVector<double>` type for accessing the vector. 
-This is because this code will execute on a background thread where it's not 
-safe to call R or Rcpp APIs. The `RVector` class is included in the 
+Note also that we use the `RVector<double>` type for accessing the vector.
+This is because this code will execute on a background thread where it's not
+safe to call R or Rcpp APIs. The `RVector` class is included in the
 RcppParallel package and provides a lightweight, thread-safe wrapper around R
 vectors.
 
-Now that we've defined the functor, implementing the parallel sum 
+Now that we've defined the functor, implementing the parallel sum
 function is straightforward. Just initialize an instance of `Sum`
 with the input vector and call `parallelReduce`:
 
 {% highlight cpp %}
 // [[Rcpp::export]]
 double parallelVectorSum(NumericVector x) {
-   
-   // declare the SumBody instance 
+
+   // declare the SumBody instance
    Sum sum(x);
-   
+
    // call parallel_reduce to start the work
    parallelReduce(0, x.length(), sum);
-   
+
    // return the computed sum
    return sum.value;
 }
@@ -143,9 +143,9 @@ res[,1:4]
 
 <pre class="output">
                   test replications elapsed relative
-2 parallelVectorSum(v)          100   0.454    1.000
-1         vectorSum(v)          100   1.220    2.687
+2 parallelVectorSum(v)          100   0.248    1.000
+1         vectorSum(v)          100   0.894    3.605
 </pre>
 
-You can learn more about using RcppParallel at 
+You can learn more about using RcppParallel at
 [https://rcppcore.github.com/RcppParallel](https://rcppcore.github.com/RcppParallel).

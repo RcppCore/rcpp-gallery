@@ -12,7 +12,7 @@ src: 2018-03-27-quiet-stop-and-warning.Rmd
 
 ### Introduction
 
-`Rcpp` has an elegant [mechanism of exception handling](http://gallery.rcpp.org/articles/intro-to-exceptions/)
+`Rcpp` has an elegant [mechanism of exception handling](https://gallery.rcpp.org/articles/intro-to-exceptions/)
 whereby `C++` exceptions are automatically translated to errors in `R`. For most
 projects, the `Rcpp::stop` wrapper (in conjunction with the `BEGIN_RCPP` and 
 `END_RCPP` macros automatically inserted by 

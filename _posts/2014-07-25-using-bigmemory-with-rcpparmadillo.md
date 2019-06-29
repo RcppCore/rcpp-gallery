@@ -24,7 +24,7 @@ the `RcppArmadillo` package.
 This example demonstrates how to use the functionality provided by
 `Armadillo` on `big.matrix` objects using `Rcpp`. To learn how to
 work with `big.matrix` objects in `Rcpp` without using `RcppArmadillo`
-see this [previous gallery post](http://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
+see this [previous gallery post](https://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
 
 Utilising the functions provided by `armadillo` simply requires the
 `Rcpp` objects and `big.matrix` objects to be case to the appropriate
@@ -147,27 +147,11 @@ NumericVector BigArmaColSums(SEXP pBigMat, IntegerVector subsetCols) {
 {% endhighlight %}
 
 So lets see how this function performs in comparison to `colSums`,
-[BigColSums](http://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
+[BigColSums](https://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
 
 {% highlight r %}
 library(microbenchmark)
 library(bigmemory)
-{% endhighlight %}
-
-
-
-<pre class="output">
-Loading required package: methods
-Loading required package: bigmemory.sri
-Loading required package: BH
-
-bigmemory &gt;= 4.0 is a major revision since 3.1.2; please see packages
-biganalytics and and bigtabulate and http://www.bigmemory.org for more information.
-</pre>
-
-
-
-{% highlight r %}
 # Lets test the performance on 100 random columns from a 60*1000 matrix.
 set.seed(4)
 ridx <- sample(1:1000, 100)
@@ -182,9 +166,9 @@ microbenchmark(res1 <- colSums(m[,ridx]), res2 <- BigArmaColSums(bigm@address, r
 
 <pre class="output">
 Unit: microseconds
-                                       expr   min    lq median    uq     max neval
-                 res1 &lt;- colSums(m[, ridx]) 56.24 57.98  59.13 75.12 1068.41   100
- res2 &lt;- BigArmaColSums(bigm@address, ridx) 12.48 13.84  19.53 36.55   61.63   100
+                                       expr    min      lq    mean  median      uq    max neval
+                 res1 &lt;- colSums(m[, ridx]) 13.372 14.0565 19.1906 14.3985 25.6325 43.795   100
+ res2 &lt;- BigArmaColSums(bigm@address, ridx)  5.159  5.5150 11.4413  7.3200 17.9555 33.930   100
 </pre>
 
 

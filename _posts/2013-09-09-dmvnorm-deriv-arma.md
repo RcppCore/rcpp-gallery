@@ -10,7 +10,7 @@ src: 2013-09-09-dmvnorm-deriv-arma.Rmd
 ---
 
 There is a great RcppArmadillo
-[implementation](http://gallery.rcpp.org/articles/dmvnorm_arma/) of
+[implementation](https://gallery.rcpp.org/articles/dmvnorm_arma/) of
 multivariate normal densities. But I was looking for the first derivative of
 the multivariate normal densities. Good implementations are surprisingly hard
 to come by. I wasn't able to find any online and my first R implementations
@@ -62,7 +62,7 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
 {% endhighlight %}
 
 These implementations work but they are not very fast. So let's look at a RcppArmadillo version.
-The `Mahalanobis` function and the first part of `dmvnorm_deriv_arma` are based on [this](http://gallery.rcpp.org/articles/dmvnorm_arma/)
+The `Mahalanobis` function and the first part of `dmvnorm_deriv_arma` are based on [this](https://gallery.rcpp.org/articles/dmvnorm_arma/)
 gallery example, which implements a fast multivariate normal density with RcppArmadillo.
 
 
@@ -119,9 +119,9 @@ benchmark(dmvnorm_deriv_arma(X,m,s),
 
 <pre class="output">
                                     test replications elapsed relative
-1            dmvnorm_deriv_arma(X, m, s)           10   0.021    1.000
-3 dmvnorm_deriv2(X, mean = m, sigma = s)           10   6.813  324.429
-2   dmvnorm_deriv1(X, mu = m, sigma = s)           10  22.439 1068.524
+1            dmvnorm_deriv_arma(X, m, s)           10   0.258    1.000
+3 dmvnorm_deriv2(X, mean = m, sigma = s)           10   0.962    3.729
+2   dmvnorm_deriv1(X, mu = m, sigma = s)           10   4.550   17.636
 </pre>
 The RcppArmadillo implementation is several hundred times faster! Such stunning performance increases are possible when existing implementation rely on pure R (or, as in `dmvnorm_deriv2`, do some of the heavy lifting in R). Of course, the R implementation can probably be improved.
 
@@ -140,6 +140,6 @@ drape.plot(x,y,z1,border=NA, add.legend=FALSE, phi=30, theta= 50)
 drape.plot(x,y,z2,border=NA, add.legend=FALSE, phi=30, theta= 50)
 {% endhighlight %}
 
-![plot of chunk unnamed-chunk-5](../figure/2013-09-09-dmvnorm-deriv-arma-unnamed-chunk-5-1.png) 
+![plot of chunk unnamed-chunk-5](../figure/2013-09-09-dmvnorm-deriv-arma-unnamed-chunk-5-1.png)
 
 Note: This is an updated version dated 2015-01-06 of the original article.

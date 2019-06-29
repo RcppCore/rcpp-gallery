@@ -22,7 +22,7 @@ R-package [Rpyplot](https://github.com/mpastell/Rpyplot). The package seems
 to work well on Ubuntu and Windows 7 for my use cases.
 
 A lot of the code is based on the informative [Call Python from R through
-Rcpp](http://gallery.rcpp.org/articles/rcpp-python/) post in Rcpp gallery. I
+Rcpp](https://gallery.rcpp.org/articles/rcpp-python/) post in Rcpp gallery. I
 decided not use Boost.Python to make compiling on Windows simpler.
 
 This post explains how I implemented the package and hopefully it will also
@@ -100,7 +100,7 @@ It is not enough to be able to just run Python commands from strings, but we als
 {% highlight cpp %}
 #include <Rcpp.h>
 #include <Python.h>
-#include <stdlib.h>n
+#include <stdlib.h>
 using namespace Rcpp;
 
 //Convert NumericVector to Python List

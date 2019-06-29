@@ -194,7 +194,7 @@ language does not support function overloading. In fact, C does not
 support *any* flavor of type-safe static polymorphism, meaning that our generic 
 function must be implemented through run-time polymorphism, as touched on in 
 Kevin Ushey's Gallery article [Dynamic Wrapping and Recursion with Rcpp](
-http://gallery.rcpp.org/articles/rcpp-wrap-and-recurse/).
+https://gallery.rcpp.org/articles/rcpp-wrap-and-recurse/).
 
 #### Rcpp Implementation (Second Attempt)
 

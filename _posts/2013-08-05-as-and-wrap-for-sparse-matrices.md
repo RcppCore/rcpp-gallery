@@ -9,7 +9,7 @@ layout: post
 src: 2013-08-05-as-and-wrap-for-sparse-matrices.cpp
 ---
 An earlier article discussed
-[sparse matrix conversion](http://gallery.rcpp.org/articles/armadillo-sparse-matrix)
+[sparse matrix conversion](https://gallery.rcpp.org/articles/armadillo-sparse-matrix)
 but stopped short of showing how to create custom `as<>()` and `wrap()` methods
 or functions.  This post started to close this gap.
 
@@ -34,9 +34,9 @@ _Nota bene 2: As of `RcppArmadillo` release 0.3.920.1 (based on `Armadillo` 3.92
 there is also a new constructor taking vectors `rowind`, `colptr` and `values`._
 
 _Nota bene 3:
-Since `RcppArmadillo` release 0.7.960.1.1, a fulle eleven types of sparse matrices on 
+Since `RcppArmadillo` release 0.7.960.1.1, a fulle eleven types of sparse matrices on
 the R side are supported. You can pass these directly to RcppArmadillo, and each will be
-converted to an `arma::sp_mat` by a corresponding function. More details are in 
+converted to an `arma::sp_mat` by a corresponding function. More details are in
 the [sparse Matrix vignette](https://cran.r-project.org/web/packages/RcppArmadillo/vignettes/RcppArmadillo-sparseMatrix.pdf)._
 
 First, we look at the `as` method.

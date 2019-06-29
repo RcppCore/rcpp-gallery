@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /tags/
 
-Sitemap: http://gallery.rcpp.org/sitemap.txt
+Sitemap: https://gallery.rcpp.org/sitemap.txt

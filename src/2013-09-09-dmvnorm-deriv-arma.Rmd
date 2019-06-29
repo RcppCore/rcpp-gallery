@@ -8,7 +8,7 @@ summary: Fast implementation of the first derivative of the Multivariate Normal 
 ---
 
 There is a great RcppArmadillo
-[implementation](http://gallery.rcpp.org/articles/dmvnorm_arma/) of
+[implementation](https://gallery.rcpp.org/articles/dmvnorm_arma/) of
 multivariate normal densities. But I was looking for the first derivative of
 the multivariate normal densities. Good implementations are surprisingly hard
 to come by. I wasn't able to find any online and my first R implementations
@@ -58,7 +58,7 @@ dmvnorm_deriv2 <- function(X, mean, sigma) {
 ```
 
 These implementations work but they are not very fast. So let's look at a RcppArmadillo version.
-The `Mahalanobis` function and the first part of `dmvnorm_deriv_arma` are based on [this](http://gallery.rcpp.org/articles/dmvnorm_arma/)
+The `Mahalanobis` function and the first part of `dmvnorm_deriv_arma` are based on [this](https://gallery.rcpp.org/articles/dmvnorm_arma/)
 gallery example, which implements a fast multivariate normal density with RcppArmadillo.
 
 ```{r, engine='Rcpp'}

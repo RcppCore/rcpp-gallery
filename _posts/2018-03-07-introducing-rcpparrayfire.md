@@ -6,7 +6,7 @@ mathjax: true
 tags: basics gpu
 summary: "Introduces RcppArrayFire, an interface to the ArrayFire library."
 layout: post
-src: 2018-03-02-introducing-rcpparrayfire.Rmd
+src: 2018-03-07-introducing-rcpparrayfire.Rmd
 ---
 
 ### Introduction
@@ -53,7 +53,7 @@ install.packages("RcppArrayFire", configure.args = "--with-arrayfire=/opt/arrayf
 
 ### A first example
 
-Let's look at the classical example of [calculating $$\pi$$](http://gallery.rcpp.org/articles/simulating-pi/)
+Let's look at the classical example of [calculating $$\pi$$](https://gallery.rcpp.org/articles/simulating-pi/)
 via simulation. The basic idea is to generate a large number of random points within
 the unit square. An approximation for $$\pi$$ can then be calculated from the ratio
 of points within the unit circle to the total number of points. A vectorized 
@@ -81,7 +81,7 @@ pi ~=  3.13999
 
 <pre class="output">
    user  system elapsed 
-  0.102   0.009   0.111 
+  0.047   0.008   0.055 
 </pre>
 
 A simple way to use C++ code in R is to use the inline package or `cppFunction()`
@@ -105,7 +105,7 @@ cat("pi ~= ", piAF(10^6), "\n") # also used for warm-up
 
 
 <pre class="output">
-pi ~=  3.14279 
+pi ~=  3.1451 
 </pre>
 
 
@@ -118,7 +118,7 @@ system.time(piAF(10^6))
 
 <pre class="output">
    user  system elapsed 
-  0.000   0.001   0.000 
+  0.001   0.000   0.001 
 </pre>
 
 Several things are worth noting:
@@ -142,7 +142,7 @@ fewer computations.
 
 Up to now we have only considered simple types like `double` or `int` as function
 parameters and return values.  However, we can also use arrays. Consider the case
-of an European put option that was recently handled with [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/).
+of an European put option that was recently handled with [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/).
 The Armadillo based function from this post reads:
 
 
@@ -220,7 +220,7 @@ array put_option_pricer_af(RcppArrayFire::typed_array<f32> s, double k, double r
 }
 {% endhighlight %}
 
-Compared with the implementations in [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/) 
+Compared with the implementations in [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/) 
 the syntax is again almost the same. One exception is that ArrayFire does not contain
 a function for the cumulative normal distribution function. However, the [closely related error function](https://en.wikipedia.org/wiki/Error_function#Cumulative_distribution_function)
 is available.
@@ -229,7 +229,7 @@ Since an object of type `af::array` can contain different [data types](http://ar
 the templated wrapper class `RcppArrayFire::typed_array<>` is used to indicate the
 desired data type when converting from R to C++. Again single precision floats are
 used with ArrayFire, which leads to differences of the order $$10^{-6}$$ compared to the 
-results from [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/):
+results from [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/):
 
 
 {% highlight r %}
@@ -239,14 +239,14 @@ put_option_pricer_af(s = 55:60, 60, .01, .02, 1, .05)
 
 
 <pre class="output">
-[1] 5.52021 4.58143 3.68485 2.85516 2.11883 1.49793
+[1] 5.52021 4.58142 3.68485 2.85517 2.11883 1.49793
 </pre>
 
 ### Performance
 
 The reason to use hardware accelerators is of course the quest for increased performance.
 How does ArrayFire fare in this respect? Using the same
-benchmark as in the [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/)
+benchmark as in the [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/)
 comparison:
 
 
@@ -262,8 +262,8 @@ rbenchmark::benchmark(Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
 
 <pre class="output">
   test replications elapsed relative
-2   AF          100   0.471    1.000
-1 Arma          100   5.923   12.575
+2   AF          100   0.489    1.000
+1 Arma          100   1.928    3.943
 </pre>
 
 Here a Nvidia GeForce GT 1030 is used together with ArrayFire's CUDA backend. With
@@ -286,8 +286,8 @@ rbenchmark::benchmark(Arma = put_option_pricer_arma(s, 60, .01, .02, 1, .05),
 
 <pre class="output">
   test replications elapsed relative
-1 Arma         1000   0.008    1.000
-2   AF         1000   0.123   15.375
+1 Arma         1000   0.007    1.000
+2   AF         1000   0.088   12.571
 </pre>
 
 But is it realistic to process $$10^6$$ options at once? Probably not in the way used
@@ -350,12 +350,12 @@ head(within(options,
 
 <pre class="output">
         s  k    r    y t sigma           p
-1 87.4192 50 0.01 0.02 1  0.05 7.44673e-29
-2 48.7060 50 0.01 0.02 1  0.05 2.09401e+00
-3 67.2626 50 0.01 0.02 1  0.05 2.34556e-09
-4 72.6573 50 0.01 0.02 1  0.05 6.84457e-14
-5 68.0854 50 0.01 0.02 1  0.05 5.26653e-10
-6 57.8775 50 0.01 0.02 1  0.05 2.57750e-03
+1 87.4192 50 0.01 0.02 1  0.05 7.45937e-29
+2 48.7060 50 0.01 0.02 1  0.05 2.09402e+00
+3 67.2626 50 0.01 0.02 1  0.05 2.34672e-09
+4 72.6573 50 0.01 0.02 1  0.05 6.84430e-14
+5 68.0854 50 0.01 0.02 1  0.05 5.26394e-10
+6 57.8775 50 0.01 0.02 1  0.05 2.57756e-03
 </pre>
 
 ### Conclusion

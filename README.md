@@ -1,7 +1,7 @@
 
 ## Rcpp Gallery
 
-This is the repository for the [Rcpp Gallery](http://gallery.rcpp.org) website,  a collection of community contributed articles and code examples that illustrate techniques for programming with [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html). The goal is to provide a forum for easy sharing of technical insights and methods of work. We hope this helps both beginners to get started with Rcpp as well as advanced users to glean insights from seeing how others use Rcpp to solve more challenging problems.
+This is the repository for the [Rcpp Gallery](https://gallery.rcpp.org) website,  a collection of community contributed articles and code examples that illustrate techniques for programming with [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html). The goal is to provide a forum for easy sharing of technical insights and methods of work. We hope this helps both beginners to get started with Rcpp as well as advanced users to glean insights from seeing how others use Rcpp to solve more challenging problems.
 
 ## Contributing
 

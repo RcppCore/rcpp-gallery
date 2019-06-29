@@ -667,11 +667,11 @@ Hopefully you'll find them as gateways for your exploration of Rcpp.
 
 
 * [Rcpp webpage](http://dirk.eddelbuettel.com/code/rcpp.html) Dirk Eddelbuettel's Rcpp webpage.
-* [Rcpp Gallery](http://gallery.rcpp.org/) A collection of examples on Rcpp usage.
+* [Rcpp Gallery](https://gallery.rcpp.org/) A collection of examples on Rcpp usage.
 * Vignette on [Rcpp-attributes](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-attributes.pdf).
 * [Rcpp-quickref](http://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-quickref.pdf) A 'Cheatsheet' on Rcpp usage.
 * Hadley Wickham's [Advanced R](http://adv-r.had.co.nz/Rcpp.html) book.
-* [Handling Strings with Rcpp](http://gallery.rcpp.org/articles/strings_with_rcpp/).
+* [Handling Strings with Rcpp](https://gallery.rcpp.org/articles/strings_with_rcpp/).
 * [StringVector](http://statr.me/rcpp-note/api/Vector_ctor.html#_CPPv212StringVector) at Rcpp Note.
 
 Once you've crossed from R to C++ there are many of sources of information online.

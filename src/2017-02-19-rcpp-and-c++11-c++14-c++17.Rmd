@@ -11,8 +11,8 @@ summary: "Rcpp supports any C++ variant: from C++98 to C++11, C++14 and now C++1
 When we started the Rcpp Gallery in late 2012, a few of us spent the next four weeks diligently
 writing articles ensuring that at least one new article would be posted per day. Two early articles
 covered the then-budding support for C++11.  Both
-[First steps in using C++11 with Rcpp](http://gallery.rcpp.org/articles/first-steps-with-C++11/) and
-[A first lambda function with C++11 and Rcpp](http://gallery.rcpp.org/articles/simple-lambda-func-c++11/)
+[First steps in using C++11 with Rcpp](https://gallery.rcpp.org/articles/first-steps-with-C++11/) and
+[A first lambda function with C++11 and Rcpp](https://gallery.rcpp.org/articles/simple-lambda-func-c++11/)
 started by actually showing how to set the compiler directive via the `PKG_CXXFLAGS` environment
 variable.
 

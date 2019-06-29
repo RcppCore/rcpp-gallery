@@ -22,9 +22,9 @@ using namespace Rcpp;
 NumericVector run_sum(NumericVector x, int n) {
     int sz = x.size();
     NumericVector res(sz);
-    
+
     res[n-1] = std::accumulate(x.begin(), x.end()-sz+n, 0.0);
-    
+
     for(int i = n; i < sz; i++) {
        res[i] = res[i-1] + x[i] - x[i-n];
     }
@@ -74,7 +74,7 @@ run_mean(x, n)
  * With `min_element` and `max_element` from the algorithm header, one can
  * also easily write a function that calculates the min and the
  * max of a range over a running window. Note the `*` to dereference
- * the iterator to obtain the value. See [Finding the minimum of a vector](http://gallery.rcpp.org/articles/vector-minimum/)
+ * the iterator to obtain the value. See [Finding the minimum of a vector](https://gallery.rcpp.org/articles/vector-minimum/)
  * for another example of using `min_element`.
  */
 
@@ -119,7 +119,7 @@ run_max(x, n)
  */
 
 /**
- * This post demonstrates how to incorporate a few useful functions 
- * from the STL, `accumulate`, `min_element`, and 
+ * This post demonstrates how to incorporate a few useful functions
+ * from the STL, `accumulate`, `min_element`, and
  * `max_element`, to write 'run' functions with Rcpp.
  */

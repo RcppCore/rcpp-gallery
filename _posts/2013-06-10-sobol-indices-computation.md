@@ -77,23 +77,11 @@ Rcpp::List FirstOrderSobol(int n) {
 {% endhighlight %}
 
 
-
 Now compare the results with a similar function to estimate Sobol indices from the excellent package [sensitivity](http://cran.r-project.org/web/packages/sensitivity/index.html) (it has a lot of other sensitivity indices and estimation procedures efficiently implemented and well documented).
 
 
 {% highlight r %}
 suppressPackageStartupMessages(require(sensitivity))
-{% endhighlight %}
-
-
-
-<pre class="output">
-Warning: there is no package called 'sensitivity'
-</pre>
-
-
-
-{% highlight r %}
 sensitivity_sobol2002<-function(n){
   X1 <- data.frame(matrix(runif(8 * n), nrow = n))
   X2 <- data.frame(matrix(runif(8 * n), nrow = n))
@@ -111,9 +99,10 @@ rbenchmark::benchmark(sensitivity_sobol2002(n),
 
 
 <pre class="output">
-Error: could not find function &quot;sobol2002&quot;
+                      test elapsed relative user.self sys.self
+2       FirstOrderSobol(n)   2.048    1.000     2.048    0.000
+1 sensitivity_sobol2002(n)   4.181    2.042     4.111    0.071
 </pre>
-
 
 It seems that the Rcpp code is faster (by a factor between 5 and 10), and part of the explanation may be in the use of a dataframe in the package sensitivity. 
 The result for the case of the Sobol function are slightly different (see the first two indices) certainly due to different definition of indices. 
@@ -124,20 +113,8 @@ n <- 10000
 X1 <- data.frame(matrix(runif(8 * n), nrow = n))
 X2 <- data.frame(matrix(runif(8 * n), nrow = n))
 x <- sobol2002(model = sobol.fun, X1, X2) ## indices from package sensitivity
-{% endhighlight %}
-
-
-
-<pre class="output">
-Error: could not find function &quot;sobol2002&quot;
-</pre>
-
-
-
-{% highlight r %}
 res=FirstOrderSobol(n)# our indices
 {% endhighlight %}
-
 
 
 {% highlight r %}
@@ -148,13 +125,14 @@ cat("Total indices\n From Sensitivity package : ",x$S[,1],"\n",
 
 
 <pre class="output">
-Error: object 'x' not found
+Total indices
+ From Sensitivity package :  0.667966 0.192648 0.0294923 0.00329963 4.15316e-05 0.000134084 0.000468673 -1.63014e-05 
+ From our function :  0.792887 0.0851894 0.00885642 0.00241633 -7.88222e-05 8.27116e-06 0.000206418 -3.17788e-05 
 </pre>
-
 
 The use of Rcpp here hence allows to have a faster code at the cost of changing manually the estimation loop in C++ if one want to make a sensitivity analysis of another function (than the "Sobol function"). 
 
-For standard users this migth be a cost difficult to afford. A solution to overcome this problem is to let the user supply the function f and even the distribution of x. This requires that you know how to pass a function (either implemented in c++ or in R) as a parameter to FirstOrderSobol. Dirk has already done that in package [RcppDE](http://cran.r-project.org/web/packages/RcppDE/index.html). Part of the trick is explained in [this](http://gallery.rcpp.org/articles/passing-cpp-function-pointers/) Rcpp Gallery post , and the  answer 
+For standard users this migth be a cost difficult to afford. A solution to overcome this problem is to let the user supply the function f and even the distribution of x. This requires that you know how to pass a function (either implemented in c++ or in R) as a parameter to FirstOrderSobol. Dirk has already done that in package [RcppDE](http://cran.r-project.org/web/packages/RcppDE/index.html). Part of the trick is explained in [this](https://gallery.rcpp.org/articles/passing-cpp-function-pointers/) Rcpp Gallery post , and the  answer 
 [here](https://stat.ethz.ch/pipermail/r-devel/2011-September/062052.html) provides more details. Could be the purpose of a further package. In addition my experience with sensitivity analysis is that the Sobol Function is very simple, this means that in a lot of practical situation the gain of implementing the subsequent function in c++ can be much larger. 
 
 Finally, I like the fact that student interested in Sobol indices get the details of the used estimator hence not seeing Sobol indices estimation as a black box. Rcpp makes it possible to do so while keeping the code very efficient (here more efficient than the optimized package) ! 

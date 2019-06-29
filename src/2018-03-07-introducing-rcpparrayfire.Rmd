@@ -49,7 +49,7 @@ install.packages("RcppArrayFire", configure.args = "--with-arrayfire=/opt/arrayf
 
 ### A first example
 
-Let's look at the classical example of [calculating $$\pi$$](http://gallery.rcpp.org/articles/simulating-pi/)
+Let's look at the classical example of [calculating $$\pi$$](https://gallery.rcpp.org/articles/simulating-pi/)
 via simulation. The basic idea is to generate a large number of random points within
 the unit square. An approximation for $$\pi$$ can then be calculated from the ratio
 of points within the unit circle to the total number of points. A vectorized 
@@ -105,7 +105,7 @@ fewer computations.
 
 Up to now we have only considered simple types like `double` or `int` as function
 parameters and return values.  However, we can also use arrays. Consider the case
-of an European put option that was recently handled with [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/).
+of an European put option that was recently handled with [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/).
 The Armadillo based function from this post reads:
 
 ```{Rcpp}
@@ -168,7 +168,7 @@ array put_option_pricer_af(RcppArrayFire::typed_array<f32> s, double k, double r
 }
 ```
 
-Compared with the implementations in [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/) 
+Compared with the implementations in [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/) 
 the syntax is again almost the same. One exception is that ArrayFire does not contain
 a function for the cumulative normal distribution function. However, the [closely related error function](https://en.wikipedia.org/wiki/Error_function#Cumulative_distribution_function)
 is available.
@@ -177,7 +177,7 @@ Since an object of type `af::array` can contain different [data types](http://ar
 the templated wrapper class `RcppArrayFire::typed_array<>` is used to indicate the
 desired data type when converting from R to C++. Again single precision floats are
 used with ArrayFire, which leads to differences of the order $$10^{-6}$$ compared to the 
-results from [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/):
+results from [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/):
 
 ```{r}
 put_option_pricer_af(s = 55:60, 60, .01, .02, 1, .05)
@@ -187,7 +187,7 @@ put_option_pricer_af(s = 55:60, 60, .01, .02, 1, .05)
 
 The reason to use hardware accelerators is of course the quest for increased performance.
 How does ArrayFire fare in this respect? Using the same
-benchmark as in the [R, Rcpp and RcppArmadillo](http://gallery.rcpp.org/articles/black-scholes-three-ways/)
+benchmark as in the [R, Rcpp and RcppArmadillo](https://gallery.rcpp.org/articles/black-scholes-three-ways/)
 comparison:
 
 ```{r}

@@ -23,7 +23,7 @@
  * This example demonstrates how to use the functionality provided by
  * `Armadillo` on `big.matrix` objects using `Rcpp`. To learn how to
  * work with `big.matrix` objects in `Rcpp` without using `RcppArmadillo`
- * see this [previous gallery post](http://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
+ * see this [previous gallery post](https://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
  *
  * Utilising the functions provided by `armadillo` simply requires the
  * `Rcpp` objects and `big.matrix` objects to be case to the appropriate
@@ -145,7 +145,7 @@ NumericVector BigArmaColSums(SEXP pBigMat, IntegerVector subsetCols) {
 
 /**
  * So lets see how this function performs in comparison to `colSums`,
- * [BigColSums](http://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
+ * [BigColSums](https://gallery.rcpp.org/articles/using-bigmemory-with-rcpp/).
  */
 
 /*** R
@@ -163,4 +163,3 @@ microbenchmark(res1 <- colSums(m[,ridx]), res2 <- BigArmaColSums(bigm@address, r
 all.equal(res1, res2)
 
 */
-

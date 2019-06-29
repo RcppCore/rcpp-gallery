@@ -13,7 +13,7 @@ is a tool to help you monitor the execution time of your C++ code, by
 providing a way to interrupt the execution inside the C++ code, and also to
 display a progress bar indicative of the state of your computation. Additionally, 
 it is compatible with multi-threaded code, for example using OpenMP. 
-[The initial (yet updated) article](http://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
+[The initial (yet updated) article](https://gallery.rcpp.org/articles/using-rcppprogress/) explains the 
 basic setup.
 
 Since version 0.4 it became more simple to create custom progress bars. In this new
@@ -54,7 +54,7 @@ long_computation(10)
 
 
 <pre class="output">
-[1] 12.20382
+[1] 12.2038
 </pre>
 
 What you get is a basic and useful console visualization that looks like this: 
@@ -157,7 +157,7 @@ long_computation_minimal(10)
 
 
 <pre class="output">
-[1] 12.20382
+[1] 12.2038
 </pre>
 
 The `display()` method in this example does nothing more than printing the word 

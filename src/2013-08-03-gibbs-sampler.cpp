@@ -3,17 +3,17 @@
  * @title Gibbs Sampler in C++
  * @author Dirk Eddelbuettel
  * @license GPL (>= 2)
- * @tags rng sugar 
+ * @tags rng sugar
  * @summary This example illustrate a popular MCMC sampler
  *
  * Markov Chain Monte Carlo (MCMC) is a popular simulation method. As
  * it is somewhat demanding, it is also frequently used to benchmark
  * different implementations or algorithms.
- * 
+ *
  * One particular algorithm has been compared a number of times, starting
  * [with an article by Darren Wilkinson](http://darrenjw.wordpress.com/2010/04/28/mcmc-programming-in-r-python-java-and-c/),
- * and [Darren's follow--up article](http://darrenjw.wordpress.com/2011/07/16/gibbs-sampler-in-various-languages-revisited/) 
- * which in turns responded in part to 
+ * and [Darren's follow--up article](http://darrenjw.wordpress.com/2011/07/16/gibbs-sampler-in-various-languages-revisited/)
+ * which in turns responded in part to
  * [our article](http://dirk.eddelbuettel.com/blog/2011/07/14/).
  *
  * This post simply refreshes the implementation using Rcpp attributes.
@@ -49,7 +49,7 @@ RCgibbs <- cmpfun(Rgibbs)
  * simulations) and `thn` (number of extra thinning simulations),
  * initializes the R random number generator for us (eg no need to manual
  * nstantiate the `RNGScope` object), and returns the result matrix
- * 
+ *
  * Also, since the initial posts were written, we made the (scalar) RNGs
  * of the R API available directly via the `R` namespace. This is both
  * little nice to read than the poor-man's pseudo-namespace in C via the
@@ -101,10 +101,10 @@ benchmark(Rgibbs(n, thn),
 
 /**
  * As we have seen before, the C++ version is about 50 times faster,
- * and around 40 times faster than the byte-compiled version. 
+ * and around 40 times faster than the byte-compiled version.
  *
- * A [related article here on the Rcpp Gallery](http://gallery.rcpp.org/articles/timing-rngs/)
+ * A [related article here on the Rcpp Gallery](https://gallery.rcpp.org/articles/timing-rngs/)
  * looks into timing different RNG implementation as this study revealed
  * that the generator for Gamma-distributed random number in R is not
- * particularly fast.  
+ * particularly fast.
 */
