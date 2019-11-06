@@ -8,7 +8,7 @@ layout: post
 src: 2019-11-05-parallel-aggregate-to-vector.cpp
 ---
 This article demonstrates using the
-[RcppParallel](https://rcppcore.github.com/RcppParallel) package to aggregate
+[RcppParallel](https://rcppcore.github.com/RcppParallel/) package to aggregate
 to an output vector. It extends directly from previous demonstrations of
 [single-valued
 aggregation](https://gallery.rcpp.org/articles/parallel-vector-sum), through
