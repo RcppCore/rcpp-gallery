@@ -3,8 +3,7 @@ title: Passing user-supplied C++ functions with RcppXPtrUtils
 author: Iñaki Ucar
 license: GPL (>= 2)
 tags: function
-summary: Demonstrates how to build and check user-supplied C++ functions 
-  with the RcppXPtrUtils package
+summary: Demonstrates how to build and check user-supplied C++ functions with the RcppXPtrUtils package
 ---
 
 Sitting on top of R's external pointers, the `RcppXPtr` class provides
@@ -23,7 +22,7 @@ couple of issues though:
    complies with the internal signature supported by the C++ backend,
    which may lead to weird runtime errors.
 
-## Better `XPtr` handling with RcppXPtrUtils
+### Better `XPtr` handling with RcppXPtrUtils
 
 In a nutshell, RcppXPtrUtils provides functions for dealing with these
 two issues: namely, `cppXPtr` and `checkXPtr`. As a package author,
@@ -37,6 +36,7 @@ returns an `XPtr` to be passed to, unwrapped and called from C++. The
 returned object is an R's `externalptr` wrapped into a class called
 `XPtr` along with additional information about the function signature.
 
+
 ```{r}
 library(RcppXPtrUtils)
 
@@ -48,6 +48,7 @@ ptr
 The `checkXptr` function checks the object against a given
 signature. If the verification fails, it throws an informative error:
 
+
 ```{r, error=TRUE}
 checkXPtr(ptr, type="double", args=c("int", "double")) # returns silently
 checkXPtr(ptr, "int", c("int", "double"))
@@ -55,12 +56,12 @@ checkXPtr(ptr, "int", c("int"))
 checkXPtr(ptr, "int", c("double", "std::string"))
 ```
 
-## Complete use case
+### Complete use case
 
 First, let us define a templated C++ backend that performs some
 processing with a user-supplied function and a couple of adapters:
 
-```{r, engine='Rcpp'}
+```{r, engine="Rcpp"}
 #include <Rcpp.h>
 using namespace Rcpp;
 

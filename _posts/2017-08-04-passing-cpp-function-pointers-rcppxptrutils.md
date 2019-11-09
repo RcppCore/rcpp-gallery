@@ -3,8 +3,7 @@ title: Passing user-supplied C++ functions with RcppXPtrUtils
 author: Iñaki Ucar
 license: GPL (>= 2)
 tags: function
-summary: Demonstrates how to build and check user-supplied C++ functions 
-  with the RcppXPtrUtils package
+summary: Demonstrates how to build and check user-supplied C++ functions with the RcppXPtrUtils package
 layout: post
 src: 2017-08-04-passing-cpp-function-pointers-rcppxptrutils.Rmd
 ---
@@ -25,7 +24,7 @@ couple of issues though:
    complies with the internal signature supported by the C++ backend,
    which may lead to weird runtime errors.
 
-## Better `XPtr` handling with RcppXPtrUtils
+### Better `XPtr` handling with RcppXPtrUtils
 
 In a nutshell, RcppXPtrUtils provides functions for dealing with these
 two issues: namely, `cppXPtr` and `checkXPtr`. As a package author,
@@ -41,10 +40,154 @@ returned object is an R's `externalptr` wrapped into a class called
 
 
 
+{% highlight r %}
+library(RcppXPtrUtils)
+
+ptr <- cppXPtr("double foo(int a, double b) { return a + b; }")
+class(ptr)
+{% endhighlight %}
 
 
 
+<pre class="output">
+[1] &quot;XPtr&quot;
+</pre>
 
 
 
+{% highlight r %}
+ptr
+{% endhighlight %}
 
+
+
+<pre class="output">
+'double foo(int a, double b)' &lt;pointer: 0x564011b984e0&gt;
+</pre>
+
+The `checkXptr` function checks the object against a given
+signature. If the verification fails, it throws an informative error:
+
+
+
+{% highlight r %}
+checkXPtr(ptr, type="double", args=c("int", "double")) # returns silently
+checkXPtr(ptr, "int", c("int", "double"))
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;int&quot;, &quot;double&quot;)): Bad XPtr signature:
+  Wrong return type 'int', should be 'double'.
+</pre>
+
+
+
+{% highlight r %}
+checkXPtr(ptr, "int", c("int"))
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;int&quot;)): Bad XPtr signature:
+  Wrong return type 'int', should be 'double'.
+  Wrong number of arguments, should be 2'.
+</pre>
+
+
+
+{% highlight r %}
+checkXPtr(ptr, "int", c("double", "std::string"))
+{% endhighlight %}
+
+
+
+<pre class="output">
+Error in checkXPtr(ptr, &quot;int&quot;, c(&quot;double&quot;, &quot;std::string&quot;)): Bad XPtr signature:
+  Wrong return type 'int', should be 'double'.
+  Wrong argument type 'double', should be 'int'.
+  Wrong argument type 'std::string', should be 'double'.
+</pre>
+
+### Complete use case
+
+First, let us define a templated C++ backend that performs some
+processing with a user-supplied function and a couple of adapters:
+
+
+{% highlight cpp %}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+template <typename T>
+NumericVector core_processing(T func, double l) {
+  double accum = 0;
+  for (int i=0; i<1e3; i++)
+    accum += sum(as<NumericVector>(func(3, l)));
+  return NumericVector(1, accum);
+}
+
+// [[Rcpp::export]]
+NumericVector execute_r(Function func, double l) {
+  return core_processing<Function>(func, l);
+}
+
+typedef SEXP (*funcPtr)(int, double);
+
+// [[Rcpp::export]]
+NumericVector execute_cpp(SEXP func_, double l) {
+  funcPtr func = *XPtr<funcPtr>(func_);
+  return core_processing<funcPtr>(func, l);
+}
+{% endhighlight %}
+
+Note that the user-supplied function takes two arguments: one is also
+user-provided and the other is provided by the backend itself. This
+core is exposed through the following R function:
+
+
+{% highlight r %}
+execute <- function(func, l) {
+  stopifnot(is.numeric(l))
+  if (is.function(func))
+    execute_r(func, l)
+  else {
+    checkXPtr(func, "SEXP", c("int", "double"))
+    execute_cpp(func, l)
+  }
+}
+{% endhighlight %}
+
+Finally, we can compare the `XPtr` approach with a pure R-based one,
+and with a compiled function wrapped in R, as returned by
+`Rcpp::cppFunction`:
+
+
+{% highlight r %}
+func_r <- function(n, l) rexp(n, l)
+cpp <- "SEXP foo(int n, double l) { return rexp(n, l); }"
+func_r_cpp <- Rcpp::cppFunction(cpp)
+func_cpp <- cppXPtr(cpp)
+
+microbenchmark::microbenchmark(
+  execute(func_r, 1.5),
+  execute(func_r_cpp, 1.5),
+  execute(func_cpp, 1.5)
+)
+{% endhighlight %}
+
+
+
+<pre class="output">
+Unit: microseconds
+                     expr      min       lq     mean   median        uq
+     execute(func_r, 1.5) 9010.765 9434.233 9985.919 9739.334 10469.518
+ execute(func_r_cpp, 1.5) 8751.593 9218.137 9776.670 9430.297 10257.962
+   execute(func_cpp, 1.5)  170.708  193.201  248.939  229.528   300.495
+       max neval cld
+ 14538.013   100   b
+ 13712.093   100   b
+   416.451   100  a 
+</pre>
