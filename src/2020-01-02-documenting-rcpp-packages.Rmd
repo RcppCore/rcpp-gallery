@@ -1,0 +1,21 @@
+---
+title: "Documenting Rcpp functions and classes in R packages"
+author: "Artem Sokolov"
+license: MIT
+tags: documentation
+date: 2020-01-02
+summary: Demonstrates how to add Roxygen blocks in .cpp source
+---
+
+## Introduction
+
+[Roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html) is a convenient way to document functions in R packages. Based on the [Doxygen](https://en.wikipedia.org/wiki/Doxygen) model, it parses relevant bits from the comments and generates the corresponding `man/*.Rd` files. The major strength of this model -- besides not having to write `*.Rd` files by hand -- is that documentation ends up living right next to the functionality it describes, thus enabling easy maintenance and synchronization between the two.
+
+When using Rcpp in package development, the R functions in `RcppExports.R` are generated automatically from the source `.cpp` files. Rcpp also faithfully transcribes comment blocks from `.cpp` to `.R`. We can take advantage of this fact to add documentation directly to the `.cpp` files and have it appear in the package reference manual.
+
+This vignette demonstrates four different ways to document Rcpp functions and classes in R packages. We will create an R package from scratch, add some very basic functionality and show how Roxygen blocks appear in the final documentation. Throughout the vignette, we will use several R packages to make our job easier: `devtools`, `usethis` and, of course, `rcpp`. All of these can be installed with the standard `install.packages()` interface:
+
+```{r eval=FALSE}
+install.packages( c("devtools", "usethis", "rcpp") )
+```
+
