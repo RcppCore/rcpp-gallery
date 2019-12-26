@@ -19,3 +19,23 @@ This vignette demonstrates four different ways to document Rcpp functions and cl
 install.packages( c("devtools", "usethis", "rcpp") )
 ```
 
+## Create a package
+
+We begin by initializing a package skeleton. The following functions create a new directory and establish a barebones structure for an R package with Roxygen and Rcpp support:
+
+```{r eval=FALSE}
+devtools::create( "~/test/testpkg" )
+devtools::document()
+usethis::use_rcpp()
+```
+
+Using your favorite text editor, create a new file `~/test/testpkg/R/zzz.R` and add the following lines to it:
+
+```{r eval=FALSE}
+#' @useDynLib testpkg
+NULL
+
+Rcpp::loadModule("double_cpp", TRUE)
+```
+
+The `useDynLib` Roxygen block adds a NAMESPACE entry exposing the functionality of the dynamic library compiled from the .cpp source. Likewise `loadModule` exposes the functionality of an [Rcpp module](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-modules.pdf) that we will use to encapsulate our C++ class. Replace `"double_cpp"` with your desired module name, but note that the name has to match what appears in the `.cpp` file below.
