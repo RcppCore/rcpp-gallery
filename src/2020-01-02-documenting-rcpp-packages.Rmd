@@ -64,3 +64,54 @@ double mult( double v1, double v2 ) {return v1*v2;}
 You may notice two `export` keywords used in the comment block. The first, `@export`, tells Roxygen2 to add a `NAMESPACE` entry that will make the function visibile to the end users of your package. Remove this line if the function should be internal to the package.
 
 The second keyword, `[[Rcpp::export]]`, is the standard Rcpp attribute that makes the function available in R. Since it has no interaction with `Roxygen2`, the comment is annotated with the traditional `//` instead. Remove this line if the function is to remain internal within the C++ code.
+
+### Approach 2: Nested field structure
+
+Classes impose an additional layer of hierarchy by grouping multiple functions and variables. We need to decide how this hierarchy should be represented in the R help pages, which itself follows a flat format. If a class is relatively small, a simple solution is to use the nested field structure to describe individual member functions. The entire class will then appear as a single entry in the final package reference manual.
+
+```{Rcpp eval=FALSE}
+//' @name Double
+//' @title Encapsulates a double
+//' @description Type the name of the class to see its methods
+//' @field new Constructor
+//' @field mult Multiply by another Double object \itemize{
+//' \item Paramter: other - The other Double object
+//' \item Returns: product of the values
+//' }
+//' @export
+class Double {
+public:
+  Double( double v ) : value(v) {}
+  double mult( const Double& other ) {return value * other.value;}
+private:
+  double value;
+};
+```
+
+### Approach 3: Stand-alone pages for individual class methods
+
+Occasionally, a member function may be complex enough to require its own `?` reference entry. A major advantage of Roxygen2 is that such entries can be created with relative ease by placing the corresponding comment block at the top level in a file.
+
+```{Rcpp eval=FALSE}
+//' @name Double$new
+//' @title Constructs a new Double object
+//' @param v A value to encapsulate
+```
+
+The only disadvantage is that the documentation does not live directly next to the function it describes. Unforunately, this is due to a limitation that only the top-level comment blocks are exported into R by Rcpp.
+
+### Approach 4: Rcpp module docstrings
+
+The final place for function documentation is inside the docstring feature provided by the Rcpp modules themselves. This works well for relatively simple classes. Unfortunately, the documentation becomes overly verbose, if a class makes heavy use of templates.
+
+```{Rcpp eval=FALSE}
+RCPP_EXPOSED_CLASS(Double)
+RCPP_MODULE(double_cpp) {
+  using namespace Rcpp;
+
+  class_<Double>("Double")
+    .constructor<double>("Wraps a double")
+    .method("mult", &Double::mult, "Multiply by another Double object")
+    ;
+}
+```
