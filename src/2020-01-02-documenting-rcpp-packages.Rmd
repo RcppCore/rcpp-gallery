@@ -115,3 +115,37 @@ RCPP_MODULE(double_cpp) {
     ;
 }
 ```
+
+## Compile, install and test
+
+After finishing `~/test/testpkg/R/zzz.R` and `~/test/testpkg/src/mult.cpp`, run the following commands in an R session somewhere inside `~/test/testpkg`:
+
+```{R eval=FALSE}
+devtools::load_all()
+devtools::document()
+devtools::install()
+```
+
+The first command compiles the `.cpp` code and generates `R/RcppExports.R`. You will notice that the roxygen comment blocks are faithfully transcribed. The second command then generates the `man/*.Rd` files based on these roxygen blocks. The last command simply installs the new package, making it available through the standard `library(testpkg)` interface.
+
+To test the package and view its documentation, start a fresh R session and examine the help pages.
+
+```{R eval=FALSE}
+library( help=testpkg )     # Lists three functions: Double, Double$new and mult
+?testpkg::mult              # Approach 1: stand-alone functions
+?testpkg::Double            # Approach 2: nested field structure
+?testpkg::`Double$new`      # Approach 3: individual class methods
+testpkg::Double             # Approach 4: docstrings
+```
+
+We can also make sure that the package functions as expected.
+
+```{R eval=FALSE}
+testpkg::mult(2, 3)    
+# [1] 6
+
+d1 = testpkg::Double$new(5)
+d2 = testpkg::Double$new(3)
+d1$mult(d2)
+# [1] 15
+```
