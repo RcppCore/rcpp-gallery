@@ -1,7 +1,7 @@
 ---
 title: "Documenting Rcpp functions and classes in R packages"
 author: "Artem Sokolov"
-license: MIT
+license: GPL (>= 2)
 tags: documentation
 date: 2020-01-02
 summary: Demonstrates how to add Roxygen blocks in .cpp source
