@@ -9,7 +9,7 @@ summary: Demonstrates how to add Roxygen blocks in .cpp source
 
 ## Introduction
 
-[Roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html) is a convenient way to document functions in R packages. Based on the [Doxygen](https://en.wikipedia.org/wiki/Doxygen) model, it parses relevant bits from the comments and generates the corresponding `man/*.Rd` files. The major strength of this model -- besides not having to write `*.Rd` files by hand -- is that documentation ends up living right next to the functionality it describes, thus enabling easy maintenance and synchronization between the two.
+[Roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html) is a convenient way to document functions in R packages. Based on the [Doxygen](https://en.wikipedia.org/wiki/Doxygen) model, it parses relevant information from the comments and generates the corresponding `man/*.Rd` files. The major strength of this model -- besides not having to write `*.Rd` files by hand -- is that documentation ends up living right next to the functionality it describes, thus enabling easy maintenance and synchronization between the two.
 
 When using Rcpp in package development, the R functions in `RcppExports.R` are generated automatically from the source `.cpp` files. Rcpp also faithfully transcribes comment blocks from `.cpp` to `.R`. We can take advantage of this fact to add documentation directly to the `.cpp` files and have it appear in the package reference manual.
 
@@ -67,7 +67,7 @@ The second keyword, `[[Rcpp::export]]`, is the standard Rcpp attribute that make
 
 ### Approach 2: Nested field structure
 
-Classes impose an additional layer of hierarchy by grouping multiple functions and variables. We need to decide how this hierarchy should be represented in the R help pages, which itself follows a flat format. If a class is relatively small, a simple solution is to use the nested field structure to describe individual member functions. The entire class will then appear as a single entry in the final package reference manual.
+Classes impose an additional layer of hierarchy by grouping multiple functions and variables. We need to decide how this hierarchy should be represented in the R help pages, which itself follows a flat format. If a class is relatively small, a simple solution is to use a nested field structure to describe individual member functions. The entire class will then appear as a single entry in the final package reference manual.
 
 ```{Rcpp eval=FALSE}
 //' @name Double
@@ -75,7 +75,7 @@ Classes impose an additional layer of hierarchy by grouping multiple functions a
 //' @description Type the name of the class to see its methods
 //' @field new Constructor
 //' @field mult Multiply by another Double object \itemize{
-//' \item Paramter: other - The other Double object
+//' \item Parameter: other - The other Double object
 //' \item Returns: product of the values
 //' }
 //' @export
@@ -92,7 +92,7 @@ private:
 
 Occasionally, a member function may be complex enough to require its own `?` reference entry. A major advantage of Roxygen2 is that such entries can be created with relative ease by placing the corresponding comment block at the top level in a file.
 
-```{Rcpp eval=FALSE}
+```{js eval=FALSE}
 //' @name Double$new
 //' @title Constructs a new Double object
 //' @param v A value to encapsulate
@@ -126,7 +126,7 @@ devtools::document()
 devtools::install()
 ```
 
-The first command compiles the `.cpp` code and generates `R/RcppExports.R`. You will notice that the roxygen comment blocks are faithfully transcribed. The second command then generates the `man/*.Rd` files based on these roxygen blocks. The last command simply installs the new package, making it available through the standard `library(testpkg)` interface.
+The first command compiles the `.cpp` code and generates `R/RcppExports.R`. You will notice that the roxygen comment blocks are faithfully transcribed from `.cpp` to `.R`. The second command then generates the `man/*.Rd` files based on these roxygen blocks. The last command simply installs the new package, making it available through the standard `library(testpkg)` interface.
 
 To test the package and view its documentation, start a fresh R session and examine the help pages.
 
