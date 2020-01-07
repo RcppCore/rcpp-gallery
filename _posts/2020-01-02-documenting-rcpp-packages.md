@@ -154,8 +154,8 @@ commands in an R session somewhere inside `~/test/testpkg`:
 
 
 {% highlight r %}
-Rcpp::compileAttributes()   # this updates the Rcpp layer from C++ to R
-roxygen2::roxygenize()      # this updates the documentation based on roxygen comments
+Rcpp::compileAttributes()           # this updates the Rcpp layer from C++ to R
+roxygen2::roxygenize(roclets="rd")  # this updates the documentation based on roxygen comments
 {% endhighlight %}
 
 followed by the usual `R CMD build` and `R CMD install` (or equivalent helper functions via RStudio,
@@ -191,3 +191,14 @@ d2 = testpkg::Double$new(3)
 d1$mult(d2)
 # [1] 15
 {% endhighlight %}
+
+### Going Further
+
+As mentioned above, additional packages (or tools like the RStudio IDE) offer to help with package
+creation, documentation, build and more.  As well, the
+[roxygen2](https://cran.r-project.org/package=roxygen2) can do more than we showed here by
+auto-generating the `NAMESPACE` file, collating R files as needed and more. However, we feel it
+helps to understand what each relevant tool offers in and by itself, and also appreciate the
+relative simplicity of the tools describe in the [Writing R
+Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) manual that is part of
+base R.  A follow-up vignette may describe the additional tools.
