@@ -3,6 +3,7 @@ title: Faster Multivariate Normal densities with RcppArmadillo and OpenMP
 author: Nino Hardt, Dicko Ahmadou, Benjamin Christoffersen
 license: GPL (>= 2)
 tags: armadillo openmp featured
+updated: Feb 2, 2020
 summary: Fast implementation of Multivariate Normal density using RcppArmadillo and OpenMP.
 layout: post
 src: 2013-07-13-dmvnorm_arma.Rmd
@@ -179,6 +180,10 @@ variables for us:
 // [[Rcpp::plugins(openmp)]]
 {% endhighlight %}
 
+When used in a package, the standard `src/Makevars` supplied by the package
+ensures the variable `$(SHLIB_OPENMP_CXXFLAGS)` is used. It relies on the R
+configuration to automatically add OpenMP support where available.
+
 We also need to set the number of cores to be used before running the
 compiled functions. One way is to use `detectCores()` from the `parallel`
 package.
@@ -335,13 +340,13 @@ benchmark(
 
 <pre class="output">
               test replications elapsed relative
-4   dmvnrm_arma_mc          100   0.931    1.000
-6 dmvnrm_arma_fast          100   3.617    3.885
-3      dmvnrm_arma          100   5.572    5.985
-5  dmvnrm_arma_old          100   7.739    8.313
-2     dmvnorm_arma          100   9.219    9.902
-7             dMvn          100  12.453   13.376
-1          dmvnorm          100  14.326   15.388
+4   dmvnrm_arma_mc          100   0.875    1.000
+6 dmvnrm_arma_fast          100   3.622    4.139
+3      dmvnrm_arma          100   5.274    6.027
+5  dmvnrm_arma_old          100   7.433    8.495
+2     dmvnorm_arma          100   8.649    9.885
+7             dMvn          100  12.563   14.358
+1          dmvnorm          100  14.637   16.728
 </pre>
 
 Lastly, we show that the functions yield the same results:
