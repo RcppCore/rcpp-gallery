@@ -1,6 +1,6 @@
 ---
 title: Faster Multivariate Normal densities with RcppArmadillo and OpenMP
-author: Nino Hardt, Dicko Ahmadou
+author: Nino Hardt, Dicko Ahmadou, Benjamin Christoffersen
 license: GPL (>= 2)
 tags: armadillo openmp featured
 summary: Fast implementation of Multivariate Normal density using RcppArmadillo and OpenMP.
@@ -15,7 +15,7 @@ Priors and mixtures of Multivariate Normals require numerous
 evaluations, thus speed of computation is vital. 
 We show dramatic increases in speed by using efficient algorithms,
 RcppArmadillo, and some extra gain by using OpenMP.
-The code is based on the latest version of RcppArmadillo (0.3.910.0).
+The code is based on the latest version of RcppArmadillo (0.9.800.1.0).
 
 While the `dmvnorm()` function from the `mvtnorm` package is quite popular,
 and in an earlier version of this article we demonstrated that an 
@@ -37,49 +37,128 @@ dMvn <- function(X,mu,Sigma) {
 }
 {% endhighlight %}
 
-
-
 Translating the vectorized approach into RcppArmadillo, 
-we precompute the inverse root of the covariance matrix ahead 
-of the main loop over the rows of `X`. 
+we precompute the inverse of the Cholesky decomposition of the covariance 
+matrix ahead of the main loop over the rows of `X`. 
 The loop can easily be parallelized, and the code is easy to read and 
-manipulate. For instance, the inverse root can be put inside the main 
-loop, if varying covariance matrices are necessary.
-The use of `trimatu` allows to exploit the diagonality of the Cholesky
-root of the covariance matrix.
+manipulate. For instance, the inverse Cholesky decomposition can be put 
+inside the main loop, if varying covariance matrices are necessary.
+It is worth remarking that multiplying with a precomputed inverse of the 
+Cholesky decomposition of 
+the covariance matrix is faster but less numerically stable compared to 
+a backsolve as in the `Mahalanobis` function we will define later.
 
 
 
 {% highlight cpp %}
+// [[Rcpp::depends("RcppArmadillo")]]
 #include <RcppArmadillo.h>
   
-const double log2pi = std::log(2.0 * M_PI);
+static double const log2pi = std::log(2.0 * M_PI);
 
-// [[Rcpp::depends("RcppArmadillo")]]
 // [[Rcpp::export]]
-arma::vec dmvnrm_arma(arma::mat x,  
-                      arma::rowvec mean,  
-                      arma::mat sigma, 
-                      bool logd = false) { 
-    int n = x.n_rows;
-    int xdim = x.n_cols;
+arma::vec dmvnrm_arma_old(arma::mat x,  
+                          arma::rowvec mean,  
+                          arma::mat sigma, 
+                          bool logd = false) { 
+    using arma::uword;
+    uword const n = x.n_rows, 
+             xdim = x.n_cols;
     arma::vec out(n);
     arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
     double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(static_cast<double>(xdim)/2.0) * log2pi;
+    double constants = -(double)xdim/2.0 * log2pi;
     
-    for (int i=0; i < n; i++) {
+    for (uword i = 0; i < n; i++) {
         arma::vec z = rooti * arma::trans( x.row(i) - mean) ;    
         out(i)      = constants - 0.5 * arma::sum(z%z) + rootisum;     
     }  
       
-    if (logd == false) {
-        out = exp(out);
-    }
-    return(out);
+    if (logd)
+      return out;
+    return exp(out);
+}
+
+// [[Rcpp::export]]
+arma::vec dmvnrm_arma(arma::mat const &x,  
+                      arma::rowvec const &mean,  
+                      arma::mat const &sigma, 
+                      bool const logd = false) { 
+    using arma::uword;
+    uword const n = x.n_rows, 
+             xdim = x.n_cols;
+    arma::vec out(n);
+    arma::mat const rooti = arma::inv(trimatu(arma::chol(sigma)));
+    double const rootisum = arma::sum(log(rooti.diag())), 
+                constants = -(double)xdim/2.0 * log2pi, 
+              other_terms = rootisum + constants;
+    
+    arma::rowvec z;
+    for (uword i = 0; i < n; i++) {
+        z      = (x.row(i) - mean) * rooti;    
+        out(i) = other_terms - 0.5 * arma::dot(z, z);     
+    }  
+      
+    if (logd)
+      return out;
+    return exp(out);
+}
+
+/* C++ version of the dtrmv BLAS function */
+void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
+  arma::uword const n = trimat.n_cols;
+  
+  for(unsigned j = n; j-- > 0;){
+    double tmp(0.);
+    for(unsigned i = 0; i <= j; ++i)
+      tmp += trimat.at(i, j) * x[i];
+    x[j] = tmp;
+  }
+}
+
+// [[Rcpp::export]]
+arma::vec dmvnrm_arma_fast(arma::mat const &x,  
+                           arma::rowvec const &mean,  
+                           arma::mat const &sigma, 
+                           bool const logd = false) { 
+    using arma::uword;
+    uword const n = x.n_rows, 
+             xdim = x.n_cols;
+    arma::vec out(n);
+    arma::mat const rooti = arma::inv(trimatu(arma::chol(sigma)));
+    double const rootisum = arma::sum(log(rooti.diag())), 
+                constants = -(double)xdim/2.0 * log2pi, 
+              other_terms = rootisum + constants;
+    
+    arma::rowvec z;
+    for (uword i = 0; i < n; i++) {
+        z = (x.row(i) - mean);
+        inplace_tri_mat_mult(z, rooti);
+        out(i) = other_terms - 0.5 * arma::dot(z, z);     
+    }  
+      
+    if (logd)
+      return out;
+    return exp(out);
 }
 {% endhighlight %}
 
+The use of `trimatu` allows to exploit that of the Cholesky
+decomposition the covariance matrix is an upper triangular matrix in the 
+inversion. The `dmvnrm_arma_old` is an older version of the function used in
+a previous version of this article. The new version differs mainly by
+
+ 1. using `const &` for the input parameters. 
+ 2. declaring `z` outside the loop.  
+ 3. using `arma::dot` instead of `arma::sum`. 
+ 4. other minor things.
+ 
+This turns out to be quite important for the computation times. The 
+`dmvnrm_arma_fast` makes an inplace vector matrix product and exploits
+that the matrix is an upper triangular matrix. One can use the 
+[dtrmv](http://www.netlib.org/lapack/explore-html/d7/d15/group__double__blas__level2_ga596c2acd9f81df6608bd5ed97e193897.html#ga596c2acd9f81df6608bd5ed97e193897)
+BLAS function instead. It is not available through the Armadillo library 
+though.
 
 Additionally, we can make use of the OpenMP library to use multiple 
 cores. For the OpenMP implementation, we need to enable OpenMP support. 
@@ -92,7 +171,6 @@ Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
 Sys.setenv("PKG_LIBS"="-fopenmp")
 {% endhighlight %}
 
-
 Rcpp version 0.10.5 and later will also provide a plugin to set these
 variables for us:
 
@@ -101,16 +179,14 @@ variables for us:
 // [[Rcpp::plugins(openmp)]]
 {% endhighlight %}
 
-
 We also need to set the number of cores to be used before running the
 compiled functions. One way is to use `detectCores()` from the `parallel`
 package.
 
 
 {% highlight r %}
-cores <- parallel::detectCores()
+cores <- parallel::detectCores(logical = FALSE)
 {% endhighlight %}
-
 
 Only two additional lines are needed to enable multicore processing. 
 In this example, a dynamic schedule is used for OpenMP. 
@@ -118,81 +194,96 @@ A static schedule might be faster in some cases. However,this is
 left to further experimentation.
 
 
-
 {% highlight cpp %}
+// [[Rcpp::depends("RcppArmadillo")]]
 #include <RcppArmadillo.h>
 #include <omp.h>
 
-const double log2pi = std::log(2.0 * M_PI);
+static double const log2pi = std::log(2.0 * M_PI);
 
-// [[Rcpp::depends("RcppArmadillo")]]
+void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
+  arma::uword const n = trimat.n_cols;
+  
+  for(unsigned j = n; j-- > 0;){
+    double tmp(0.);
+    for(unsigned i = 0; i <= j; ++i)
+      tmp += trimat.at(i, j) * x[i];
+    x[j] = tmp;
+  }
+}
+
 // [[Rcpp::export]]
-arma::vec dmvnrm_arma_mc(arma::mat x,  
-                         arma::rowvec mean,  
-                         arma::mat sigma, 
-                         bool logd = false,
-                         int cores = 1) { 
+arma::vec dmvnrm_arma_mc(arma::mat const &x,  
+                         arma::rowvec const &mean,  
+                         arma::mat const &sigma, 
+                         bool const logd = false,
+                         int const cores = 1) {  
+    using arma::uword;
     omp_set_num_threads(cores);
-    int n = x.n_rows;
-    int xdim = x.n_cols;
+    uword const n = x.n_rows, 
+             xdim = x.n_cols;
     arma::vec out(n);
-    arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
-    double rootisum = arma::sum(log(rooti.diag()));
-    double constants = -(xdim/2) * log2pi;
-    #pragma omp parallel for schedule(static) 
-    for (int i=0; i < n; i++) {
-        arma::vec z = rooti * arma::trans( x.row(i) - mean) ;    
-        out(i)      = constants - 0.5 * arma::sum(z%z) + rootisum;     
+    arma::mat const rooti = arma::inv(trimatu(arma::chol(sigma)));
+    double const rootisum = arma::sum(log(rooti.diag())), 
+                constants = -(double)xdim/2.0 * log2pi, 
+              other_terms = rootisum + constants;
+    
+    arma::rowvec z;
+    #pragma omp parallel for schedule(static) private(z)
+    for (uword i = 0; i < n; i++) {
+        z = (x.row(i) - mean);
+        inplace_tri_mat_mult(z, rooti);   
+        out(i) = other_terms - 0.5 * arma::dot(z, z);     
     }  
       
-    if (logd==false) {
-        out=exp(out);
-    }
-    return(out);
+    if (logd)
+      return out;
+    return exp(out);
 }
 {% endhighlight %}
 
-
-
-Likewise, it is easy to translate 'dmvnorm' from the 'mvtnorm' 
+Likewise, it is easy to translate `dmvnorm` from the `mvtnorm` 
 package into Rcpp:
 
 
 {% highlight cpp %}
+// [[Rcpp::depends("RcppArmadillo")]]
 #include <RcppArmadillo.h>
 
-const double log2pi = std::log(2.0 * M_PI);
+static double const log2pi = std::log(2.0 * M_PI);
 
-// [[Rcpp::depends("RcppArmadillo")]]
-// [[Rcpp::export]]
-arma::vec Mahalanobis(arma::mat x, arma::rowvec center, arma::mat cov) {
-    int n = x.n_rows;
-    arma::mat x_cen;
-    x_cen.copy_size(x);
-    for (int i=0; i < n; i++) {
-        x_cen.row(i) = x.row(i) - center;
-    }
-    return sum((x_cen * cov.i()) % x_cen, 1);    
+arma::vec Mahalanobis(arma::mat const &x, 
+                      arma::vec const &center, 
+                      arma::mat const &cov) {
+    arma::mat x_cen = x.t();
+    x_cen.each_col() -= center;
+    arma::solve(x_cen, arma::trimatl(chol(cov).t()), x_cen);
+    x_cen.for_each( [](arma::mat::elem_type& val) { val = val * val; } );
+    return arma::sum(x_cen, 0).t();    
 }
 
 // [[Rcpp::export]]
-arma::vec dmvnorm_arma(arma::mat x, arma::rowvec mean, arma::mat sigma, bool log = false) { 
-    arma::vec distval = Mahalanobis(x,  mean, sigma);
-    double logdet = sum(arma::log(arma::eig_sym(sigma)));
-    arma::vec logretval = -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
+arma::vec dmvnorm_arma(arma::mat const &x, 
+                       arma::vec const &mean, 
+                       arma::mat const &sigma, 
+                       bool const logd = false) { 
+    arma::vec const distval = Mahalanobis(x,  mean, sigma);
+    double const logdet = sum(arma::log(arma::eig_sym(sigma)));
+    arma::vec const logretval = 
+      -( (x.n_cols * log2pi + logdet + distval)/2  ) ;
     
-    if (log) { 
-        return(logretval);
-    } else { 
-        return(exp(logretval));
-    }
+    if (logd)
+        return logretval;
+    return exp(logretval);
 }
 {% endhighlight %}
 
-
-
+We use `each_col`, an appropriate overload of `arma::solve`, and `for_each` 
+to do the computations without performing additional allocations after the 
+copy at `x_cen = x.t()`. 
 
 Now we simulate some data for benchmarking:
+
 
 {% highlight r %}
 set.seed(123)
@@ -200,9 +291,6 @@ sigma <- bayesm::rwishart(10,diag(8))$IW
 means <- rnorm(8)
 X     <- mvtnorm::rmvnorm(900000, means, sigma)
 {% endhighlight %}
-
-
-
 
 And run the benchmark:
 
@@ -214,7 +302,7 @@ print(paste0("Using ",cores," cores for _mc versions"))
 
 
 <pre class="output">
-[1] &quot;Using 8 cores for _mc versions&quot;
+[1] &quot;Using 12 cores for _mc versions&quot;
 </pre>
 
 
@@ -232,36 +320,41 @@ Loading required package: rbenchmark
 
 
 {% highlight r %}
-benchmark(mvtnorm::dmvnorm(X,means,sigma,log=F), 
-          dmvnorm_arma(X,means,sigma,F), 
-          dmvnrm_arma(X,means,sigma,F) , 
-          dmvnrm_arma_mc(X,means,sigma,F,cores), 
-          dMvn(X,means,sigma),
-          order="relative", replications=100)[,1:4]
+benchmark(
+  dmvnorm          = mvtnorm::dmvnorm(X,means,sigma,log=FALSE), 
+  dmvnorm_arma     = dmvnorm_arma    (X,means,sigma,FALSE), 
+  dmvnrm_arma      = dmvnrm_arma     (X,means,sigma,FALSE),
+  dmvnrm_arma_mc   = dmvnrm_arma_mc  (X,means,sigma,FALSE,cores), 
+  dmvnrm_arma_old  = dmvnrm_arma_old (X,means,sigma,FALSE), 
+  dmvnrm_arma_fast = dmvnrm_arma_fast(X,means,sigma,FALSE),
+  dMvn             = dMvn            (X,means,sigma),
+  order="relative", replications=100)[,1:4]
 {% endhighlight %}
 
 
 
 <pre class="output">
-                                        test replications elapsed relative
-4  dmvnrm_arma_mc(X, means, sigma, F, cores)          100   9.636    1.000
-3            dmvnrm_arma(X, means, sigma, F)          100  18.848    1.956
-2           dmvnorm_arma(X, means, sigma, F)          100  23.459    2.435
-5                      dMvn(X, means, sigma)          100  29.501    3.062
-1 mvtnorm::dmvnorm(X, means, sigma, log = F)          100  44.556    4.624
+              test replications elapsed relative
+4   dmvnrm_arma_mc          100   0.931    1.000
+6 dmvnrm_arma_fast          100   3.617    3.885
+3      dmvnrm_arma          100   5.572    5.985
+5  dmvnrm_arma_old          100   7.739    8.313
+2     dmvnorm_arma          100   9.219    9.902
+7             dMvn          100  12.453   13.376
+1          dmvnorm          100  14.326   15.388
 </pre>
-
-
-
 
 Lastly, we show that the functions yield the same results:
 
 
 {% highlight r %}
-all.equal(mvtnorm::dmvnorm(X,means,sigma,log=FALSE),
-          dmvnorm_arma(X,means,sigma,FALSE)[,1],
-	  dmvnrm_arma(X,means,sigma,FALSE)[,1],
-	  dMvn(X,means,sigma))
+truth <- mvtnorm::dmvnorm                      (X,means,sigma,log=FALSE)
+all(
+  isTRUE(all.equal(truth, drop(dmvnorm_arma    (X,means,sigma,    FALSE)))), 
+  isTRUE(all.equal(truth, drop(dmvnrm_arma_fast(X,means,sigma,    FALSE)))),
+  isTRUE(all.equal(truth, drop(dmvnrm_arma_mc  (X,means,sigma,    FALSE)))),
+  isTRUE(all.equal(truth, drop(dmvnrm_arma     (X,means,sigma,    FALSE)))),
+  isTRUE(all.equal(truth, drop(dMvn            (X,means,sigma)))))
 {% endhighlight %}
 
 
@@ -269,16 +362,3 @@ all.equal(mvtnorm::dmvnorm(X,means,sigma,log=FALSE),
 <pre class="output">
 [1] TRUE
 </pre>
-
-
-
-The use of RcppArmadillo brings about a significant increase 
-in speed. The addition of OpenMP leads to only little 
-additional performance. 
-
-This example also illustrates that Rcpp does not completely
-substitute the need to look for faster algorithms. Basing the
-code of 'lndMvn' instead of 'dmvnorm' leads to a significantly
-faster function.
-
-
