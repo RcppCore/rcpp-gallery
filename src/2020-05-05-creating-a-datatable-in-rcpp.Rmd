@@ -30,18 +30,20 @@ needed, the runtime is often reduced.  This design difference is (along with _a 
 performance and optimisations in general) one of the reasons why `data.table` is so [looking rather
 attractive](https://h2oai.github.io/db-benchmark/) in benchmarks.
 
-As objects of type `data.table` also inherit from `data.frame`, we can use all `data.frame` functions on a `data.table`.
-Internally, however, the two are very different.
-The question now is, how can we create a `data.table` efficiently inside of `Rcpp` without the need for a deep copy of the data?
+As objects of type `data.table` also inherit from `data.frame`, we can use all `data.frame`
+functions on a `data.table`.  Internally, however, the two are very different.  The question now is,
+how can we create a `data.table` efficiently inside of `Rcpp` without the need for a deep copy of
+the data?
 
-This question is important if the data generation process takes place in `C++`, e.g., parsing, simulating, or otherwise generating data.
-In particular, this question came up with the [RITCH](https://github.com/DavZim/RITCH) package, which parses binary ITCH files (financial messages) in `Rcpp` and needed a way for fast data conversion to `R`s `data.table`.
+This question is important if the data generation process takes place in `C++`, _e.g._ when parsing, simulating, or otherwise generating data.
+One example for which question came up is the [RITCH](https://github.com/DavZim/RITCH) package which
+parses (large) binary ITCH files (financial messages) in `Rcpp` and needs a fast data conversion to `data.table`.
 
 ## Very Short Answer
 
 To provide a very short answer, mostly for future reference (a more detailed answer is provided below):
 
-- set the class of the object to `"data.table", "data.frame"` in `Rcpp`
+- set the S3 class of the object to `"data.table", "data.frame"` in `Rcpp`
 
 ```{r, engine="Rcpp", eval=FALSE}
 Rcpp::List create_data_table() {
@@ -56,6 +58,7 @@ Rcpp::List create_data_table() {
 ```
 
 - in R call the `data.table::setalloccol(df)` function on the "partial" `data.table`
+
 ```{r, eval=FALSE}
 foo <- function() {
   dt <- create_data_table()
@@ -63,11 +66,18 @@ foo <- function() {
   return(dt)
 }
 ```
+A look inside the `data.table::setalloccol()` functions shows that it itself calls only a few
+`data.table` functions needed to do some housekeeping and optimisation on internal state. It would
+be useful to access these functions directly from another package at the C level, and we plan to
+discuss this with the `data.table` team.
+
 
 ## Detailed Answer
 
-A first thought would be to use the `Rcpp::DataFrame` or the `Rcpp::List` class in `Rcpp` to return the data to `R` and then call `data.table::setDT()` on the object to properly convert it to a `data.table`. 
-To give an example, lets consider creating a dataset of some data in `Rcpp` and returing it to R as a `Data.Frame`
+A first thought would be to use the `Rcpp::DataFrame` or the `Rcpp::List` class in `Rcpp` to return
+the data to `R` and then call `data.table::setDT()` on the object to properly convert it to a
+`data.table`.  To give an example, lets consider creating a dataset of some data in `Rcpp` and
+returing it to R as a `Data.Frame`
 
 ```{r, engine="Rcpp"}
 #include<Rcpp.h>
@@ -108,6 +118,7 @@ Inspecting the `data.table` code reveals, that internally, `data.table` uses the
 This can be leveraged in the following way: 
 
 Set the class attribute of the list to `"data.table", "data.frame"`
+
 ```{r, engine="Rcpp"}
 #include<Rcpp.h>
 using namespace Rcpp;
@@ -162,3 +173,5 @@ rbenchmark::benchmark(
   replications = 10
 )
 ```
+
+TODO: R 4.0.0 brings a new function `list2DF()` which we should time as well.
