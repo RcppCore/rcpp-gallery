@@ -1,24 +1,34 @@
 ---
 title: Creating a `data.table` in `Rcpp` 
-author: David Zimmermann
+author: David Zimmermann, Leonardo Silvestri, Dirk Eddelbuettel
 license: GPL (>= 2)
 tags: data.table
 summary: This post shows how to create a data.table (mostly) directly in Rcpp
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE) # collapse=TRUE
 options(width=80)
 ```
 
-The following is mainly influenced by [Leonardo](https://github.com/lsilvest)'s work and his [MWE](https://github.com/lsilvest/data.table_at_c_level).
+Note: This post draws upon, and extends, an earlier writeup [at his
+repo](https://github.com/lsilvest/data.table_at_c_level).
 
 ### Introduction
 
-`Rcpp` provides the `DataFrame` class, which allows us to pass `data.frame`s between `C++` and `R`.
-One of the main drawbacks of base `R` `data.frame`s (and for that matter `tibble`s as well), is that they need to create a copy of the data after each call, which can add up to substantial runtimes for larger datasets.
+`Rcpp` provides the `DataFrame` class which enables us to pass `data.frame` object between C++ and
+R. `DataFrame` objects are key to R and used very widely.  They also provide the basis from which
+two key packages extend them. One of these, the `tibble` package, operates in a similar fashion to
+`data.table` and treats the data as _immutable_. Upon a change to the data, a new version is created
+internally---this is frequently refered to as "copy-on-write". Immutable data structures have some
+desirable properties in terms of reasoning with and about data, but the copying comes at a price in
+terms of performance especially once data becomes sizeable.
 
-In contrast, `data.table` modifies the data inplace, which means that no copies of the data are needed, reducing the runtime.
-This is one of the main reasons why `data.table` is so [blazingly fast](https://h2oai.github.io/db-benchmark/).
+The other package, `data.table`, offers a contrasting approach. It generally modifies the data
+_in-place_; this is often referred to as _by reference_. As (generally) no copies of the data are
+needed, the runtime is often reduced.  This design difference is (along with _a lot_ of attention to
+performance and optimisations in general) one of the reasons why `data.table` is so [looking rather
+attractive](https://h2oai.github.io/db-benchmark/) in benchmarks.
 
 As objects of type `data.table` also inherit from `data.frame`, we can use all `data.frame` functions on a `data.table`.
 Internally, however, the two are very different.
