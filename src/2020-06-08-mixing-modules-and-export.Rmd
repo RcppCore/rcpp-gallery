@@ -120,8 +120,12 @@ shout(echo$get())
 Rcpp defines a number \code{RCPP_EXPOSED\*}macros in
 \code{inst/include/Rcpp/macros/module.h}, the most important ones are
 
-- \code{RCPP_EXPOSED_AS} which allows passing objects from \proglang{R} to
-  \proglang{C++};
-- \code{RCPP_EXPOSED_WRAP} which allows the other way around;
+- \code{RCPP_EXPOSED_AS}  which allows passing objects from \proglang{R} to
+  \proglang{C++}. As seen above, this is needed when exported functions want to
+  take a \proglang{C++} object as argument. Other uses include methods and
+  constructors of other Rcpp modules classes that take a \proglang{C++} object
+  as argument;
+- \code{RCPP_EXPOSED_WRAP} which allows the other way around; This is needed
+  when a exported function or method wants to return a \proglang{C++} object;
 - \code{RCPP_EXPOSED_CLASS} which allows both.
 
