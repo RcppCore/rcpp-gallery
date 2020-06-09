@@ -18,7 +18,7 @@ attributes (Eddelbuettel and Francois, 2017) using Rcpp attributes
 Exporting \proglang{C++} functions is simple thanks to Rcpp attributes. Just
 add a single specially formatted comment line to each function as follows:
 
-```{r engine="Rcpp"}
+```{r chunk-1, engine="Rcpp"}
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
@@ -36,7 +36,7 @@ different mechanism and requires a bit more work. The simple class \code{Echo}
 below has a \code{get()} method which returns the original constructor
 parameter.
 
-```{r engine="Rcpp", eval=FALSE}
+```{r chunk-2, engine="Rcpp", eval=FALSE}
 #include <Rcpp.h>
 #include <string>
 
@@ -57,7 +57,7 @@ public:
 This simple class can now be exposed to R by specifing the constructors and the
 methods that should be callable from R along
 
-```{r engine="Rcpp", eval=FALSE}
+```{r chunk-3, engine="Rcpp", eval=FALSE}
 RCPP_MODULE(echo_module) {
     class_<Echo>("Echo")
     .constructor<std::string>()
@@ -73,38 +73,13 @@ building the package as the functionality that transforms the class between a
 \code{SEXP} and a regular \proglang{C++} object is not created. The solution is
 simple: instruct the compiler to do so explicitly using the
 \code{RCPP_EXPOSED\*} family of macros.  In the current case it suffices to add
-```{r engine="Rcpp", eval=FALSE}
+```{r chunk-4, engine="Rcpp", eval=FALSE}
 RCPP_EXPOSED_AS(Echo)
 ```
 Now the code can be compiled and using the \proglang{C++} is as in the earlier
 examples.
 
-```{r engine="Rcpp", echo=FALSE}
-// All code is put into this one block to allow compilation.
-#include <Rcpp.h>
-#include <string>
-
-using namespace Rcpp;
-
-class Echo {
-private:
-    std::string message;
-public:
-    Echo(std::string message) : message(message) {}
-
-    std::string get() {
-      return message;
-    }
-};
-
-RCPP_MODULE(echo_module) {
-    class_<Echo>("Echo")
-    .constructor<std::string>()
-    .method("get", &Echo::get)
-    ;
-};
-
-RCPP_EXPOSED_CLASS(Echo) // The magic line
+```{r ref.label=c(paste0('chunk-', 1:4)), engine="Rcpp", echo=FALSE}
 ```
 
 Now, using the class from \proglang{R} is easy:
