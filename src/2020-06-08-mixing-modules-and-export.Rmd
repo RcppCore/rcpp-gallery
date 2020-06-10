@@ -2,16 +2,16 @@
 title: "Mixing Rcpp modules and Rcpp attributes"
 author: "Bob Jansen"
 license: GPL (>= 2)
-tags: basics attributes modules
+tags: basics modules
 summary: How to use Rcpp modules in combination with Rcpp attributes
 ---
 
 ### Introduction
 
-With Rcpp modules (Eddelbuettel and Francois, 2017) it is easy to expose
+With Rcpp modules (Eddelbuettel and François, 2017) it is easy to expose
 \proglang{C++} classes and functions to \proglang{R}. This note describes how
 to use exported classes in conjunction with functions exported using Rcpp
-attributes (Eddelbuettel and Francois, 2017) using Rcpp attributes
+attributes (Allaire et al, 2017) using Rcpp attributes
 (Eddelbuettel and Francois, 2017) through the use of
 \code{RCPP_EXPOSED\*} macros.
 
@@ -23,7 +23,7 @@ add a single specially formatted comment line to each function as follows:
 
 // [[Rcpp::export]]
 void shout(std::string message) {
-  Rcpp::Rcout << message << "!" << std::endl;
+    Rcpp::Rcout << message << "!" << std::endl;
 }
 ```
 Now, calling this function from \code{R} is as easy as one can hope:
@@ -44,13 +44,13 @@ using namespace Rcpp;
 
 class Echo {
 private:
-    std::string message;
+      std::string message;
 public:
-    Echo(std::string message) : message(message) {}
+      Echo(std::string message) : message(message) {}
 
-    std::string get() {
-      return message;
-    }
+      std::string get() {
+        return message;
+      }
 };
 ```
 
@@ -59,18 +59,18 @@ methods that should be callable from R along
 
 ```{r chunk-3, engine="Rcpp", eval=FALSE}
 RCPP_MODULE(echo_module) {
-    class_<Echo>("Echo")
-    .constructor<std::string>()
-    .method("get", &Echo::get)
-    ;
+      class_<Echo>("Echo")
+      .constructor<std::string>()
+      .method("get", &Echo::get)
+      ;
 };
 ```
 
 Unfortunately, combining these two snippets as is creates a problem. The Rcpp
 attributes machinery that exports \code{shout()} will not be automagically
-aware of the \code{Echo} class. This will cause a _link time error_ when
-building the package as the functionality that transforms the class between a
-\code{SEXP} and a regular \proglang{C++} object is not created. The solution is
+aware of the \code{Echo} class. This will cause an error when the package is
+loaded as the required functionality that transforms the class between a
+\code{SEXP} and a regular \proglang{C++} object can't be loaded. The solution is
 simple: instruct the compiler to do so explicitly using the
 \code{RCPP_EXPOSED\*} family of macros.  In the current case it suffices to add
 ```{r chunk-4, engine="Rcpp", eval=FALSE}
