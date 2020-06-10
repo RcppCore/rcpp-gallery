@@ -1,0 +1,103 @@
+---
+title: "Mixing Rcpp modules and Rcpp attributes"
+author: "Bob Jansen"
+license: GPL (>= 2)
+tags: basics modules
+summary: How to use Rcpp modules in combination with Rcpp attributes
+---
+
+### Introduction
+
+With Rcpp attributes Rcpp modules (described in the Rcpp vignettes) it is
+easy to expose \proglang{C++} classes and functions to \proglang{R}. This note
+describes how to use classes exported by modules in conjunction with functions
+exported using Rcpp attributes through the use of \code{RCPP_EXPOSED\*} macros.
+
+In the following snippets, a simple example is given of a simple class and a
+function that takes that class as an argument. The \proglang{C++} function is
+exported using Rcpp attributes as follows:
+
+```{r chunk-1, engine="Rcpp"}
+#include <Rcpp.h>
+
+// [[Rcpp::export]]
+void shout(std::string message) {
+    Rcpp::Rcout << message << "!" << std::endl;
+}
+```
+Now, calling this function from \code{R} is as easy as one can hope:
+```{r}
+shout("Hello World")
+```
+
+\proglang{C++} classes can be exported using Rcpp modules. The simple class
+\code{Echo} below has a \code{get()} method which returns the original
+constructor parameter.
+
+```{r chunk-2, engine="Rcpp", eval=FALSE}
+#include <Rcpp.h>
+#include <string>
+
+using namespace Rcpp;
+
+class Echo {
+private:
+      std::string message;
+public:
+      Echo(std::string message) : message(message) {}
+
+      std::string get() {
+        return message;
+      }
+};
+```
+
+This class can now be exposed to \proglang{R} by specifing the constructors and
+the methods that should be callable from \proglang{R} with
+
+```{r chunk-3, engine="Rcpp", eval=FALSE}
+RCPP_MODULE(echo_module) {
+      class_<Echo>("Echo")
+      .constructor<std::string>()
+      .method("get", &Echo::get)
+      ;
+};
+```
+
+Unfortunately, combining these two snippets as above  creates a problem. The Rcpp
+attributes machinery that exports \code{shout()} will not be automagically
+aware of the \code{Echo} class. This will cause an error when the package is
+loaded by \proglang{R} as the required functionality that transforms the class
+between a \code{SEXP} and a regular \proglang{C++} object can't be loaded. The
+solution is simple: instruct the compiler to do so explicitly using the
+\code{RCPP_EXPOSED\*} family of macros.  In the current case it suffices to add
+```{r chunk-4, engine="Rcpp", eval=FALSE}
+RCPP_EXPOSED_AS(Echo)
+```
+
+```{r ref.label=c(paste0('chunk-', 1:4)), engine="Rcpp", echo=FALSE}
+```
+
+Now, constructing and using the class from \proglang{R} is again
+straightforward
+
+```{r}
+echo <- new(Echo, "Hello World")
+echo$get()
+shout(echo$get())
+```
+
+### The \code{RCPP_EXPOSED\*} macros
+
+Rcpp defines a number \code{RCPP_EXPOSED\*}macros in
+\code{inst/include/Rcpp/macros/module.h}, the most important ones are
+
+- \code{RCPP_EXPOSED_AS}  which allows passing objects from \proglang{R} to
+  \proglang{C++}. As seen above, this is needed when exported functions want to
+  take a \proglang{C++} object as argument. Other uses include methods and
+  constructors of other Rcpp modules classes that take a \proglang{C++} object
+  as argument;
+- \code{RCPP_EXPOSED_WRAP} which allows the other way around; This is needed
+  when a exported function or method wants to return a \proglang{C++} object;
+- \code{RCPP_EXPOSED_CLASS} which allows both.
+
