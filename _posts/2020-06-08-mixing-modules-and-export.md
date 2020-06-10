@@ -4,6 +4,8 @@ author: "Bob Jansen"
 license: GPL (>= 2)
 tags: basics modules
 summary: How to use Rcpp modules in combination with Rcpp attributes
+layout: post
+src: 2020-06-08-mixing-modules-and-export.Rmd
 ---
 
 ### Introduction
@@ -17,24 +19,33 @@ In the following snippets, a simple example is given of a simple class and a
 function that takes that class as an argument. The C++ function is
 exported using Rcpp attributes as follows:
 
-```{r chunk-1, engine="Rcpp"}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
 void shout(std::string message) {
     Rcpp::Rcout << message << "!" << std::endl;
 }
-```
+{% endhighlight %}
 Now, calling this function from R is as easy as one can hope:
-```{r}
+
+{% highlight r %}
 shout("Hello World")
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Hello World!
+</pre>
 
 C++ classes can be exported using Rcpp modules. The simple class
 `Echo` below has a `get()` method which returns the original
 constructor parameter.
 
-```{r chunk-2, engine="Rcpp", eval=FALSE}
+
+{% highlight cpp %}
 #include <Rcpp.h>
 #include <string>
 
@@ -50,19 +61,20 @@ public:
         return message;
       }
 };
-```
+{% endhighlight %}
 
 This class can now be exposed to R by specifing the constructors and
 the methods that should be callable from R with
 
-```{r chunk-3, engine="Rcpp", eval=FALSE}
+
+{% highlight cpp %}
 RCPP_MODULE(echo_module) {
       class_<Echo>("Echo")
       .constructor<std::string>()
       .method("get", &Echo::get)
       ;
 };
-```
+{% endhighlight %}
 
 Unfortunately, combining these two snippets as above  creates a problem. The Rcpp
 attributes machinery that exports `shout()` will not be automagically
@@ -71,21 +83,39 @@ loaded by R as the required functionality that transforms the class
 between a `SEXP` and a regular C++ object can't be loaded. The
 solution is simple: instruct the compiler to do so explicitly using the
 `RCPP_EXPOSED*` family of macros.  In the current case it suffices to add
-```{r chunk-4, engine="Rcpp", eval=FALSE}
-RCPP_EXPOSED_AS(Echo)
-```
 
-```{r ref.label=c(paste0('chunk-', 1:4)), engine="Rcpp", echo=FALSE}
-```
+{% highlight cpp %}
+RCPP_EXPOSED_AS(Echo)
+{% endhighlight %}
+
+
 
 Now, constructing and using the class from R is again
 straightforward
 
-```{r}
+
+{% highlight r %}
 echo <- new(Echo, "Hello World")
 echo$get()
+{% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;Hello World&quot;
+</pre>
+
+
+
+{% highlight r %}
 shout(echo$get())
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+Hello World!
+</pre>
 
 ### The `RCPP_EXPOSED*` macros
 

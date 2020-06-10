@@ -9,12 +9,12 @@ src: 2020-06-06-recreating-rmultinom-and-rpois-with-rcpp.Rmd
 ---
 
 Sometimes one needs to mimic the exact behavior of R's `Distributions` within C++
-code. The incredible **Rcpp** team has provided access to these distributions through
+code. The incredible Rcpp team has provided access to these distributions through
 `Rmath.h` (in the `R::` namespace), as well as through the `Rcpp::` namespace where there
 can be two forms: scalar as in R, and vectorized via Rcpp sugar. The behavior of these
 functions may not always exactly match what the user expects from the standard R behavior,
 particularly if attempting to use the functions in `Rmath.h`. In particular, the functions
-in `Rmath.h` are not vectorized. In what follows, I will use **Rcpp** to mimic the
+in `Rmath.h` are not vectorized. In what follows, I will use Rcpp to mimic the
 behavior of both the `rmultinom` and `rpois` functions available in base R so that this
 functionality and behavior is provided in native C++.
 
@@ -97,8 +97,8 @@ microbenchmark::microbenchmark(
 <pre class="output">
 Unit: milliseconds
                              expr     min      lq    mean  median      uq     max neval cld
-      rmultinom(1000, size, prob) 10.8676 10.9925 11.1737 11.0826 11.1898 13.9595   100  a 
- rmultinom_rcpp(1000, size, prob) 11.0879 11.2072 11.4897 11.3341 11.6203 13.9920   100   b
+      rmultinom(1000, size, prob) 10.9042 11.1841 11.7729 11.6485 12.1532 14.1841   100  a 
+ rmultinom_rcpp(1000, size, prob) 11.1452 11.3780 12.0209 11.8841 12.2702 14.9434   100   b
 </pre>
 
 The [poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) is a
@@ -171,6 +171,6 @@ microbenchmark::microbenchmark(
 <pre class="output">
 Unit: microseconds
                                    expr   min     lq    mean median     uq    max neval cld
-      rpois(length(lambda) + 5, lambda) 7.412 7.7780 8.50529 7.9495 8.2165 60.014   100   b
- rpois_rcpp(length(lambda) + 5, lambda) 6.721 6.9965 7.37430 7.1645 7.4950 21.263   100  a 
+      rpois(length(lambda) + 5, lambda) 7.455 7.7825 8.02154  7.909 8.2425 11.145   100   b
+ rpois_rcpp(length(lambda) + 5, lambda) 6.737 6.9860 7.31607  7.182 7.4515 16.328   100  a 
 </pre>

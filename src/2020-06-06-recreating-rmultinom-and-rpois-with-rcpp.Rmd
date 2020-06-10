@@ -7,12 +7,12 @@ summary: Demonstrates how to mimic the functionality of R's Distributions using 
 ---
 
 Sometimes one needs to mimic the exact behavior of R's `Distributions` within C++
-code. The incredible **Rcpp** team has provided access to these distributions through
+code. The incredible Rcpp team has provided access to these distributions through
 `Rmath.h` (in the `R::` namespace), as well as through the `Rcpp::` namespace where there
 can be two forms: scalar as in R, and vectorized via Rcpp sugar. The behavior of these
 functions may not always exactly match what the user expects from the standard R behavior,
 particularly if attempting to use the functions in `Rmath.h`. In particular, the functions
-in `Rmath.h` are not vectorized. In what follows, I will use **Rcpp** to mimic the
+in `Rmath.h` are not vectorized. In what follows, I will use Rcpp to mimic the
 behavior of both the `rmultinom` and `rpois` functions available in base R so that this
 functionality and behavior is provided in native C++.
 
