@@ -4,14 +4,11 @@ author: "David Quesada"
 license: GPL (>= 2)
 tags: basics r6
 summary: Some examples of how to create R6 objects in C++ and how to call their methods
+layout: post
+src: 2020-07-31-handling-R6-objects-in-rcpp.Rmd
 ---
 
-```{r setup, include=FALSE}
-library(knitr)
-opts_chunk$set(echo=TRUE)
-opts_chunk$set(cache=FALSE)
-options(width=80)
-```
+
 
 ### Introduction
 
@@ -29,7 +26,8 @@ and how to interact with them.
 First, we define the class 'Person', with a name, an id, an item and some 
 methods: 
 
-```{r person}
+
+{% highlight r %}
 library(R6)
 
 #' R6 class that defines a person
@@ -73,7 +71,7 @@ Person <- R6::R6Class("Person",
     bad_foo = function(){return("This is a private function")}
   )
 )
-```
+{% endhighlight %}
 
 With this simple class, we will be able to create R6 objects, initialize them 
 and call some of their methods.
@@ -84,7 +82,8 @@ To create R6 objects, we must first get the 'new' function that initializes
 them. In this case, given that we have loaded the Person class into the 
 global environment, we will get it from there:
 
-```{r init, engine="Rcpp"}
+
+{% highlight cpp %}
 #include<Rcpp.h>
 using namespace Rcpp;
 
@@ -106,16 +105,17 @@ List initialize_list(StringVector &names, IntegerVector &ids){
   return res;
 }
 
-```
+{% endhighlight %}
 
-```{r initialize_list, eval=FALSE}
+
+{% highlight r %}
 names <- c("Jake", "Anne", "Alex")
 ids <- 1:3
 
 res <- initialize_list(names, ids)
 
 print(res)
-```
+{% endhighlight %}
 
 The previous example initializes a list with Persons. It is important to notice 
 that the only function relevant to us from the global environment is the 'new' 
@@ -126,7 +126,8 @@ If the R6 object is defined inside some package, included our own package if
 we are developing one, we must get it from there. To do this, the previous 
 function has to be modified as follows:
 
-```{r modified_init, engine="Rcpp", eval=FALSE}
+
+{% highlight cpp %}
 #include<Rcpp.h>
 using namespace Rcpp;
 
@@ -146,14 +147,15 @@ List initialize_list(unsigned int size){
   return res;
 }
 
-```
+{% endhighlight %}
 
 ### Calling the methods of an instance
 
 Once we have instantiated an R6 object as an environment, we can call its
 methods after getting them from the instance:
 
-```{r method item, engine="Rcpp"}
+
+{% highlight cpp %}
 #include<Rcpp.h>
 using namespace Rcpp;
 
@@ -174,13 +176,14 @@ Environment create_person_item(){
   return new_p;
 }
 
-```
+{% endhighlight %}
 
-```{r init_w_item, eval=FALSE}
+
+{% highlight r %}
 res <- create_person_item()
 
 print(res)
-```
+{% endhighlight %}
 
 Note that if we are creating multiple instances, we have to get the desired
 method from each one of them.
@@ -188,7 +191,8 @@ method from each one of them.
 Private attributes and methods cannot be accessed in this manner, trying to do 
 so results in an error:
 
-```{r method private, engine="Rcpp"}
+
+{% highlight cpp %}
 #include<Rcpp.h>
 using namespace Rcpp;
 
@@ -208,16 +212,17 @@ String access_method(std::string foo_name){
   return res;
 }
 
-```
+{% endhighlight %}
 
-```{r access private, eval=FALSE}
+
+{% highlight r %}
 tryCatch({res <- access_method("bad_foo")},
          error=function(cond){print(paste0("Exception raised: ", cond))})
 
 res <- access_method("good_foo")
 
 print(res)
-```
+{% endhighlight %}
 
 The error is telling us that there is no function called "bad_foo" in
 the environment of the object "new_p". In that environment, only public 
@@ -231,7 +236,8 @@ the method we want to call public.
 Passing R6 objects as arguments to C++ functions is also straight forward
 by treating them as environments:
 
-```{r pass down R6, engine="Rcpp"}
+
+{% highlight cpp %}
 #include<Rcpp.h>
 using namespace Rcpp;
 
@@ -243,15 +249,34 @@ void give_shovel(Environment &person){
   give_i(item);
 }
 
-```
+{% endhighlight %}
 
-```{r pass R6 to C++}
+
+{% highlight r %}
 p <- Person$new("Jake", 1)
 
 give_shovel(p)
 
 print(p)
-```
+{% endhighlight %}
+
+
+
+<pre class="output">
+&lt;Person&gt;
+  Public:
+    clone: function (deep = FALSE) 
+    get_id: function () 
+    get_name: function () 
+    give_item: function (item) 
+    good_foo: function () 
+    initialize: function (name, id) 
+  Private:
+    bad_foo: function () 
+    id: 1
+    item: shovel
+    name: Jake
+</pre>
 
 Note that there is no need to return the object, as the environment is passed
 by reference and changes inside it will be reflected outside the function.
