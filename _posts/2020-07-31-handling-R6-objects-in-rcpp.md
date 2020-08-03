@@ -31,7 +31,7 @@ methods:
 library(R6)
 
 #' R6 class that defines a person
-Person <- R6::R6Class("Person",
+Person <<- R6::R6Class("Person",
   public = list(
     #' @description 
     #' Constructor of the 'Person' class
@@ -117,6 +117,55 @@ res <- initialize_list(names, ids)
 print(res)
 {% endhighlight %}
 
+
+
+<pre class="output">
+[[1]]
+&lt;Person&gt;
+  Public:
+    clone: function (deep = FALSE) 
+    get_id: function () 
+    get_name: function () 
+    give_item: function (item) 
+    good_foo: function () 
+    initialize: function (name, id) 
+  Private:
+    bad_foo: function () 
+    id: 1
+    item: NULL
+    name: Jake
+
+[[2]]
+&lt;Person&gt;
+  Public:
+    clone: function (deep = FALSE) 
+    get_id: function () 
+    get_name: function () 
+    give_item: function (item) 
+    good_foo: function () 
+    initialize: function (name, id) 
+  Private:
+    bad_foo: function () 
+    id: 2
+    item: NULL
+    name: Anne
+
+[[3]]
+&lt;Person&gt;
+  Public:
+    clone: function (deep = FALSE) 
+    get_id: function () 
+    get_name: function () 
+    give_item: function (item) 
+    good_foo: function () 
+    initialize: function (name, id) 
+  Private:
+    bad_foo: function () 
+    id: 3
+    item: NULL
+    name: Alex
+</pre>
+
 The previous example initializes a list with Persons. It is important to notice 
 that the only function relevant to us from the global environment is the 'new' 
 function created by the R6 class. All the functions defined inside Person will
@@ -185,6 +234,24 @@ res <- create_person_item()
 print(res)
 {% endhighlight %}
 
+
+
+<pre class="output">
+&lt;Person&gt;
+  Public:
+    clone: function (deep = FALSE) 
+    get_id: function () 
+    get_name: function () 
+    give_item: function (item) 
+    good_foo: function () 
+    initialize: function (name, id) 
+  Private:
+    bad_foo: function () 
+    id: 1
+    item: shovel
+    name: Jake
+</pre>
+
 Note that if we are creating multiple instances, we have to get the desired
 method from each one of them.
 
@@ -218,11 +285,27 @@ String access_method(std::string foo_name){
 {% highlight r %}
 tryCatch({res <- access_method("bad_foo")},
          error=function(cond){print(paste0("Exception raised: ", cond))})
+{% endhighlight %}
 
+
+
+<pre class="output">
+[1] &quot;Exception raised: Error in access_method(\&quot;bad_foo\&quot;): Cannot convert object to a function: [type=NULL; target=CLOSXP, SPECIALSXP, or BUILTINSXP].\n&quot;
+</pre>
+
+
+
+{% highlight r %}
 res <- access_method("good_foo")
 
 print(res)
 {% endhighlight %}
+
+
+
+<pre class="output">
+[1] &quot;Wrapped inside: {This is a private function}&quot;
+</pre>
 
 The error is telling us that there is no function called "bad_foo" in
 the environment of the object "new_p". In that environment, only public 
