@@ -130,6 +130,8 @@ The rest of package was created via one call `Rcpp.package.skeleton("RcppGuile")
 
 and that's it!  Then any of the usual steps with R will build and install a working package.
 
+The complete package is available in [this
+directory](https://github.com/eddelbuettel/stackoverflow/tree/master/65340724/RcppGuile).
 
 #### Guile Demo
 
