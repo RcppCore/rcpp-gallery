@@ -2,7 +2,7 @@
 title: "Handling R6 objects in C++"
 author: "David Quesada"
 license: GPL (>= 2)
-tags: basics r6
+tags: basics r6 featured
 summary: Some examples of how to create R6 objects in C++ and how to call their methods
 layout: post
 src: 2020-07-31-handling-R6-objects-in-rcpp.Rmd

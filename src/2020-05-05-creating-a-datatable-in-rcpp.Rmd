@@ -2,7 +2,7 @@
 title: Creating a data.table from C++
 author: David Zimmermann, Leonardo Silvestri, Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: data.table
+tags: data.table featured
 summary: This post shows how to create a data.table (mostly) directly in Rcpp
 ---
 

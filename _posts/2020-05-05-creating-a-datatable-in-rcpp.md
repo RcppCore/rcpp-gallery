@@ -2,7 +2,7 @@
 title: Creating a data.table from C++
 author: David Zimmermann, Leonardo Silvestri, Dirk Eddelbuettel
 license: GPL (>= 2)
-tags: data.table
+tags: data.table featured
 summary: This post shows how to create a data.table (mostly) directly in Rcpp
 layout: post
 src: 2020-05-05-creating-a-datatable-in-rcpp.Rmd
@@ -226,8 +226,8 @@ rbenchmark::benchmark(
 
 <pre class="output">
                          test replications elapsed relative user.self sys.self
-2 create_dt_correct(15, 1000)           10   0.004     1.00     0.004    0.000
-1   create_dt_naive(15, 1000)           10   0.011     2.75     0.009    0.001
+2 create_dt_correct(15, 1000)           10   0.007    1.000     0.008        0
+1   create_dt_naive(15, 1000)           10   0.013    1.857     0.013        0
   user.child sys.child
 2          0         0
 1          0         0
@@ -248,8 +248,8 @@ rbenchmark::benchmark(
 
 <pre class="output">
                           test replications elapsed relative user.self sys.self
-2 create_dt_correct(15, 1e+06)           10    3.92     1.00     3.820    0.100
-1   create_dt_naive(15, 1e+06)           10    4.00     1.02     3.923    0.077
+2 create_dt_correct(15, 1e+06)           10   4.202    1.000     4.035    0.167
+1   create_dt_naive(15, 1e+06)           10   4.265    1.015     4.147    0.118
   user.child sys.child
 2          0         0
 1          0         0

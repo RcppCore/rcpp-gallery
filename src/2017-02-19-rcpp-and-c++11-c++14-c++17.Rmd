@@ -2,7 +2,7 @@
 title: "Using Rcpp with C++11, C++14 and C++17"
 author: "Dirk Eddelbuettel"
 license: GPL (>= 2)
-tags: c++11 c++14 c++17 featured
+tags: c++11 c++14 c++17 
 summary: "Rcpp supports any C++ variant: from C++98 to C++11, C++14 and now C++17"
 ---
 
