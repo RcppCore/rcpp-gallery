@@ -22,10 +22,11 @@ provided last summer on the R Developers Blog [in this
 post](https://developer.r-project.org/Blog/public/2020/07/30/windows/utf-8-build-of-r-and-cran-packages/index.html).
 
 More recently, another [blog
-post](https://fishandwhistle.net/post/2021/using-rs-cross-platform-iconv-wrapper-from-cpp11/). The
-useful idea presented in the post is to rely on the (public) header `R_ext/Riconv.h` which
-then transparently passes on to the `iconv` library R itself uses.  (Strictly speaking
-this is an optional feature, see `capabilities("iconv")` to check your build of R.)
+post](https://fishandwhistle.net/post/2021/using-rs-cross-platform-iconv-wrapper-from-cpp11/)
+covered character conversion.  The useful idea presented in the post is to rely on the (public)
+header `R_ext/Riconv.h` which then transparently passes on to the `iconv` library R itself uses.
+(Strictly speaking this is an optional feature, see `capabilities("iconv")` to check your build of
+R.)
 
 In order to test this, we wrapped up a [little (GitHub-only) package
 RcppIconvExample](https://github.com/eddelbuettel/rcppiconvexample) so that we could toss
@@ -95,3 +96,7 @@ std::string read_file(std::string filename, std::string encoding = "") {
 The entire function body is plain C++ code in a basic C++1998 standard, calls the C API of R to
 access `iconv` if a conversion is selected, and relies on Rcpp for the convenience of automating the
 interface and translating strings to `SEXP` objects and back.
+
+The function has also been implemented in a bareboned C++ version on top of the C API of R (using the
+helper definitions in the [tidyCpp](https://github.com/eddelbuettel/tidycpp) package) in package
+[dang](https://github.com/eddelbuettel/dang) as function `readAndConvert()`.
