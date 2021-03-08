@@ -100,3 +100,8 @@ interface and translating strings to `SEXP` objects and back.
 The function has also been implemented in a bareboned C++ version on top of the C API of R (using the
 helper definitions in the [tidyCpp](https://github.com/eddelbuettel/tidycpp) package) in package
 [dang](https://github.com/eddelbuettel/dang) as function `readAndConvert()`.
+
+Postscriptum: An astute reader pointed out that while `iconv` _appears to be_ platform-independent,
+it is not. Results on Windows can differ from results on Linux. The only consistent cross-platform
+encoding conversions are offered by library `stringi` (as used by package `stringr`) but that one is
+also a known pain to install (as it is not tiny).
