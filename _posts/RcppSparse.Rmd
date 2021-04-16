@@ -1,0 +1,220 @@
+---
+title: "Constructing a Sparse Matrix Class in Rcpp"
+author: "Zach DeBruine"
+license: GPL (>= 2)
+tags: sparse s4 matrix
+summary: Creating a sparse matrix reference class in Rcpp
+---
+
+```{r echo = F, cache = F}
+knitr::knit_hooks$set(document = function(x){
+  gsub("```\n*```r*\n*", "", x)
+})
+```
+
+```{Rcpp, ref.label=knitr::all_rcpp_labels(), include=FALSE}
+```
+
+### Introduction
+
+It's no secret that sparse matrix operations are faster in C++ than in R. RcppArmadillo and RcppEigen do a great job copying sparse matrices from R to C++ and back again. 
+
+But note the word "copy". Every time RcppArmadillo converts an R sparse matrix to an _arma::SpMat<T>_ object, it creates a **deep copy**. Every time RcppEigen converts an R sparse matrix to an _Eigen::SparseMatrix<T>_ object, it creates a **deep copy**.
+
+Deep copies consume time and memory.
+
+One of the advantages of structures like _Rcpp::NumericVector_ is that they simply **reference** an R object that already exists in memory -- no copy is created!
+
+Can we create a sparse matrix class using _Rcpp::NumericVector_ and _Rcpp::IntegerVector_ that uses references rather than a deep-copy?
+
+### Structure of a "dgCMatrix"
+
+Let's focus on the "dgCMatrix", the most common form of compressed-sparse-column (CSC) matrix in the R "Matrix" package. The "dgCMatrix" is an object with several slots:
+
+```{r}
+library(Matrix)
+set.seed(123)
+str(rsparsematrix(5, 5, 0.5), vec.len = 12)
+```
+
+* Slot `i` is an integer vector giving the row indices of the non-zero values of the matrix
+* Slot `p` is an integer vector giving the index of the first non-zero value of each column in `i`
+* Slot `x` gives the non-zero elements of the matrix corresponding to rows in `i` and columns delineated by `p`
+
+Realize that `i` and `p` are integer vectors, and `x` is a numeric vector (R-type is _double_), corresponding to _Rcpp::IntegerVector_ and _Rcpp::NumericVector_ (which is of type _double_).
+
+That means that we can construct a sparse matrix class in C++ using Rcpp vectors!
+
+### A dgCMatrix reference class for Rcpp
+
+A dgCMatrix is simply an S4 object containing integer and double vectors, and Rcpp already has implemented exporters and wrappers for S4 objects, integer vectors, and numeric vectors. That makes class construction easy:
+
+```{Rcpp, eval = FALSE}
+#include <Rcpp.h>
+
+namespace Rcpp {
+    class dgCMatrix {
+    public:
+        IntegerVector i, p, Dim;
+        NumericVector x;
+        List Dimnames;
+
+        // constructor
+        dgCMatrix(S4 mat) {
+            i = mat.slot("i");
+            p = mat.slot("p");
+            x = mat.slot("x");
+            Dim = mat.slot("Dim");
+            Dimnames = mat.slot("Dimnames");
+        };
+
+        // column iterator
+        class col_iterator {
+          public:
+            int index;
+            col_iterator(dgCMatrix& g, int ind) : parent(g) { index = ind; }
+            bool operator!=(col_iterator x) { return index != x.index; };
+            col_iterator& operator++(int) { ++index; return (*this); };
+            int row() { return parent.i[index]; };
+            int col() { return column; };
+            double& value() { return parent.x[index]; };
+          private:
+            dgCMatrix& parent;
+            int column;
+        };
+        col_iterator begin_col(int j) { return col_iterator(*this, p[j]); };
+        col_iterator end_col(int j) { return col_iterator(*this, p[j + 1]); };
+        
+    };
+
+    template <> dgCMatrix as(SEXP mat) { return dgCMatrix(mat); }
+
+    template <> SEXP wrap(const dgCMatrix& sm) {
+        S4 s(std::string("dgCMatrix"));
+        s.slot("i") = sm.i;
+        s.slot("p") = sm.p;
+        s.slot("x") = sm.x;
+        s.slot("Dim") = sm.Dim;
+        s.slot("Dimnames") = sm.Dimnames;
+        return s;
+    }
+}
+```
+
+In the above code, first we create a C++ class for a dgCMatrix in the Rcpp namespace with public members corresponding to the slots in an R `Matrix::dgCMatrix`.
+
+Second, we add a constructor for the class that receives an S4 R object (hopefully a valid dgCMatrix).
+
+Third, we add a simple forward-only sparse column iterator with read/write access for convenient traversal of non-zero elements in the matrix.
+
+Finally, we use `Rcpp::as` and `Rcpp::wrap` for seamless conversion between R and C++ and back again.
+
+### Using the Rcpp::dgCMatrix class
+
+We can now simply pull a dgCMatrix into any Rcpp function thanks to our handy class methods and the magic of `Rcpp::as`.
+
+```{Rcpp, eval = FALSE}
+//[[Rcpp::export]]
+Rcpp::dgCMatrix R_to_Cpp_to_R(Rcpp::dgCMatrix& mat){
+  return mat;
+}
+```
+
+And call the following from R:
+
+```{R}
+library(Matrix)
+spmat <- abs(rsparsematrix(100, 100, 0.1))
+spmat2 <- R_to_Cpp_to_R(spmat)
+all.equal(spmat, spmat2)
+```
+
+Awesome!
+
+### Passing by reference vs. value
+
+Rcpp structures such as _NumericVector_ are **references** to R objects. This means that if we modify our sparse matrix in C++, it will modify the original R object. For instance:
+
+```{Rcpp, eval = FALSE}
+//[[Rcpp::export]]
+Rcpp::dgCMatrix Rcpp_square(Rcpp::dgCMatrix& mat){
+  for(Rcpp::NumericVector::iterator i = mat.x.begin(); i != mat.x.end(); ++i)
+    (*i) *= (*i);
+  return mat;
+}
+```
+
+```{R}
+cat("sum before squaring: ", sum(spmat))
+spmat2 <- Rcpp_square(spmat)
+cat("sum of original object after squaring: ", sum(spmat))
+cat("sum of assigned object after squaring: ", sum(spmat2))
+```
+
+Notice how the original object AND the returned object are identical, yet they don't point to the same memory address:
+
+```{R}
+tracemem(spmat)
+tracemem(spmat2)
+```
+
+You might further inspect memory addresses within the structure using `pryr::inspect()` and `.Internal(inspect())` and indeed, you will see the memory addresses are not the same.
+
+This is because Rcpp passes from R to C++ by reference, and passes from C++ to R by copy.
+
+What this all means is that we can simply call the function in R and modify the object implicitly without an assignment operator.
+
+```{R, results = 'hide'}
+set.seed(123)
+spmat <- abs(rsparsematrix(100, 100, 0.1))
+sum_before <- sum(spmat)
+Rcpp_square(spmat)
+sum_after <- sum(spmat)
+```
+
+```{R, echo = FALSE}
+cat("sum_before = ", sum_before)
+cat("sum_after  = ", sum_after)
+```
+
+This principal of course applies to other Rcpp classes such as _NumericVector_ as well. But especially when working with very large sparse matrices, it is useful to avoid deep copies and pass by reference only.
+
+If you do need to operate on a copy of your matrix in C++, there is no reason to be using an Rcpp container when you can be using RcppArmadillo or RcppEigen. These libraries are extremely capable and well-documented.
+
+### Sparse iterator class
+
+One of the best ways to read and/or write non-zero values in a sparse matrix is with an iterator. 
+
+A basic column forward iterator with read/write access was presented in the declaration of our sparse matrix class. We can use this iterator in a very Armadillo-esque manner to compute things like column sums:
+
+```{Rcpp, eval = FALSE}
+//[[Rcpp::export]]
+Rcpp::NumericVector Rcpp_colSums(Rcpp::dgCMatrix& mat){
+  int n_col = mat.p.size() - 1;
+  Rcpp::NumericVector sums(n_col);
+  for(int col = 0; col < n_col; col++)
+    for(Rcpp::dgCMatrix::col_iterator it = mat.begin_col(col); it != mat.end_col(col); it++)
+      sums[col] += it.value();
+  return sums;
+}
+```
+
+On the R end:
+
+```{R}
+sums <- Rcpp_colSums(spmat)
+all.equal(Matrix::colSums(spmat), sums)
+```
+
+Great!  but, is it faster???
+
+```{R}
+library(microbenchmark)
+microbenchmark(Rcpp_colSums(spmat), Matrix::colSums(spmat))
+```
+
+### Extending the class
+
+There are many ways we can extend _Rcpp::dgCMatrix__. For example, we can use const_iterator, row_iterator and iterators that traverse all values in addition to col_iterator. We can also add support for subview copies, dense copies of columns and rows, basic element-wise operations, cross-product, etc. 
+
+I've implemented and documented these methods, and hopefully there will be a Rcpp-extending CRAN package in the not-too-distant future that allows you to seamlessly interface with the dgCMatrix class. For now, see my [Github repo](https://github.com/zdebruine/RcppSparse).
