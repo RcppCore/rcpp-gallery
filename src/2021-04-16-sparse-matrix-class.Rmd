@@ -41,6 +41,7 @@ str(rsparsematrix(5, 5, 0.5), vec.len = 12)
 ```
 
 Here we have:
+
 * Slot `i` is an integer vector giving the row indices of the non-zero values of the matrix
 * Slot `p` is an integer vector giving the index of the first non-zero value of each column in `i`
 * Slot `x` gives the non-zero elements of the matrix corresponding to rows in `i` and columns delineated by `p`
