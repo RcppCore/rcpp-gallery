@@ -39,7 +39,7 @@ The computational gains from applying the algorithm presented above are twofold.
 
 ## Three implementations in RcppArmadillo
 
-All the presented solutions are designed to sample `n` draws from the target distribution and return them in columns of the output matrix `draw`. The results are required to be reproducible. Therefore, the compatibility with R's `set.seed` is obtained by including code line `RNGScope scp;` and generating normal random draws using `Rcpp::rnorm` rather than `arma::randn`. All the considered functions take three arguments: the number of requested draws `n`, the `precision` matrix, and the covector `location`. Then they read the dimension of the normal vector `T`, fill matrix `epsilon` with normal random draws, create the `location_matrix` of appropriate dimensions whose columns are filled with `location` using `each_col`, and proceed to the implementation of steps 3 and 4 from the sampling algorithm presented above.
+All the presented solutions are designed to sample `n` draws from the target distribution and return them in columns of the output matrix `draw`. The results are required to be reproducible. Therefore, the compatibility with R's `set.seed` is obtained by generating normal random draws using `Rcpp::rnorm` rather than `arma::randn`. All the considered functions take three arguments: the number of requested draws `n`, the `precision` matrix, and the covector `location`. Then they read the dimension of the normal vector `T`, fill matrix `epsilon` with normal random draws, create the `location_matrix` of appropriate dimensions whose columns are filled with `location` using `each_col`, and proceed to the implementation of steps 3 and 4 from the sampling algorithm presented above.
 
 The first function `rmvnorm_arma_inv` is based on the Cholesky decomposition computed by `chol` subsequently declared as an upper-triangular matrix using `trimatu`, and uses function `inv` to compute the inverse. This matrix is then used to compute the draws from the target distribution using matrix multiplication and summation.
 
@@ -53,7 +53,6 @@ using namespace arma;
 // [[Rcpp::export]]
 mat rmvnorm_arma_inv (int n, mat precision, vec location){
   
-  RNGScope scp;
   int T = precision.n_rows;
   
   mat epsilon(T, n);
@@ -84,7 +83,6 @@ using namespace arma;
 // [[Rcpp::export]]
 mat rmvnorm_arma_solve(int n, mat precision, vec location){
   
-  RNGScope scp;
   int T = precision.n_rows;
   
   mat epsilon(T, n);
@@ -154,7 +152,6 @@ vec backward_algorithm(const vec& chol_diag, const vec& chol_offdiag, const vec&
 // [[Rcpp::export]]
 mat rmvnorm_arma_stochvol(int n, mat precision, vec location){
   
-  RNGScope scp;
   int     T                 = precision.n_rows;
   vec     precision_diag    = precision.diag();
   double  precision_offdiag = precision(1,0);
