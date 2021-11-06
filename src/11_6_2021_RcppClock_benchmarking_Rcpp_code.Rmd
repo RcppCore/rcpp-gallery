@@ -12,6 +12,9 @@ Rcpp is all about the need for speed. However, Rcpp code is not magically fast, 
 * On the C++ side, `RcppClock` wraps `std::chrono::high_resolution_clock` (C++11) to time chunks of code, and exports the results to an R object in the global environment.
 * On the R side, `RcppClock` provides convenient methods for summarizing results and plotting with `ggplot2`.
 
+There are other Rcpp benchmarking tools, such as the Rcpp `timer` class (see RcppGallery vignettte [here](https://gallery.rcpp.org/articles/using-the-rcpp-timer/)) and `rcppgeiger` (see repo [here](https://github.com/eddelbuettel/rcppgeiger
+)). `RcppClock` moves beyond both of these tools by supporting overlapping time points and direct access to timing results in the R environment.
+
 By benchmarking Rcpp code with `RcppClock`, we avoid measuring latency associated with converting R types to C++ types (and back again), and we can profile at line-by-line resolution rather than entire functions.
 
 Note: `RcppClock` is not compatible with OpenMP parallelization, and does not accurately measure processes taking less than ~1 microsecond (somewhat implementation-dependent).
