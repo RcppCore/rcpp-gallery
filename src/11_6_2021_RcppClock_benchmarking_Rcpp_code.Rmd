@@ -1,0 +1,148 @@
+---
+title: "Benchmarking Rcpp code with RcppClock"
+author: "Zach DeBruine"
+license: GPL (>= 2)
+tags: Rcpp benchmarking RcppClock
+summary: Rcpp benchmarking with a simple C++ tick-tock clock and seamless integration
+  with the R environment at runtime.
+---
+
+Rcpp is all about the need for speed. However, Rcpp code is not magically fast, but is the result of careful coding and profiling. RcppClock makes it easy to profile C++ code from R:
+
+* On the C++ side, RcppClock wraps `std::chrono::high_resolution_clock` to time chunks of code, and exports the results to an R object in the global environment.
+* On the R side, RcppClock provides convenient methods for summarizing results and plotting with `ggplot2`.
+
+By benchmarking Rcpp code with RcppClock, we avoid measuring latency associated with converting R types to C++ types (and back again), and we can profile at line-by-line resolution rather than entire functions.
+
+Note: RcppClock is not compatible with OpenMP parallelization, and does not accurately measure processes taking less than ~1 microsecond.
+
+## A simple example
+
+Install RcppClock from CRAN:
+
+```{r, warning = FALSE, message = FALSE, eval = FALSE}
+install.packages("RcppClock")
+```
+
+```{Rcpp, ref.label=knitr::all_rcpp_labels(), include=FALSE}
+```
+
+In your `.cpp` file, link the RcppClock header with `//[[Rcpp::depends(RcppClock)]]` and, if this is an R package, link to it in your `DESCRIPTION` file. `RcppClock` loads `Rcpp.h` so we don't need to include it again.
+
+```{Rcpp, eval = FALSE}
+//[[Rcpp::depends(RcppClock)]]
+#include <RcppClock.h>
+#include <thread>
+
+//[[Rcpp::export]]
+void sleepy(){
+  Rcpp::Clock clock;
+  
+  clock.tick("both_naps");
+  
+  clock.tick("short_nap");
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));  
+  clock.tock("short_nap");
+  
+  clock.tick("long_nap");
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));  
+  clock.tock("long_nap");
+
+  clock.tock("both_naps");
+  
+  // send the times to the R global environment variable, named "naptimes"
+  clock.stop("naptimes");
+}
+```
+
+`.tick(std::string)` starts a new timer. Provide a name to record what is being timed.
+
+`.tock(std::string)` stops a timer. It is important to use the same name as declared in .tick().
+
+`.stop(std::string)` calculates the duration between all .tick() and .tock() timing results, and creates an object in the R environment with the name provided.
+
+On the R end, we can now do stuff with the "naptimes" variable that was created in the above Rcpp function:
+
+```{R}
+sleepy()
+# global variable "naptimes" is now created in the environment
+library(RcppClock)
+naptimes
+```
+
+## Multiple replicates
+
+For extremely fast calculations it can be useful to repeat the calculation some number of times in order to improve the accuracy of the measurement.
+
+If a `.tick()` with the same name is called multiple times, RcppClock automatically groups the results.
+
+The following code reproduces the `?fibonacci` function example included in the RcppClock package:
+
+```{Rcpp, eval = FALSE}
+int fib(int n) {
+  return ((n <= 1) ? n : fib(n - 1) + fib(n - 2));
+}
+
+//[[Rcpp::export]]
+void fibonacci(std::vector<int> n, int reps) {
+  Rcpp::Clock clock;
+  
+  while(reps-- > 0){
+    for(auto number : n){
+      clock.tick("fib" + std::to_string(number));
+      fib(number);
+      clock.tock("fib" + std::to_string(number));
+    }
+  }
+  clock.stop("clock");
+}
+```
+
+On the R end, we'll get an object named "clock":
+
+```{R}
+fibonacci(n = 25:35, reps = 10)
+# global variable "clock" is created in the R global environment
+clock
+```
+
+The result of `summary()` is an S3 object of class `RcppClock` (essentially a `data.frame`) and has a `plot` method using `ggplot2`:
+
+```{R, fig.width = 4, fig.height = 3}
+plot(clock)
+```
+
+Unfortunately, some times were nearly impossible to measure. We can fix this by replicating the calculation many times within each timing bracket:
+
+```{Rcpp, eval = FALSE}
+//[[Rcpp::export]]
+void fibonacci_rep(std::vector<int> n, int outer_reps, int inner_reps) {
+  Rcpp::Clock clock;
+  
+  while(outer_reps-- > 0){
+    for(auto number : n){
+      clock.tick("fib" + std::to_string(number));
+      for(int rep = 0; rep < inner_reps; ++rep)
+        fib(number);
+      clock.tock("fib" + std::to_string(number));
+    }
+  }
+  clock.stop("clock");
+}
+```
+
+Now on the R end we can account for this:
+
+```{R}
+fibonacci_rep(n = 10:20, outer_reps = 10, inner_reps = 10000)
+clock$timer <- clock$timer / 10000
+clock
+```
+
+And plot the results:
+
+```{R, fig.width = 4, fig.height = 3}
+plot(clock)
+```
+
+In conclusion, RcppClock is a non-intrusive method for benchmarking Rcpp code in R.
