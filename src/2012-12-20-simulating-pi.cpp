@@ -13,7 +13,7 @@
  * We start with an R version. 
  *
  * The basic idea is that for a point (x,y), we compute the distance to the origin
- * using Pythargoras' well-known expression, or in this context a standard distance 
+ * using Pythagoras' well-known expression, or in this context a standard distance
  * norm. We do this repeatedly for a number of points, the ratio of those below one 
  * ("inside the unit circle") to the number N of simulation will approach pi/4 -- as
  * we were filling the area of one quarter of the unit circle by limiting ourselves

@@ -15,7 +15,7 @@ is very similar to the R version.
 We start with an R version. 
 
 The basic idea is that for a point (x,y), we compute the distance to the origin
-using Pythargoras' well-known expression, or in this context a standard distance 
+using Pythagoras' well-known expression, or in this context a standard distance
 norm. We do this repeatedly for a number of points, the ratio of those below one 
 ("inside the unit circle") to the number N of simulation will approach pi/4 -- as
 we were filling the area of one quarter of the unit circle by limiting ourselves
@@ -42,13 +42,13 @@ c(piR(1000), piR(10000), piR(100000), piR(1000000))
 
 
 <pre class="output">
-[1] 3.156 3.155 3.139 3.141
+[1] 3.15600 3.15520 3.13900 3.14101
 </pre>
 
 The neat thing about Rcpp sugar enables us to write C++ code that
 looks almost as compact.  
 
-{% highlight cpp %}
+{% highlight rcpp %}
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -76,5 +76,5 @@ c(piSugar(1000), piSugar(10000), piSugar(100000), piSugar(1000000))
 
 
 <pre class="output">
-[1] 3.156 3.155 3.139 3.141
+[1] 3.15600 3.15520 3.13900 3.14101
 </pre>
