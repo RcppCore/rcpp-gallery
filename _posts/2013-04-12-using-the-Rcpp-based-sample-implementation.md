@@ -2,6 +2,7 @@
 title: Using the RcppArmadillo-based Implementation of R's sample()
 author: Christian Gunning and Jonathan Olmsted
 license: GPL (>= 2)
+updated: Dec 12, 2022
 tags: rng
 summary: Demonstrates the use and performance of an RcppArmadillo-based `sample()` implementation
 layout: post
@@ -57,12 +58,13 @@ require(RcppArmadillo)
 Loading required package: RcppArmadillo
 </pre>
 
+### Account for R 3.6.0 Change 
 
-
-<pre class="output">
-Loading required package: Rcpp
-</pre>
-
+This post was originally written in 2013. Years later, with R release 3.6.0,
+a change was made to how R generates random integers. This affects the
+`sample()` function discussed here. To restore the behaviour present when
+this post was written (and to which the C++ implementation is calibrated) use
+`RNGkind(sample.kind = "Rounding").
 
 ### Quick Example
 
@@ -71,7 +73,7 @@ Here's a quick test to make sure it works.
 Some C++ code that can be hooked into with `sourceCpp()`:
 
 
-{% highlight cpp %}
+{% highlight rcpp %}
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadilloExtensions/sample.h>
@@ -89,7 +91,6 @@ CharacterVector csample_char( CharacterVector x,
 }
 {% endhighlight %}
 
-
 Notice that we only need `#include <RcppArmadilloExtensions/sample.h>` because
 `sample.h` then `#include`-s RcppArmadillo.
 
@@ -98,6 +99,18 @@ We invoke the (automatically defined) `csample_char()` R function:
 
 {% highlight r %}
 N <- 10
+RNGkind(sample.kind = "Rounding")  # pre R 3.6.0 behavior
+{% endhighlight %}
+
+
+
+<pre class="output">
+Warning in RNGkind(sample.kind = &quot;Rounding&quot;): non-uniform 'Rounding' sampler used
+</pre>
+
+
+
+{% highlight r %}
 set.seed(7)
 
 sample.r <- sample(letters, N, replace=T)
@@ -114,7 +127,6 @@ print(identical(sample.r, sample.c))
 [1] TRUE
 </pre>
 
-
 Of course, R's sample() function is "internally" vectorized and
 already fast.  This functionality was *not* added to speed up
 `sample()`!  Instead, this lets you stay in C++ when you need to sample
@@ -126,7 +138,7 @@ That said, performance is still a concern. A quick test shows a dead-heat for
 sampling with replacement when compared to vanilla R:
 
 
-{% highlight cpp %}
+{% highlight rcpp %}
 #include <RcppArmadilloExtensions/sample.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -142,7 +154,6 @@ NumericVector csample_num( NumericVector x,
   return ret;
 }
 {% endhighlight %}
-
 
 Consider the following timing where we compare vanilla R's `sample()` to
 `RcppArmadillo::sample()`. See the results for sampling with replacement with
@@ -188,14 +199,13 @@ benchmark(r = sample(frame1, n.samples1, replace=.replace),
 
 <pre class="output">
   test replications relative elapsed
-2  cpp         1000    1.000   0.186
-1    r         1000    1.188   0.221
+2  cpp         1000    1.000   0.084
+1    r         1000    1.512   0.127
 </pre>
 
 
 
 {% highlight r %}
-
 ## With probabilities
 benchmark(r.prob = sample(frame1, n.samples1, prob = probs1, replace = .replace),
           cpp.prob = csample_num(frame1, n.samples1, prob = probs1, replace = .replace),
@@ -209,10 +219,9 @@ benchmark(r.prob = sample(frame1, n.samples1, prob = probs1, replace = .replace)
 
 <pre class="output">
       test replications relative elapsed
-1   r.prob         1000    1.000   0.759
-2 cpp.prob         1000    1.009   0.766
+2 cpp.prob         1000    1.000   0.318
+1   r.prob         1000    1.006   0.320
 </pre>
-
 
 The two perform equally well.
 
@@ -240,14 +249,13 @@ benchmark(r = sample(frame1, n.samples2, replace=.replace),
 
 <pre class="output">
   test replications relative elapsed
-2  cpp         1000    1.000   0.011
-1    r         1000    1.364   0.015
+2  cpp         1000     1.00   0.004
+1    r         1000     4.25   0.017
 </pre>
 
 
 
 {% highlight r %}
-
 ## With probabilities
 benchmark(r.prob = sample(frame1, n.samples2, prob = probs1, replace = .replace),
           cpp.prob = csample_num(frame1, n.samples2, prob = probs1, replace = .replace),
@@ -261,10 +269,9 @@ benchmark(r.prob = sample(frame1, n.samples2, prob = probs1, replace = .replace)
 
 <pre class="output">
       test replications relative elapsed
-1   r.prob         1000        1   0.029
-2 cpp.prob         1000        1   0.029
+2 cpp.prob         1000    1.000   0.009
+1   r.prob         1000    1.444   0.013
 </pre>
-
 
 Finally, what we haven't done.  For sampling with replacement and more than
 200 non-zero weights, R uses Walker's Alias method.  This method can be
@@ -288,27 +295,8 @@ n.samples1 <- 1e4
 
 ## With probabilities
 r.prob <- sample(frame2, n.samples1, prob = probs2, replace = .replace)
-{% endhighlight %}
-
-
-
-<pre class="output">
-Warning: Walker's alias method used: results are different from R &lt; 2.2.0
-</pre>
-
-
-
-{% highlight r %}
 cpp.prob <- csample_num(frame2, n.samples1, prob = probs2, replace = .replace)
 {% endhighlight %}
-
-
-
-<pre class="output">
-Error: Walker Alias method not implemented. R-core sample() is likely
-faster for this problem.
-</pre>
-
 
 [1]: http://cran.r-project.org/doc/manuals/R-exts.html#Random-numbers
 [2]: http://onlinelibrary.wiley.com/book/10.1002/9780470316726

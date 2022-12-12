@@ -2,6 +2,7 @@
 title: Using the RcppArmadillo-based Implementation of R's sample()
 author: Christian Gunning and Jonathan Olmsted
 license: GPL (>= 2)
+updated: Dec 12, 2022
 tags: rng
 summary: Demonstrates the use and performance of an RcppArmadillo-based `sample()` implementation
 ---
@@ -48,6 +49,14 @@ You are ready to go from there:
 require(RcppArmadillo)
 ```
 
+### Account for R 3.6.0 Change 
+
+This post was originally written in 2013. Years later, with R release 3.6.0,
+a change was made to how R generates random integers. This affects the
+`sample()` function discussed here. To restore the behaviour present when
+this post was written (and to which the C++ implementation is calibrated) use
+`RNGkind(sample.kind = "Rounding").
+
 ### Quick Example
 
 Here's a quick test to make sure it works.
@@ -79,6 +88,7 @@ Notice that we only need `#include <RcppArmadilloExtensions/sample.h>` because
 We invoke the (automatically defined) `csample_char()` R function:
 ```{r}
 N <- 10
+RNGkind(sample.kind = "Rounding")  # pre R 3.6.0 behavior
 set.seed(7)
 
 sample.r <- sample(letters, N, replace=T)
