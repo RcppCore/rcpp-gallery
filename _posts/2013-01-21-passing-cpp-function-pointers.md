@@ -19,8 +19,7 @@ To set the stage, let us consider two simple functions of a vector
 
 
 
-
-{% highlight cpp %}
+{% highlight rcpp %}
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 
@@ -38,26 +37,24 @@ vec fun2_cpp(const vec& x) {	// and a second function
 }
 {% endhighlight %}
 
-
 These are pretty boring and standard functions, and we could simple
 switch between them via if/else statements.  Where it gets
 interesting is via the `SEXP` wrapping offered by `XPtr` below. 
 
 But before we get there, let us do this one step at a time.
 
-This typdef is important and just says that `funcPtr` will take a
+This typedef is important and just says that `funcPtr` will take a
 const reference to a vec and return a vector -- just like our two
 functions above
 
-{% highlight cpp %}
+{% highlight rcpp %}
 typedef vec (*funcPtr)(const vec& x);
 {% endhighlight %}
-
 
 The following function takes a string argument, picks a function and returns it 
 wrapped as an external pointer `SEXP`.  We could return this to R as well. 
 
-{% highlight cpp %}
+{% highlight rcpp %}
 // [[Rcpp::export]]
 XPtr<funcPtr> putFunPtrInXPtr(std::string fstr) {
     if (fstr == "fun1")
@@ -69,10 +66,9 @@ XPtr<funcPtr> putFunPtrInXPtr(std::string fstr) {
 }
 {% endhighlight %}
 
-
 A simple test of this function follows. First a function using it:
 
-{% highlight cpp %}
+{% highlight rcpp %}
 // [[Rcpp::export]]
 vec callViaString(const vec x, std::string funname) {
     XPtr<funcPtr> xpfun = putFunPtrInXPtr(funname);
@@ -81,7 +77,6 @@ vec callViaString(const vec x, std::string funname) {
     return (y);
 }
 {% endhighlight %}
-
 
 And then a call, showing access to both functions:
 
@@ -113,17 +108,15 @@ callViaString(1:3, "fun2")
 [3,]   30
 </pre>
 
-
 But more interestingly, we can also receive a function pointer via the `SEXP` wrapping:
 
 {% highlight r %}
 fun <- putFunPtrInXPtr("fun1")
 {% endhighlight %}
 
-
 And use it in this function which no longer switches:
 
-{% highlight cpp %}
+{% highlight rcpp %}
 // [[Rcpp::export]]
 vec callViaXPtr(const vec x, SEXP xpsexp) {
     XPtr<funcPtr> xpfun(xpsexp);
@@ -132,7 +125,6 @@ vec callViaXPtr(const vec x, SEXP xpsexp) {
     return (y);
 }
 {% endhighlight %}
-
 
 As seen here:
 
@@ -149,7 +141,6 @@ callViaXPtr(1:4, fun)
 [3,]    6
 [4,]    8
 </pre>
-
 
 This is a reasonably powerful and generic framework offered by Rcpp
 and sitting on top of R's external pointers.
