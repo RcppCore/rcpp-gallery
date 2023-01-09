@@ -41,7 +41,7 @@ vec fun2_cpp(const vec& x) {	// and a second function
  *
  * But before we get there, let us do this one step at a time.
  * 
- * This typdef is important and just says that `funcPtr` will take a
+ * This typedef is important and just says that `funcPtr` will take a
  * const reference to a vec and return a vector -- just like our two
  * functions above
  */
