@@ -1,0 +1,82 @@
+---
+title: "Extending R with C++ and Fortran"
+author: "Dirk Eddelbuettel and JBrandon Duck-Mayr"
+license: GPL (>= 2)
+tags: basics
+summary: Rcpp can also be helpful in providing glue code to connect to Fortran.
+---
+
+A recent social-media
+[question](https://mastodon.social/@ProfJamesCurran@mastodon.nz/109770574777963511) by [James
+Curran](https://profiles.auckland.ac.nz/j-curran) inquired about the best, or recommended ways, to
+extend R with Fortran code. Part of the question was whether the `.Fortran()` interface was still
+recommended or as there is 'conflicting advice' out there.  [Dirk](https://dirk.eddelbuettel.com)
+then [followed up](https://mastodon.social/@eddelbuettel/109772801398410192) and pointed to the
+(stunning!)  performance gains [reported by
+`glmnet`](https://cran.r-project.org/web/packages/glmnet/news/news.html) which switched from
+`.Fortran()` to a C++ interface using Rcpp and the (now much preferred) `.Call()` interface.  One
+key reason behind the performance gains is that `.Fortran()` requires copies of all arguments, just
+like the (also effectively deprecated) `.C()` interface.  Whereas `.Call()` works with `SEXP` object
+which are _pointers_: this can be dramatically faster and more efficient as object sizes increase.
+
+A few years earlier, and for a related question, [JBrandon Duck-Mayr](https://jbduckmayr.com/) had written a _very comprehensive_
+[answer on StackOverflow](https://stackoverflow.com/questions/31396802/integrate-fortran-c-with-r).
+It is backed by an example package [mixedlang](https://github.com/duckmayr/mixedlang) which
+implements the recommendation. 
+
+It starts from a Fortran90 function multiplying two 'real' aka `double` valued inputs:
+
+```f
+REAL*8 FUNCTION MULTIPLY (X, Y) 
+REAL*8 X, Y
+MULTIPLY = X * Y
+RETURN
+END
+```
+
+This can be connected quite easily to C++ code using the common `extern "C"`declaration (specifying
+that a C calling convention is used from the C++ code).  It still shows the  `Rcpp::depends()` used
+when `sourceCpp()`-ing a function, it is not needed in a package like `mixedlang`.
+
+```cpp
+#include "RcppArmadillo.h"
+
+// [[Rcpp::depends(RcppArmadillo)]]
+
+// First we'll declare the MULTIPLY Fortran function
+// as multiply_ in an extern "C" linkage specification
+// making sure to have the arguments passed as pointers.
+extern "C" {
+    double multiply_(double *x, double *y);
+}
+
+// Now our C++ function
+// [[Rcpp::export]]
+Rcpp::NumericVector test_function(Rcpp::NumericVector x) {
+    // Get the size of the vector
+    int n = x.size();
+    // Create a new vector for our result
+    Rcpp::NumericVector result(n);
+    for ( int i = 0; i < n; ++i ) {
+        // And for each element of the vector,
+        // store as doubles the element and the index
+        double starting_value = x[i], multiplier = (double)i;
+        // Now we can call the Fortran function,
+        // being sure to pass the address of the variables
+        result[i] = multiply_(&starting_value, &multiplier);
+    }
+    return result;
+}
+```
+
+Once both functions are compiled and loaded (as _e.g._ in package `mixedlang`) the wrapper function
+can be called from R as usual:
+
+```r
+mixedlang::test_function(0:9)
+# [1]  0  1  4  9 16 25 36 49 64 81
+```
+
+We hope the (recently updated) package at GitHub serves as starting point for other wanting to
+combine R and Fortran via Rcpp.
+
