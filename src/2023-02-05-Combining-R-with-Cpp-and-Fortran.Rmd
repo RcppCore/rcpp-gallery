@@ -10,13 +10,13 @@ A recent social-media
 [question](https://mastodon.social/@ProfJamesCurran@mastodon.nz/109770574777963511) by [James
 Curran](https://profiles.auckland.ac.nz/j-curran) inquired about the best, or recommended ways, to
 extend R with Fortran code. Part of the question was whether the `.Fortran()` interface was still
-recommended or as there is 'conflicting advice' out there.  [Dirk](https://dirk.eddelbuettel.com)
+recommended or not as there is 'conflicting advice' out there.  [Dirk](https://dirk.eddelbuettel.com)
 then [followed up](https://mastodon.social/@eddelbuettel/109772801398410192) and pointed to the
 (stunning!)  performance gains [reported by
 `glmnet`](https://cran.r-project.org/web/packages/glmnet/news/news.html) which switched from
 `.Fortran()` to a C++ interface using Rcpp and the (now much preferred) `.Call()` interface.  One
 key reason behind the performance gains is that `.Fortran()` requires copies of all arguments, just
-like the (also effectively deprecated) `.C()` interface.  Whereas `.Call()` works with `SEXP` object
+like the (also effectively deprecated) `.C()` interface.  Whereas `.Call()` works with `SEXP` objects
 which are _pointers_: this can be dramatically faster and more efficient as object sizes increase.
 
 A few years earlier, and for a related question, [JBrandon Duck-Mayr](https://jbduckmayr.com/) had written a _very comprehensive_
@@ -77,6 +77,6 @@ mixedlang::test_function(0:9)
 # [1]  0  1  4  9 16 25 36 49 64 81
 ```
 
-We hope the (recently updated) package at GitHub serves as starting point for other wanting to
+We hope the (recently updated) package at GitHub serves as starting point for others wanting to
 combine R and Fortran via Rcpp.
 
