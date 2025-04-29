@@ -14,7 +14,7 @@ wondered how to access R's facilities for eigenvalues calculations
 from C code.
 
 For this, we need to step back and consider how this is done. In
-fact, R farms the calculation out to the BLAS. On could possibly
+fact, R farms the calculation out to the BLAS. One could possibly
 access R's functions---but would then have to wrestle with the data
 input/output issues which make Rcpp shine in comparison.  Also,
 Rcpp gets us access to Armadillo (via the RcppArmadillo) package
@@ -27,8 +27,7 @@ will note that there are also one include statement, two attributes
 declarations and the function name itself.)
 
 
-
-{% highlight cpp %}
+{% highlight rcpp %}
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -38,7 +37,6 @@ arma::vec getEigenValues(arma::mat M) {
     return arma::eig_sym(M);
 }
 {% endhighlight %}
-
 
 We can illustrate this easily via a random sample matrix.
 
@@ -53,13 +51,12 @@ getEigenValues(Z)
 
 
 <pre class="output">
-        [,1]
-[1,]  0.3319
-[2,]  1.6856
-[3,]  2.4099
-[4,] 14.2100
+          [,1]
+[1,]  0.331887
+[2,]  1.685588
+[3,]  2.409920
+[4,] 14.210011
 </pre>
-
 
 In comparison, R gets the same results (in reverse order) and also returns the eigenvectors.
 
@@ -70,16 +67,16 @@ eigen(Z)
 
 
 <pre class="output">
+eigen() decomposition
 $values
-[1] 14.2100  2.4099  1.6856  0.3319
+[1] 14.210011  2.409920  1.685588  0.331887
 
 $vectors
-         [,1]     [,2]    [,3]     [,4]
-[1,]  0.69988 -0.55799  0.4458 -0.00627
-[2,] -0.06833 -0.08433  0.0157  0.99397
-[3,]  0.44100 -0.15334 -0.8838  0.03127
-[4,]  0.55769  0.81118  0.1413  0.10493
+           [,1]       [,2]       [,3]        [,4]
+[1,]  0.6998802  0.5579950  0.4458363 -0.00626959
+[2,] -0.0683337  0.0843295  0.0157046  0.99396801
+[3,]  0.4409966  0.1533407 -0.8837594  0.03127147
+[4,]  0.5576919 -0.8111823  0.1412537  0.10493036
 </pre>
-
 
 Armadillo has other eigenvector computations too, see [its documentation](http://arma.sourceforge.net/docs.html#eig_sym).
