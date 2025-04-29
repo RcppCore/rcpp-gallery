@@ -13,7 +13,7 @@
  * from C code.
  *
  * For this, we need to step back and consider how this is done. In
- * fact, R farms the calculation out to the BLAS. On could possibly
+ * fact, R farms the calculation out to the BLAS. One could possibly
  * access R's functions---but would then have to wrestle with the data
  * input/output issues which make Rcpp shine in comparison.  Also,
  * Rcpp gets us access to Armadillo (via the RcppArmadillo) package
